@@ -1,9 +1,12 @@
+'''Generates the json file containing all nodes and ways'''
+
 import overpass
 import json
 
 api = overpass.API(endpoint="https://overpass.kumi.systems/api/interpreter")
 
-# fetch all ways and nodes
+# Fetch all ways and nodes in Squirrel Hill
+print('Querying Overpass API...', end=' ')
 response = api.get(
     """
     [out:json][timeout:600];
@@ -55,6 +58,7 @@ response = api.get(
     """,
     build=False,
 )
+print('Response Received.\nWriting file...')
 jsonResponse = json.dumps(response)
-with open("squirrelhill.json", "w") as output_file:
+with open("test.json", "w") as output_file:
     output_file.write(jsonResponse)
