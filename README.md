@@ -2,11 +2,10 @@
 
 This pipeline generates the `associated.csv` file and visualizations for it.
 
-
 <img src="https://user-images.githubusercontent.com/35245591/147997445-bb23eec5-8b0c-480c-b283-603f23c5d218.png" alt="Associations" width="589" height="412">
 
 ## Table of Contents
-- [Pipeline Order](#Order)
+- [Usage](#Usage)
 - [Retrieve Data](#Retrieve-Data)
   - [Block & Node Info](#Retrieve-Data)
   - [House Coordinates](#House-Coordinates)
@@ -16,14 +15,17 @@ This pipeline generates the `associated.csv` file and visualizations for it.
   - [Running](#GIS-Visualizations)
 
 
-## Order
+## Usage
 
- - Run `get_data.py` to generate an *area*`.json` file, containing all nodes and ways in the desired area
+Change the `BASE_DIR` variable in `utils.py` to the path of your `WLC-Preprocessing` folder.
+
+ - Run `get_data.py` to generate an `input/area.json` file, containing all nodes and ways in the desired area
  - Run `parse_json.py` to generate the hash table with all the nodes, saved to a pickle
+ - Run `preprocess_data.py` to generate `input/block_output.json`, containing blocks, their nodes, and their attributes
  - Run `associate_houses.py` to generate `associated.csv`, which associates each house with a block
 
  For visualization:
- - Run `make_gis.py` to generate `gis_blocks.csv`, which contains all nodes in all ways, identified by block ID.
+ - Run `make_gis.py` to generate `qgis/blocks.csv`, which contains all nodes in all ways, identified by block ID.
  - Open `visualizations.qgz` to run the visualization. Try to fix any files that are not found by rearranging file locations.
 
 
@@ -70,7 +72,7 @@ It saves the latitude, longitude, and block ID of each association via `associat
 
 ## Pre-processing
 
-`make_gis.py` generates `gis_blocks.csv`. For the purpose of visualization, it is useful to have, for each node on a street, its node ID, block ID, and coordinates together. This way, we can group these in QGIS via their block ID.
+`make_gis.py` generates `qgis/blocks.csv`. For the purpose of visualization, it is useful to have, for each node on a street, its node ID, block ID, and coordinates together. This way, we can group these in QGIS via their block ID.
 
 This script uses `block_output.json` and `hash_nodes.pkl` and simply concatenates the information to the final csv by searching the hash table for each node ID to fetch the coordinates.
 
@@ -80,11 +82,11 @@ This script uses `block_output.json` and `hash_nodes.pkl` and simply concatenate
 To get the visualizations, simply open visualizations.gqz with QGIS Desktop. The instructions below are for re-creating this visualization from scratch:
 
  - Add OSM Standard Layer (copy from another project or go to Layer -> Add Layer -> Add Vector Layer -> XYZ). This adds the map.
- - Add `gis_blocks.csv` layer (Layer -> Add Layer -> Add Delimited Text Layer)
- - Connect these points to make the blocks via the `BlockID` field (Processing -> Toolbox -> Points to Path. Set 'Input point layer' to the `gis_blocks` layer, set 'Order field' AND 'Group field' to `BlockID`). Edit the style of this layer as desired to make the lines more visible. Make this layer permanent (*Right click layer* -> Make Permanent -> *Save as GeoJSON*)
+ - Add `qgis/blocks.csv` layer (Layer -> Add Layer -> Add Delimited Text Layer)
+ - Connect these points to make the blocks via the `BlockID` field (Processing -> Toolbox -> Points to Path. Set 'Input point layer' to the `blocks` layer, set 'Order field' AND 'Group field' to `BlockID`). Edit the style of this layer as desired to make the lines more visible. Make this layer permanent (*Right click layer* -> Make Permanent -> *Save as GeoJSON*)
  - Add houses and their block IDs, via `associated.csv` (Layer -> Add Layer -> Add Delimited Text Layer. *Note: Go to 'Record and Field Options' and ensure 'Detect field types' is unchecked, or else block_id will be rounded per float imprecision*)
  - Create a new virtual layer to define colors for each block:
-    - Create a new layer with the attribute table as all unique block IDs (Layer -> Create Layer -> New Virtual Layer. In 'Query', type 'SELECT DISTINCT BlockID FROM gis_blocks')
+    - Create a new layer with the attribute table as all unique block IDs (Layer -> Create Layer -> New Virtual Layer. In 'Query', type 'SELECT DISTINCT BlockID FROM blocks')
     - Create an R, G, and B field (Open Attribute Table -> Open Field Calculator. Use '3' for field length and 'R', 'G', and then 'B' for field name. For expression, type 'rand(10, 255)')
     - This layer will unfortunately re-randomize every time you zoom, so: Export -> Save Features As... -> GeoJSON with name 'perm_colors'
     - To apply the colors to the blocks, copy this into Properties... ->  Simple Line -> Color Equation Edit...

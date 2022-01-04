@@ -1,31 +1,40 @@
 # -*- encoding: utf-8 -*-
 
+'''
+Associate houses with their block segments and save to associated.csv
+'''
+
+from copy import deepcopy
 import csv
 import json
-from tqdm import tqdm
+import os
 import pickle
-from copy import deepcopy
-from utils import cross_track_distance
+from tqdm import tqdm
 from typing import NamedTuple
+from utils import cross_track_distance
+
+from utils import BASE_DIR
+
 
 MAX_DISTANCE = 500  # meters from hosue to segment
 
 # Load the hash table containing node coordinates hashed by ID
 print('Loading hash table of nodes...')
-node_coords_table = pickle.load(open('/home/aaron/walk_list_creator/input/hash_nodes.pkl', 'rb'))
+node_coords_table = pickle.load(open(os.path.join(BASE_DIR, 'input/hash_nodes.pkl'), 'rb'))
 
 # This file contains the coordinates of every building in the county
 print('Loading coordinates of houses...')
-house_points_file = open('/home/aaron/walk_list_creator/input/address_pts.csv', 'r')
+house_points_file = open(os.path.join(BASE_DIR, 'input/address_pts.csv'), 'r')
 num_rows = -1
 for line in house_points_file: num_rows += 1
 house_points_file.seek(0)
 house_points_reader = csv.DictReader(house_points_file)
 
-# Load the block_output file, which contains the blocks returned from the OSM query
+# Load the block_output file, containing the blocks returned from the OSM query
 print('Loading node and way coordinations query...')
-blocks = json.load(open('/home/aaron/walk_list_creator/input/block_output.json', 'r'))
+blocks = json.load(open(os.path.join(BASE_DIR, 'input/block_output.json'), 'r'))
 block_associations = []
+
 
 class Segment(NamedTuple):
     '''Define a segment between two nodes on a block relative to a house'''
@@ -36,10 +45,12 @@ class Segment(NamedTuple):
     distance: float
     id: int
 
+
 with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progress:
     for item in house_points_reader:
         progress.update()  # Update the progress bar
-        if item['municipality'].strip().upper() != 'PITTSBURGH' or int(item['zip_code']) != 15217:
+        if item['municipality'].strip().upper() != 'PITTSBURGH' or \
+                int(item['zip_code']) != 15217:
             continue
         house_lat, house_lon = item['latitude'], item['longitude']
         street_name = item['st_name'].split(' ')[0].upper()
@@ -52,11 +63,13 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
         for start_node in blocks:
             for block in blocks[start_node]:
                 if block[2] is None:
-                    continue  # This means this is the duplicate, as described in the README
-                possible_street_names = [block[2]['ways'][i][1]['name'].split(' ')[0].upper() for i in range(len(block[2]['ways']))]
+                    continue  # This is a duplicate, as described in the README
+                possible_street_names = [
+                    block[2]['ways'][i][1]['name'].split(' ')[0].upper()
+                    for i in range(len(block[2]['ways']))]
 
                 if street_name in possible_street_names:
-                    # Iterate through the block segments within this block (it may curve around)
+                    # Iterate through each block segment (block may curve)
                     for i in range(len(block[2]['nodes']) - 1):
                         node_1 = node_coords_table.get(block[2]['nodes'][i])
                         node_2 = node_coords_table.get(block[2]['nodes'][i + 1])
@@ -65,20 +78,32 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
                             continue
 
                         house_to_segment = cross_track_distance(
-                            float(house_lat), float(house_lon), node_1['lat'], node_1['lon'], node_2['lat'], node_2['lon'])
+                            float(house_lat), float(house_lon),
+                            node_1['lat'], node_1['lon'],
+                            node_2['lat'], node_2['lon'])
 
-                        if debug: print('With Node ID {} and {}, distance is {:.2f}.'.format(node_1['id'], node_2['id'], house_to_segment))
+                        if debug:
+                            print('nodes {} and {}, distance {:.2f}.'.format(
+                                node_1['id'], node_2['id'], house_to_segment))
 
-                        if best_segment is None or (best_segment is not None and abs(house_to_segment) < abs(best_segment.distance)):
-                            if debug: print('Replacing best segment, for which distance was {:.2f}'.format(-1 if best_segment is None else best_segment.distance))
-                            best_segment = Segment(start_node_id=int(start_node), sub_node_1=deepcopy(node_1), sub_node_2=deepcopy(node_2),
-                                                   end_node_id=block[0], distance=abs(house_to_segment), id=block[1])
+                        if best_segment is None or \
+                                (best_segment is not None and abs(house_to_segment) < abs(best_segment.distance)):
+                            if debug: print('Replacing best segment with distance {:.2f}'.format(-1 if best_segment is None else best_segment.distance))
+                            best_segment = Segment(
+                                start_node_id=int(start_node),
+                                sub_node_1=deepcopy(node_1),
+                                sub_node_2=deepcopy(node_2),
+                                end_node_id=block[0],
+                                distance=abs(house_to_segment),
+                                id=block[1])
 
         if best_segment is not None and best_segment.distance <= MAX_DISTANCE:
-            block_associations.append([house_lat, house_lon, str(best_segment.start_node_id) + str(best_segment.end_node_id) + str(best_segment.id)])
+            block_associations.append(
+                [house_lat, house_lon,
+                 str(best_segment.start_node_id) + str(best_segment.end_node_id) + str(best_segment.id)])
         if debug: print('best block for {}, {} is {}.'.format(house_lat, house_lon, best_segment))
 
 print('Writing...')
-output_writer = csv.writer(open('/home/aaron/walk_list_creator/associated_test.csv', 'w'))
+output_writer = csv.writer(open(os.path.join(BASE_DIR, 'associated.csv'), 'w'))
 output_writer.writerow(['Lat', 'Lon', 'BlockID'])
 output_writer.writerows(block_associations)

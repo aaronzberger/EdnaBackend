@@ -1,19 +1,21 @@
 '''
-Save a pickle containing a table of all nodes hashed by ID, read from the OSM query
+Save a pickle containing a hash table of all nodes hashed by ID
 '''
 
 import json
+import os
 import pickle
 
 from hash_table import Hash_Table
+from utils import BASE_DIR
 
 
 # Returned from OSM query of all nodes and ways in a region
-read_file = '/home/aaron/walk_list_creator/squirrelhill.json'
+read_file = os.path.join(BASE_DIR, 'input/squirrel_hill.json')
 loaded = json.load(open(read_file))
 
 # Save the file as input for the data preparation in associate_houses.py
-save_file = '/home/aaron/walk_list_creator/input/hash_nodes.pkl'
+save_file = os.path.join(BASE_DIR, 'input/hash_nodes.pkl')
 
 hash_table = Hash_Table()
 

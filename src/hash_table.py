@@ -1,3 +1,8 @@
+'''
+Hash table class and relevant parameter functions
+'''
+
+
 def get_id(item):
     '''Retrieves the ID, whether the input is an ID or block'''
     if type(item) == dict:
@@ -5,13 +10,14 @@ def get_id(item):
     else:
         return int(item)
 
+
 def hash_node_and_ways(self, item):
     return hash(self.get_fn(item)) % len(self.table)
 
 
 class Hash_Table:
     def __init__(self, len=10000000, hash_fn=None, get_fn=None):
-        '''Set the hash function and get function (gets the ID from the item)'''
+        '''Set the hash function and get function (gets ID from the item)'''
         self.table = [[] for _ in range(len)]
         self.num_items = 0
         self.collisions = 0
@@ -27,7 +33,7 @@ class Hash_Table:
             self.get_fn = get_id
 
     def insert(self, item):
-        '''Hashes and inserts the item parameter, returning -1 if it's a duplicate'''
+        '''Hashes and inserts item, returning -1 if it's a duplicate'''
         index = self.hash(self, item)
         for i in self.table[index]:
             if item == i:
