@@ -16,13 +16,14 @@ grouped_response = {}
 for element in response['elements']:
     if element['type'] == 'node':
         grouped_response[element['id']] = (element, [])
+
 for element in response['elements']:
     if element['type'] == 'node':
         lastNode = element['id']
     if element['type'] == 'way':
         grouped_response[lastNode][1].append(element)
 
-# Writing cleaned data to a file
+# # Writing cleaned data to a file
 # clean_data = json.dumps(grouped_response)
 # file = open('Output/clean_data.json', 'w')
 # file.write(clean_data)
@@ -47,7 +48,7 @@ for key in grouped_response:
     if branches == 1 or branches >= 3:
         intersection_nodes[key] = grouped_response[key]
 
-# Writing instersection nodes to a file
+# # Writing instersection nodes to a file
 # intersection_json = json.dumps(intersection_nodes)
 # file = open('Output/intersectionnodes.json', 'w')
 # file.write(intersection_json)
@@ -191,23 +192,10 @@ for key in intersection_nodes:
                         end_found = True
 
 
-# this prints the JSON to the console in a readable way
+# # Print the JSON to the console in a readable way
 # pp.pprint(blocks)
+
 block_json = json.dumps(blocks)
 file = open(os.path.join(BASE_DIR, 'input/block_output.json'), 'w')
 file.write(block_json)
 file.close()
-
-
-# temporary CSV output for easy import to QGIS
-# with open('Output/intersection_nodes.csv', mode='w') as csv_file:
-#     writer = csv.DictWriter(csv_file, fieldnames=['id', 'lat', 'lon'])
-#     writer.writeheader()
-#     for key in intersection_nodes:
-#         writer.writerow(
-#             {
-#                 'id': key,
-#                 'lat': intersection_nodes[key][0]['lat'],
-#                 'lon': intersection_nodes[key][0]['lon'],
-#             }
-#         )

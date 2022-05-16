@@ -44,6 +44,7 @@ class Segment(NamedTuple):
     end_node_id: int
     distance: float
     id: int
+    side: int
 
 
 with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progress:
@@ -95,15 +96,17 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
                                 sub_node_2=deepcopy(node_2),
                                 end_node_id=block[0],
                                 distance=abs(house_to_segment),
-                                id=block[1])
+                                id=block[1],
+                                side=1 if house_to_segment > 0 else 0)
 
         if best_segment is not None and best_segment.distance <= MAX_DISTANCE:
             block_associations.append(
                 [house_lat, house_lon,
-                 str(best_segment.start_node_id) + str(best_segment.end_node_id) + str(best_segment.id)])
+                 str(best_segment.start_node_id) + str(best_segment.end_node_id) + str(best_segment.id) + str(best_segment.side),
+                 item['full_address'], best_segment.sub_node_1['id'], best_segment.sub_node_2['id']])
         if debug: print('best block for {}, {} is {}.'.format(house_lat, house_lon, best_segment))
 
 print('Writing...')
 output_writer = csv.writer(open(os.path.join(BASE_DIR, 'associated.csv'), 'w'))
-output_writer.writerow(['Lat', 'Lon', 'BlockID'])
+output_writer.writerow(['Lat', 'Lon', 'BlockID', 'Address', 'Segment Node 1', 'Segment Node 2'])
 output_writer.writerows(block_associations)
