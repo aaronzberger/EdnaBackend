@@ -2,6 +2,7 @@ from enum import Enum
 from geographiclib.geodesic import Geodesic
 from math import radians, sin, cos, asin, acos
 from haversine import haversine, Unit
+import utm
 
 BASE_DIR = '/Users/aaron/Documents/GitHub/WLC'
 
@@ -123,3 +124,34 @@ def distance(lat1, lon1, lat2, lon2):
         float: the distance in meters between the points
     '''
     return haversine((lat1, lon1), (lat2, lon2), unit=Unit.METERS)
+
+
+def lat_lon_to_x_y(lat, lon):
+    '''
+    Converts GPS coordinates to X-Y grid coordinates
+
+    Parameters:
+        lat1 (float): latitude of point
+        lon1 (float): longitude of point
+
+    Returns:
+        float: the x-component
+        float: the y-component
+        int: the zone
+        char: the letter
+    '''
+    return utm.from_latlon(lat, lon)
+
+def x_y_to_lat_lon(x, y, zone, letter):
+    '''
+    Converts GPS coordinates to X-Y grid coordinates
+
+    Parameters:
+        x (float): x-component of point
+        y (float): y-component of point
+
+    Returns:
+        float: the latitude
+        float: the longitude
+    '''
+    return utm.to_latlon(x, y, zone, letter)

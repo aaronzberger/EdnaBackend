@@ -35,6 +35,7 @@ print('Loading node and way coordinations query...')
 blocks = json.load(open(os.path.join(BASE_DIR, 'input/block_output.json'), 'r'))
 block_associations = []
 
+blocks_by_id = {}
 
 class Segment(NamedTuple):
     '''Define a segment between two nodes on a block relative to a house'''
@@ -100,13 +101,21 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
                                 side=1 if house_to_segment > 0 else 0)
 
         if best_segment is not None and best_segment.distance <= MAX_DISTANCE:
+            block_id = str(best_segment.start_node_id) + str(best_segment.end_node_id) + str(best_segment.id) + str(best_segment.side)
             block_associations.append(
                 [house_lat, house_lon,
-                 str(best_segment.start_node_id) + str(best_segment.end_node_id) + str(best_segment.id) + str(best_segment.side),
-                 item['full_address'], best_segment.sub_node_1['id'], best_segment.sub_node_2['id']])
+                 block_id, item['full_address'], best_segment.sub_node_1['id'], best_segment.sub_node_2['id']])
+            if block_id in blocks_by_id:
+                blocks_by_id[block_id].append(item['full_address'])
+            else:
+                blocks_by_id[block_id] = [item['full_address']]
         if debug: print('best block for {}, {} is {}.'.format(house_lat, house_lon, best_segment))
 
 print('Writing...')
 output_writer = csv.writer(open(os.path.join(BASE_DIR, 'associated.csv'), 'w'))
 output_writer.writerow(['Lat', 'Lon', 'BlockID', 'Address', 'Segment Node 1', 'Segment Node 2'])
 output_writer.writerows(block_associations)
+
+filename = os.path.join(BASE_DIR, 'blocks.json')
+with open(filename, 'w', encoding='utf-8') as f:
+    json.dump(blocks_by_id, f, ensure_ascii=False, indent=4)

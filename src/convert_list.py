@@ -25,6 +25,10 @@ requested_reader = csv.DictReader(requested_houses_file)
 print('Loading node and way coordinations query...')
 all_way_nodes = json.load(open(os.path.join(BASE_DIR, 'input/block_output.json'), 'r'))
 
+# Load the hash table containing node coordinates hashed by ID
+print('Loading hash table of nodes...')
+node_coords_table = pickle.load(open(os.path.join(BASE_DIR, 'input/hash_nodes.pkl'), 'rb'))
+
 walk_list = {"addresses": [], "route": []}
 
 block_order = []
@@ -50,7 +54,7 @@ with tqdm(total=num_requested_houses, desc='Matching', unit='houses', colour='gr
         for item in association_reader:
             if formatted_address == item['Address']:
                 found = True
-                walk_list["addresses"].append(formatted_address)
+                walk_list["addresses"].append([formatted_address, item['Lat'], item['Lon']])
 
                 # Create or update this house's block
                 block_id = item['BlockID'][:-1]
@@ -58,11 +62,11 @@ with tqdm(total=num_requested_houses, desc='Matching', unit='houses', colour='gr
                     block_order.append(block_id)
                     block_ends[block_id] = [
                         (float(item['Lat']), float(item['Lon']),
-                        item['Segment Node 1'], item['Segment Node 2']), None]
+                        item['Segment Node 1'], item['Segment Node 2'], formatted_address), None]
                 else:
                     block_ends[block_id][1] = (
                         float(item['Lat']), float(item['Lon']),
-                        item['Segment Node 1'], item['Segment Node 2'])
+                        item['Segment Node 1'], item['Segment Node 2'], formatted_address)
                 break
         if not found:
             print(Colors.WARNING.value + 'Warning: Could not find {} in associations'.format(formatted_address) + Colors.ENDC.value)
@@ -86,6 +90,8 @@ for block in block_order:
     # Convert way nodes to str (this will be fixed soon in preprocess_data.py)
     way_nodes = [str(i) for i in way_nodes]
 
+    print('this block has start {} and end {} and way nodes'.format(block_ends[block][0][4], block_ends[block][1][4]), way_nodes)
+
     # Get the index of each block end's segment within the entire block
     try:
         h1_hops_to_start = min(way_nodes.index(block_ends[block][0][2]), way_nodes.index(block_ends[block][0][3]))
@@ -94,7 +100,6 @@ for block in block_order:
         print(Colors.FAIL.value + 'FAIL: For some reason, segment node wasn\'t in block' + Colors.ENDC.value)
         sys.exit()
 
-
     if h1_hops_to_start < h2_hops_to_start:
         # First house comes before second house, so this is the correct ordering
         walk_list['route'] += way_nodes
@@ -102,25 +107,28 @@ for block in block_order:
         walk_list['route'] +=  way_nodes[::-1]
     else:
         # Executed if these houses are on the same segment
-
-        first_node_coords = block_ends[block][0][0:2]
-        second_node_coords = block_ends[block][1][0:2]
+        start_house_coords = block_ends[block][0][0:2]
+        end_house_coords = block_ends[block][1][0:2]
 
         # Switch the segment nodes if needed so they are oriented the same way as the way nodes
         if way_nodes.index(block_ends[block][0][2]) > way_nodes.index(block_ends[block][0][3]):
-            first_node_coords = block_ends[block][1][0:2]
-            second_node_coords = block_ends[block][0][0:2]
+            temp = block_ends[block][0][2]
+            block_ends[block][0][2] = block_ends[block][0][3]
+            block_ends[block][0][3] = temp
+
+        segment_start_coords = node_coords_table.get(int(block_ends[block][0][2]))
+        segment_end_coords = node_coords_table.get(int(block_ends[block][0][3]))
 
         # ALD to beginning of segment relative to start
         h1_to_p1, _ = along_track_distance(
-            block_ends[block][0][0], block_ends[block][0][1],
-            lat1=first_node_coords[0], lon1=first_node_coords[1],
-            lat2=second_node_coords[0], lon2=second_node_coords[1])
+            segment_start_coords['lat'], segment_start_coords['lon'],
+            lat1=start_house_coords[0], lon1=start_house_coords[1],
+            lat2=end_house_coords[0], lon2=end_house_coords[1])
 
         h2_to_p1, _ = along_track_distance(
-            block_ends[block][1][0], block_ends[block][1][1],
-            lat1=first_node_coords[0], lon1=first_node_coords[1],
-            lat2=second_node_coords[0], lon2=second_node_coords[1])
+            segment_end_coords['lat'], segment_end_coords['lon'],
+            lat1=start_house_coords[0], lon1=start_house_coords[1],
+            lat2=end_house_coords[0], lon2=end_house_coords[1])
 
         if h1_to_p1 < h2_to_p1:
             walk_list['route'] += way_nodes
