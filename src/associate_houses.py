@@ -15,6 +15,7 @@ from utils import cross_track_distance
 
 from utils import BASE_DIR
 
+SEPARATE_SIDES = False
 
 MAX_DISTANCE = 500  # meters from hosue to segment
 
@@ -26,7 +27,8 @@ node_coords_table = pickle.load(open(os.path.join(BASE_DIR, 'input/hash_nodes.pk
 print('Loading coordinates of houses...')
 house_points_file = open(os.path.join(BASE_DIR, 'input/address_pts.csv'), 'r')
 num_rows = -1
-for line in house_points_file: num_rows += 1
+for line in house_points_file:
+    num_rows += 1
 house_points_file.seek(0)
 house_points_reader = csv.DictReader(house_points_file)
 
@@ -37,6 +39,7 @@ block_associations = []
 
 blocks_by_id = {}
 
+
 class Segment(NamedTuple):
     '''Define a segment between two nodes on a block relative to a house'''
     start_node_id: int
@@ -46,6 +49,7 @@ class Segment(NamedTuple):
     distance: float
     id: int
     side: int
+    all_nodes: list
 
 
 with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progress:
@@ -90,7 +94,8 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
 
                         if best_segment is None or \
                                 (best_segment is not None and abs(house_to_segment) < abs(best_segment.distance)):
-                            if debug: print('Replacing best segment with distance {:.2f}'.format(-1 if best_segment is None else best_segment.distance))
+                            if debug:
+                                print('Replacing best segment with distance {:.2f}'.format(-1 if best_segment is None else best_segment.distance))
                             best_segment = Segment(
                                 start_node_id=int(start_node),
                                 sub_node_1=deepcopy(node_1),
@@ -98,18 +103,33 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
                                 end_node_id=block[0],
                                 distance=abs(house_to_segment),
                                 id=block[1],
-                                side=1 if house_to_segment > 0 else 0)
+                                side=1 if house_to_segment > 0 else 0,
+                                all_nodes=block[2]['nodes'])
 
         if best_segment is not None and best_segment.distance <= MAX_DISTANCE:
-            block_id = str(best_segment.start_node_id) + str(best_segment.end_node_id) + str(best_segment.id) + str(best_segment.side)
+            block_id = str(best_segment.start_node_id) + ':' + str(best_segment.end_node_id) + \
+                       ':' + str(best_segment.id) + ':' + str(best_segment.side)
             block_associations.append(
                 [house_lat, house_lon,
                  block_id, item['full_address'], best_segment.sub_node_1['id'], best_segment.sub_node_2['id']])
-            if block_id in blocks_by_id:
-                blocks_by_id[block_id].append(item['full_address'])
+            reference_id = block_id if SEPARATE_SIDES else block_id[:-2]
+            if reference_id in blocks_by_id:
+                blocks_by_id[reference_id][0].append(item['full_address'])
             else:
-                blocks_by_id[block_id] = [item['full_address']]
-        if debug: print('best block for {}, {} is {}.'.format(house_lat, house_lon, best_segment))
+                blocks_by_id[reference_id] = [[item['full_address']]]
+                all_nodes_coords = []
+                for i in best_segment.all_nodes:
+                    coords = node_coords_table.get(i)
+                    if coords is None:
+                        continue
+                    all_nodes_coords.append([coords['lat'], coords['lon']])
+                if best_segment.all_nodes.index(best_segment.start_node_id) == 0:
+                    blocks_by_id[reference_id].append(all_nodes_coords)
+                else:
+                    blocks_by_id[reference_id].append(reversed(all_nodes_coords))
+
+        if debug:
+            print('best block for {}, {} is {}.'.format(house_lat, house_lon, best_segment))
 
 print('Writing...')
 output_writer = csv.writer(open(os.path.join(BASE_DIR, 'associated.csv'), 'w'))

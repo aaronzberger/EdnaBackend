@@ -14,7 +14,7 @@ walk_list = json.load(open(argv[1], 'r'))
 output = {}
 output['type'] = 'FeatureCollection'
 output['name'] = os.path.splitext(os.path.basename(argv[2]))[0]
-output['crs'] = {'type': 'name', 'properties': { 'name': 'urn:ogc:def:crs:OGC:1.3:CRS84' } }
+output['crs'] = {'type': 'name', 'properties': {'name': 'urn:ogc:def:crs:OGC:1.3:CRS84'}}
 output['features'] = []
 
 # Load the hash table containing node coordinates hashed by ID
@@ -30,8 +30,6 @@ for house in walk_list['addresses']:
 
 # Next, add each segment to the visualization
 coordinates = []
-# coordinates = [[house["Lat"], house["Lon"]] for house in node_coords_table.get(int(node)) for node in walk_list['route']]
-# coordinates = [node_coords_table.get(int(node)) for node in walk]
 for node in walk_list['route']:
     house = node_coords_table.get(int(node))
     coordinates.append([house["lon"], house["lat"]])
@@ -62,7 +60,9 @@ perpendicular_slope /= np.linalg.norm(perpendicular_slope)
 
 p1 = x_y_to_lat_lon(*np.add(mid_point, perpendicular_slope * 10).tolist(), zone_num, zone_let)
 p2 = x_y_to_lat_lon(*np.subtract(mid_point, perpendicular_slope * 10).tolist(), zone_num1, zone_let1)
-coordinates = [[first_coords['lon'], first_coords['lat']], p1[::-1], p2[::-1], [first_coords['lon'], first_coords['lat']]]
+coordinates = [[first_coords['lon'], first_coords['lat']],
+               p1[::-1], p2[::-1],
+               [first_coords['lon'], first_coords['lat']]]
 
 geometry = {'type': 'LineString', 'coordinates': coordinates}
 properties = {'name': 'start'}
@@ -91,7 +91,9 @@ perpendicular_slope /= np.linalg.norm(perpendicular_slope)
 p1 = x_y_to_lat_lon(*np.add(end_vec, perpendicular_slope * 10).tolist(), zone_num, zone_let)
 p2 = x_y_to_lat_lon(*np.subtract(end_vec, perpendicular_slope * 10).tolist(), zone_num1, zone_let1)
 poly_pt = x_y_to_lat_lon(*poly_point.tolist(), zone_num1, zone_let1)
-coordinates = [[last_coords['lon'], last_coords['lat']], p1[::-1], poly_pt[::-1], p2[::-1], [last_coords['lon'], last_coords['lat']]]
+coordinates = [[last_coords['lon'], last_coords['lat']],
+               p1[::-1], poly_pt[::-1], p2[::-1],
+               [last_coords['lon'], last_coords['lat']]]
 
 geometry = {'type': 'LineString', 'coordinates': coordinates}
 properties = {'name': 'end'}

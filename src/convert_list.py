@@ -17,7 +17,8 @@ association_reader = csv.DictReader(association_file)
 print('Loading requested houses...')
 requested_houses_file = open(os.path.join(BASE_DIR, 'input/requested.csv'), 'r')
 num_requested_houses = -1
-for line in requested_houses_file: num_requested_houses += 1
+for line in requested_houses_file:
+    num_requested_houses += 1
 requested_houses_file.seek(0)
 requested_reader = csv.DictReader(requested_houses_file)
 
@@ -62,7 +63,7 @@ with tqdm(total=num_requested_houses, desc='Matching', unit='houses', colour='gr
                     block_order.append(block_id)
                     block_ends[block_id] = [
                         (float(item['Lat']), float(item['Lon']),
-                        item['Segment Node 1'], item['Segment Node 2'], formatted_address), None]
+                            item['Segment Node 1'], item['Segment Node 2'], formatted_address), None]
                 else:
                     block_ends[block_id][1] = (
                         float(item['Lat']), float(item['Lon']),
@@ -90,7 +91,8 @@ for block in block_order:
     # Convert way nodes to str (this will be fixed soon in preprocess_data.py)
     way_nodes = [str(i) for i in way_nodes]
 
-    print('this block has start {} and end {} and way nodes'.format(block_ends[block][0][4], block_ends[block][1][4]), way_nodes)
+    print('this block has start {} and end {} and way nodes'.format(
+        block_ends[block][0][4], block_ends[block][1][4]), way_nodes)
 
     # Get the index of each block end's segment within the entire block
     try:
@@ -104,7 +106,7 @@ for block in block_order:
         # First house comes before second house, so this is the correct ordering
         walk_list['route'] += way_nodes
     elif h1_hops_to_start > h2_hops_to_start:
-        walk_list['route'] +=  way_nodes[::-1]
+        walk_list['route'] += way_nodes[::-1]
     else:
         # Executed if these houses are on the same segment
         start_house_coords = block_ends[block][0][0:2]

@@ -101,12 +101,14 @@ def cross_track_distance(ptlat, ptlon, lat1, lon1, lat2, lon2, debug=False):
     # If either of the along track distances is longer than the distance of
     # the line, the point must be off to one side of the line
     if abs(along_track_distance_P1) > abs(δ12) or abs(along_track_distance_P2) > abs(δ12):
-        if debug: print('Point not on line, since along track distance {:.2f} or {:.2f} is greater than the block distance {:.2f}'.format(
-            along_track_distance_P1, along_track_distance_P2, δ12))
+        if debug:
+            print('Point not on line, since along track distance {:.2f} or {:.2f} is greater than the block distance {:.2f}'.format(
+                along_track_distance_P1, along_track_distance_P2, δ12))
         return δ13 if abs(δ13) < abs(δ23) else δ23
     else:
-        if debug: print('Point is on line, since along track distance {:.2f} and {:.2f} are less than block distance {:.2f}'.format(
-            along_track_distance_P1, along_track_distance_P2, δ12))
+        if debug:
+            print('Point is on line, since along track distance {:.2f} and {:.2f} are less than block distance {:.2f}'.format(
+                along_track_distance_P1, along_track_distance_P2, δ12))
         return cross_track_distance
 
 
@@ -141,6 +143,7 @@ def lat_lon_to_x_y(lat, lon):
         char: the letter
     '''
     return utm.from_latlon(lat, lon)
+
 
 def x_y_to_lat_lon(x, y, zone, letter):
     '''
