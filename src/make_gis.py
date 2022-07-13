@@ -7,7 +7,7 @@ import json
 import os
 import pickle
 
-from utils import BASE_DIR
+from gps_utils import BASE_DIR
 
 
 file = json.load(open(os.path.join(BASE_DIR, 'input/block_output.json'), 'r'))

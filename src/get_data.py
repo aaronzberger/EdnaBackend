@@ -5,7 +5,7 @@ import json
 import overpass
 import os
 
-from utils import BASE_DIR, Colors
+from gps_utils import BASE_DIR, Colors
 
 
 OUPTUT_NAME = 'squirrel_hill'

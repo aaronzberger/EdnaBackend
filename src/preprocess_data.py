@@ -2,7 +2,7 @@ import json
 import os
 import pprint
 
-from utils import BASE_DIR
+from gps_utils import BASE_DIR
 
 
 pp = pprint.PrettyPrinter(indent=4)

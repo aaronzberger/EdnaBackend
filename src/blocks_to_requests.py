@@ -2,7 +2,7 @@ import json
 import os
 import pickle
 
-from utils import BASE_DIR
+from gps_utils import BASE_DIR
 
 # Load the hash table containing node coordinates hashed by ID
 print('Loading hash table of nodes...')

@@ -7,7 +7,7 @@ import os
 import pickle
 
 from hash_table import Hash_Table
-from utils import BASE_DIR
+from gps_utils import BASE_DIR
 
 
 # Returned from OSM query of all nodes and ways in a region

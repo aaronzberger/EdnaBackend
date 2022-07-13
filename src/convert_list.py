@@ -6,7 +6,7 @@ import pickle
 
 from tqdm import tqdm
 
-from utils import BASE_DIR, Colors, along_track_distance
+from gps_utils import BASE_DIR, Colors, along_track_distance, Point
 
 # This file contains associations for every house
 print('Loading associations...')
@@ -119,18 +119,20 @@ for block in block_order:
             block_ends[block][0][3] = temp
 
         segment_start_coords = node_coords_table.get(int(block_ends[block][0][2]))
+        segment_start_pt = Point(lat=segment_start_coords['lat'], lon=segment_start_coords['lon'])
         segment_end_coords = node_coords_table.get(int(block_ends[block][0][3]))
+        segment_end_pt = Point(lat=segment_end_coords['lat'], lon=segment_end_coords['lon'])
 
         # ALD to beginning of segment relative to start
         h1_to_p1, _ = along_track_distance(
-            segment_start_coords['lat'], segment_start_coords['lon'],
-            lat1=start_house_coords[0], lon1=start_house_coords[1],
-            lat2=end_house_coords[0], lon2=end_house_coords[1])
+            p1=segment_start_pt,
+            p2=Point(*start_house_coords),
+            p3=Point(*end_house_coords))
 
         h2_to_p1, _ = along_track_distance(
-            segment_end_coords['lat'], segment_end_coords['lon'],
-            lat1=start_house_coords[0], lon1=start_house_coords[1],
-            lat2=end_house_coords[0], lon2=end_house_coords[1])
+            p1=segment_end_pt,
+            p2=Point(*start_house_coords),
+            p3=Point(*end_house_coords))
 
         if h1_to_p1 < h2_to_p1:
             walk_list['route'] += way_nodes

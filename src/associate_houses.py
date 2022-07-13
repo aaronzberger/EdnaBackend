@@ -11,9 +11,9 @@ import os
 import pickle
 from tqdm import tqdm
 from typing import NamedTuple
-from utils import cross_track_distance
+from gps_utils import cross_track_distance
 
-from utils import BASE_DIR
+from gps_utils import BASE_DIR, Point
 
 SEPARATE_SIDES = False
 
@@ -58,7 +58,7 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
         if item['municipality'].strip().upper() != 'PITTSBURGH' or \
                 int(item['zip_code']) != 15217:
             continue
-        house_lat, house_lon = item['latitude'], item['longitude']
+        house_pt = Point(item['latitude'], item['longitude'])
         street_name = item['st_name'].split(' ')[0].upper()
 
         best_segment = None  # Store the running closest segment to the house
@@ -84,9 +84,9 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
                             continue
 
                         house_to_segment = cross_track_distance(
-                            float(house_lat), float(house_lon),
-                            node_1['lat'], node_1['lon'],
-                            node_2['lat'], node_2['lon'])
+                            house_pt,
+                            Point(node_1['lat'], node_1['lon']),
+                            Point(node_2['lat'], node_2['lon']))
 
                         if debug:
                             print('nodes {} and {}, distance {:.2f}.'.format(
@@ -110,7 +110,7 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
             block_id = str(best_segment.start_node_id) + ':' + str(best_segment.end_node_id) + \
                        ':' + str(best_segment.id) + ':' + str(best_segment.side)
             block_associations.append(
-                [house_lat, house_lon,
+                [house_pt.lat, house_pt.lon,
                  block_id, item['full_address'], best_segment.sub_node_1['id'], best_segment.sub_node_2['id']])
             reference_id = block_id if SEPARATE_SIDES else block_id[:-2]
             if reference_id in blocks_by_id:
@@ -129,7 +129,7 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
                     blocks_by_id[reference_id].append(reversed(all_nodes_coords))
 
         if debug:
-            print('best block for {}, {} is {}.'.format(house_lat, house_lon, best_segment))
+            print('best block for {}, {} is {}.'.format(house_pt.lat, house_pt.lon, best_segment))
 
 print('Writing...')
 output_writer = csv.writer(open(os.path.join(BASE_DIR, 'associated.csv'), 'w'))
