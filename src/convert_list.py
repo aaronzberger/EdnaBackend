@@ -1,12 +1,13 @@
 import csv
-import os
 import json
-import sys
+import os
 import pickle
+import sys
 
+from termcolor import colored
 from tqdm import tqdm
 
-from gps_utils import BASE_DIR, Colors, along_track_distance, Point
+from gps_utils import BASE_DIR, Point, along_track_distance
 
 # This file contains associations for every house
 print('Loading associations...')
@@ -15,7 +16,7 @@ association_reader = csv.DictReader(association_file)
 
 # This file contains the addresses of the requested Squirrel Hill houses
 print('Loading requested houses...')
-requested_houses_file = open(os.path.join(BASE_DIR, 'input/requested.csv'), 'r')
+requested_houses_file = open(os.path.join(BASE_DIR, 'example_lists/requested.csv'), 'r')
 num_requested_houses = -1
 for line in requested_houses_file:
     num_requested_houses += 1
@@ -28,7 +29,7 @@ all_way_nodes = json.load(open(os.path.join(BASE_DIR, 'input/block_output.json')
 
 # Load the hash table containing node coordinates hashed by ID
 print('Loading hash table of nodes...')
-node_coords_table = pickle.load(open(os.path.join(BASE_DIR, 'input/hash_nodes.pkl'), 'rb'))
+node_coords_table = pickle.load(open(os.path.join(BASE_DIR, 'store', 'hash_nodes.pkl'), 'rb'))
 
 walk_list = {"addresses": [], "route": []}
 
@@ -70,7 +71,7 @@ with tqdm(total=num_requested_houses, desc='Matching', unit='houses', colour='gr
                         item['Segment Node 1'], item['Segment Node 2'], formatted_address)
                 break
         if not found:
-            print(Colors.WARNING.value + 'Warning: Could not find {} in associations'.format(formatted_address) + Colors.ENDC.value)
+            print(colored('Warning: Could not find {} in associations'.format(formatted_address), color='yellow'))
 
 # Calculate direction and add route nodes
 for block in block_order:
@@ -84,8 +85,8 @@ for block in block_order:
         for end_node in all_way_nodes[str(block[9:18])]:
             if end_node[0] == block[:9]:
                 way_nodes = end_node[2]['nodes']
-    except:
-        print(Colors.FAIL.value + 'FAIL: Failed to find way nodes for ID {}'.format(block) + Colors.ENDC.value)
+    except Exception:
+        print(colored('FAIL: Failed to find way nodes for ID {}'.format(block), color='red'))
         sys.exit()
 
     # Convert way nodes to str (this will be fixed soon in preprocess_data.py)
@@ -99,7 +100,7 @@ for block in block_order:
         h1_hops_to_start = min(way_nodes.index(block_ends[block][0][2]), way_nodes.index(block_ends[block][0][3]))
         h2_hops_to_start = min(way_nodes.index(block_ends[block][1][2]), way_nodes.index(block_ends[block][1][3]))
     except ValueError:
-        print(Colors.FAIL.value + 'FAIL: For some reason, segment node wasn\'t in block' + Colors.ENDC.value)
+        print(colored('FAIL: For some reason, segment node wasn\'t in block', color='red'))
         sys.exit()
 
     if h1_hops_to_start < h2_hops_to_start:

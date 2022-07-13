@@ -6,7 +6,7 @@ from gps_utils import BASE_DIR
 
 # Load the hash table containing node coordinates hashed by ID
 print('Loading hash table of nodes...')
-node_coords_table = pickle.load(open(os.path.join(BASE_DIR, 'input/hash_nodes.pkl'), 'rb'))
+node_coords_table = pickle.load(open(os.path.join(BASE_DIR, 'store', 'hash_nodes.pkl'), 'rb'))
 
 output = {}
 
@@ -18,13 +18,11 @@ for block_id in blocks.keys():
     start_node = node_coords_table.get(int(block_id[:block_id.find(':')]))
     if start_node is None:
         failed += 1
-        print('fail at start', blocks[block_id][0][0], block_id[:block_id.find(':')])
         continue
     start_node_coords = [start_node['lat'], start_node['lon']]
 
     end_node = node_coords_table.get(int(block_id[block_id.find(':') + 1:block_id.find(':', block_id.find(':') + 1)]))
     if end_node is None:
-        print('fail at end', blocks[block_id][0][0], block_id[block_id.find(':') + 1:block_id.find(':', block_id.find(':') + 1)])
         failed += 1
         continue
     end_node_coords = [end_node['lat'], end_node['lon']]

@@ -9,13 +9,12 @@ import pickle
 
 from gps_utils import BASE_DIR
 
-
 file = json.load(open(os.path.join(BASE_DIR, 'input/block_output.json'), 'r'))
 
 # Load the hash table containing node coordinates hashed by ID
 print('Loading hash table of nodes...')
 node_coords_table = pickle.load(open(
-    os.path.join(BASE_DIR, 'input/hash_nodes.pkl'), 'rb'))
+    os.path.join(BASE_DIR, 'store', 'hash_nodes.pkl'), 'rb'))
 
 # Create the qgis directory if it doesn't exist
 os.makedirs(os.path.join(BASE_DIR, 'qgis'), exist_ok=True)

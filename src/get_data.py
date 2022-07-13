@@ -2,15 +2,16 @@
 Generate the area.json file containing all nodes and ways
 '''
 import json
-import overpass
 import os
 
-from gps_utils import BASE_DIR, Colors
+import overpass
+from termcolor import colored
 
+from gps_utils import BASE_DIR
 
 OUPTUT_NAME = 'squirrel_hill'
 
-print(Colors.WARNING.value + 'Please wait. This query takes 2m 30s for Squirrel Hill...' + Colors.ENDC.value)
+print(colored('Please wait. This query takes 2m 30s for Squirrel Hill...', color='yellow'))
 print('Querying Overpass API...', end=' ')
 
 api = overpass.API(endpoint='https://overpass.kumi.systems/api/interpreter')

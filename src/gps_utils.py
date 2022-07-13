@@ -152,3 +152,9 @@ def utm_to_pt(x, y, zone, letter):
         Point: the Point
     '''
     return Point(utm.to_latlon(x, y, zone, letter))
+
+
+def angle_between_pts(p1: Point, p2: Point):
+    '''Calculate the bearing from p1 to p2'''
+    converter = Geodesic.WGS84
+    return converter.Inverse(lat1=p1.lat, lon1=p1.lon, lat2=p2.lat, lon2=p2.lon)['azi1'] - 90

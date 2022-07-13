@@ -4,7 +4,6 @@ import pprint
 
 from gps_utils import BASE_DIR
 
-
 pp = pprint.PrettyPrinter(indent=4)
 
 response = json.load(open(os.path.join(BASE_DIR, 'input/squirrel_hill.json'), 'r'))
@@ -29,7 +28,8 @@ for element in response['elements']:
 # file.write(clean_data)
 # file.close()
 
-# Find the intersections based on how many directions a node branches off in (1 means dead end, 3+ means intersection, 2 is just a regular road)
+# Find the intersections based on how many directions a node branches off in
+# (1 means dead end, 3+ means intersection, 2 is just a regular road)
 
 intersection_nodes = {}
 

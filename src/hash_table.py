@@ -15,7 +15,7 @@ def hash_node_and_ways(self, item):
     return hash(self.get_fn(item)) % len(self.table)
 
 
-class Hash_Table:
+class HashTable:
     def __init__(self, len=10000000, hash_fn=None, get_fn=None):
         '''Set the hash function and get function (gets ID from the item)'''
         self.table = [[] for _ in range(len)]

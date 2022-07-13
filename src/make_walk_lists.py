@@ -12,7 +12,7 @@ from scipy.spatial.distance import pdist, squareform
 from tqdm import tqdm
 
 from gps_utils import BASE_DIR, Point
-from timeline_utils import Segment, Timeline, NodeDistances
+from timeline_utils import NodeDistances, Segment, Timeline
 from viz_utils import (display_clustered_segments, display_requests,
                        display_segments, display_walk_lists)
 
@@ -27,7 +27,7 @@ segments = [Segment(id=i, start=Point(*d['start']), end=Point(*d['end']),
             for i, d in zip(requests.keys(), requests.values())]
 
 if DISPLAY_VERBOSE:
-    display_segments(segments).save(os.path.join(BASE_DIR, 'segments.html'))
+    display_segments(segments).save(os.path.join(BASE_DIR, 'viz', 'segments.html'))
 
 '-----------------------------------------------------------------------------------------'
 '                                Node Distances Generation                                '
@@ -42,7 +42,7 @@ print('Beginning segment clustering...')
 
 def cluster_segments(segments: list[Segment]):
     # TODO: Somehow enforce a policy that all clusters must be fully connected (no outliers)
-    segment_distance_matrix_file = os.path.join(BASE_DIR, 'segment_distance_matrix.pkl')
+    segment_distance_matrix_file = os.path.join(BASE_DIR, 'store', 'segment_distance_matrix.pkl')
     if os.path.exists(segment_distance_matrix_file):
         print('Segment distance matrix pickle found.')
         segment_distance_matrix = pickle.load(open(segment_distance_matrix_file, 'rb'))
@@ -51,11 +51,9 @@ def cluster_segments(segments: list[Segment]):
         with tqdm(total=(len(segments) ** 2) / 2, desc='Processing', unit='iters', colour='green') as progress:
             def distance_metric(s1: Segment, s2: Segment):
                 progress.update()
-                s1_ids = s1.extract_end_ids().values()
-                s2_ids = s2.extract_end_ids().values()
-                return min([node_distances.get_distance_by_id(i, j) for i, j in
-                           [s1_ids[0], s2_ids[0], (s1_ids[0], s2_ids[1]),
-                           (s1_ids[1], s2_ids[0]), (s1_ids[1], s2_ids[1])]])
+                return min([node_distances.get_distance(i, j) for i, j in
+                           [s1.start, s2.start, (s1.start, s2.end),
+                           (s1.end, s2.start), (s1.end, s2.end)]])
             segment_distance_matrix = squareform(pdist(np.expand_dims(segments, axis=1), metric=distance_metric))
             print('Saving segment distance matrix to {}'.format(segment_distance_matrix_file))
             with open(segment_distance_matrix_file, 'wb') as output:
@@ -80,7 +78,7 @@ print('Beginning starting point selection...')
 
 
 def select_starting_locations(segments, labels):
-    pickle_path = os.path.join(BASE_DIR, 'centers.pkl')
+    pickle_path = os.path.join(BASE_DIR, 'store', 'centers.pkl')
     if os.path.exists(pickle_path):
         return pickle.load(open(pickle_path, 'rb'))
     else:
@@ -89,11 +87,9 @@ def select_starting_locations(segments, labels):
         for cluster in clusters:
             # Center is the one closest to all the other nodes
             all_points = list(itertools.chain.from_iterable((s.start, s.end) for s in cluster))
-            all_ids = list(itertools.chain.from_iterable(s.extract_end_ids() for s in cluster))
             distances = []
-            for id in all_ids:
-                distances.append(sum([node_distances.get_distance_by_id(id, i) for i in all_ids]))
-                # distances.append(sum([get_distance_p(point, i) for i in all_points]))
+            for point in all_points:
+                distances.append(sum([node_distances.get_distance(point, i) for i in all_points]))
             centers.append(all_points[distances.index(min(distances))])
         with open(os.path.join(pickle_path), 'wb') as output:
             pickle.dump(centers, output)
@@ -102,8 +98,10 @@ def select_starting_locations(segments, labels):
 
 centers = select_starting_locations(segments, labels)
 
+node_distances.add_nodes(centers)
+
 if DISPLAY_VERBOSE:
-    display_clustered_segments(segments, labels, centers).save(os.path.join(BASE_DIR, 'clustered.html'))
+    display_clustered_segments(segments, labels, centers).save(os.path.join(BASE_DIR, 'viz', 'clustered.html'))
 
 '--------------------------------------------------------------------------------'
 '                                Request Ordering                                '
@@ -123,7 +121,7 @@ def order_requests(requests: list[Segment]) -> list[Segment]:
 ordered_requests = order_requests(segments)
 
 if DISPLAY_VERBOSE:
-    display_requests(ordered_requests).save(os.path.join(BASE_DIR, 'requests.html'))
+    display_requests(ordered_requests).save(os.path.join(BASE_DIR, 'viz', 'requests.html'))
 
 '-----------------------------------------------------------------------------------'
 '                                Timeline Population                                '
@@ -137,7 +135,7 @@ timelines = []
 for center in centers:
     timelines.append(Timeline(start=center, end=center))
 
-ordered_requests *= 10
+# ordered_requests *= 10
 
 with tqdm(total=len(ordered_requests), desc='Populating', unit='requests', colour='green') as progress:
     for request in ordered_requests:
@@ -165,4 +163,5 @@ with tqdm(total=len(ordered_requests), desc='Populating', unit='requests', colou
         timelines[min_timeline].insert(request, min_slot)
 
 # Always display the final walk lists
-display_walk_lists(timelines).save(os.path.join(BASE_DIR, 'lists.html'))
+test = display_walk_lists(timelines)
+test.save(os.path.join(BASE_DIR, 'viz', 'lists.html'))

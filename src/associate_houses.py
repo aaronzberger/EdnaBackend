@@ -4,16 +4,16 @@
 Associate houses with their block segments and save to associated.csv
 '''
 
-from copy import deepcopy
 import csv
 import json
 import os
 import pickle
-from tqdm import tqdm
+from copy import deepcopy
 from typing import NamedTuple
-from gps_utils import cross_track_distance
 
-from gps_utils import BASE_DIR, Point
+from tqdm import tqdm
+
+from gps_utils import BASE_DIR, Point, cross_track_distance
 
 SEPARATE_SIDES = False
 
@@ -21,7 +21,7 @@ MAX_DISTANCE = 500  # meters from hosue to segment
 
 # Load the hash table containing node coordinates hashed by ID
 print('Loading hash table of nodes...')
-node_coords_table = pickle.load(open(os.path.join(BASE_DIR, 'input/hash_nodes.pkl'), 'rb'))
+node_coords_table = pickle.load(open(os.path.join(BASE_DIR, 'store', 'hash_nodes.pkl'), 'rb'))
 
 # This file contains the coordinates of every building in the county
 print('Loading coordinates of houses...')
@@ -95,7 +95,8 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
                         if best_segment is None or \
                                 (best_segment is not None and abs(house_to_segment) < abs(best_segment.distance)):
                             if debug:
-                                print('Replacing best segment with distance {:.2f}'.format(-1 if best_segment is None else best_segment.distance))
+                                print('Replacing best segment with distance {:.2f}'.format(
+                                    -1 if best_segment is None else best_segment.distance))
                             best_segment = Segment(
                                 start_node_id=int(start_node),
                                 sub_node_1=deepcopy(node_1),
