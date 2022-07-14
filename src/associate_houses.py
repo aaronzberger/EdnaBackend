@@ -137,6 +137,6 @@ output_writer = csv.writer(open(os.path.join(BASE_DIR, 'associated.csv'), 'w'))
 output_writer.writerow(['Lat', 'Lon', 'BlockID', 'Address', 'Segment Node 1', 'Segment Node 2'])
 output_writer.writerows(block_associations)
 
-filename = os.path.join(BASE_DIR, 'blocks.json')
-with open(filename, 'w', encoding='utf-8') as f:
-    json.dump(blocks_by_id, f, ensure_ascii=False, indent=4)
+
+json.dump(blocks_by_id, open(os.path.join(BASE_DIR, 'blocks.json'), 'w', encoding='utf-8'),
+          ensure_ascii=False, indent=4)

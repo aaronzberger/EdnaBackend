@@ -14,9 +14,9 @@ from tqdm import tqdm
 from gps_utils import BASE_DIR, Point
 from timeline_utils import NodeDistances, Segment, Timeline
 from viz_utils import (display_clustered_segments, display_requests,
-                       display_segments, display_walk_lists)
+                       display_segments, display_walk_lists, generate_timelines)
 
-DISPLAY_VERBOSE = True
+DISPLAY_VERBOSE = False
 
 
 requests = json.load(open(os.path.join(BASE_DIR, 'requests.json')))
@@ -137,30 +137,38 @@ for center in centers:
 
 # ordered_requests *= 10
 
-with tqdm(total=len(ordered_requests), desc='Populating', unit='requests', colour='green') as progress:
-    for request in ordered_requests:
-        progress.update()
-        # Look through each delta
-        min_delta = sys.float_info.max
-        min_timeline = min_slot = -1
-        for i, timeline in enumerate(timelines):
-            bids = [timeline.get_bid(request, i) for i in range(len(timeline.deltas))]
-            # If no timeline can fit this request, we are done
-            existent_bids = [b for b in bids if b is not None]
-            if len(existent_bids) == 0:
+timeline_file = os.path.join(BASE_DIR, 'timelines.pkl')
+if os.path.exists(timeline_file):
+    timelines = pickle.load(open(timeline_file, 'rb'))
+else:
+    with tqdm(total=len(ordered_requests), desc='Populating', unit='requests', colour='green') as progress:
+        for request in ordered_requests:
+            progress.update()
+            # Look through each delta
+            min_delta = sys.float_info.max
+            min_timeline = min_slot = -1
+            for i, timeline in enumerate(timelines):
+                bids = [timeline.get_bid(request, i) for i in range(len(timeline.deltas))]
+                # If no timeline can fit this request, we are done
+                existent_bids = [b for b in bids if b is not None]
+                if len(existent_bids) == 0:
+                    continue
+                # TODO: continue for a few
+
+                min_bid = min(existent_bids)
+                if min_bid < min_delta:
+                    min_delta = min_bid
+                    min_timeline = i
+                    min_slot = bids.index(min_bid)
+
+            # It didn't fit into any timeline
+            if min_timeline == -1:
                 continue
-            # TODO: continue for a few
+            timelines[min_timeline].insert(request, min_slot)
+        with open(timeline_file, 'wb') as output:
+            pickle.dump(timelines, output)
 
-            min_bid = min(existent_bids)
-            if min_bid < min_delta:
-                min_delta = min_bid
-                min_timeline = i
-                min_slot = bids.index(min_bid)
-
-        # It didn't fit into any timeline
-        if min_timeline == -1:
-            continue
-        timelines[min_timeline].insert(request, min_slot)
+generate_timelines(timelines)
 
 # Always display the final walk lists
 test = display_walk_lists(timelines)

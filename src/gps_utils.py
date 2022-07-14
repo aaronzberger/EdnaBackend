@@ -124,6 +124,23 @@ def distance(p1: Point, p2: Point):
     return haversine((p1.lat, p1.lon), (p2.lat, p2.lon), unit=Unit.METERS)
 
 
+def middle(p1: Point, p2: Point):
+    '''
+    Calculate the middle between points in GPS coordinates
+
+    Parameters:
+        p1 (Point): first point
+        p2 (Point): second point
+
+    Returns:
+        Point: the point exactly between these two points
+    '''
+    converter = Geodesic.WGS84
+    path_between = converter.InverseLine(lat1=p1.lat, lon1=p1.lon, lat2=p2.lat, lon2=p2.lon)
+    middle = path_between.Position(path_between.s13 / 2.0)
+    return Point(lat=middle['lat2'], lon=middle['lon2'])
+
+
 def pt_to_utm(pt: Point):
     '''
     Converts GPS coordinates to X-Y grid coordinates

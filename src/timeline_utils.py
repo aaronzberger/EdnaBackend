@@ -24,6 +24,21 @@ class Segment():
         self.length = 0
         for first, second in itertools.pairwise(self.all_points):
             self.length += get_distance(first, second)
+        self.time_to_walk = self.num_houses * 1.5 + self.length * (1/60)
+
+    def get_node_ids(self):
+        split = self.id.find(':')
+        return self.id[:split], self.id[split + 1:self.id.find(':', split + 1)]
+
+    def reversed(self):
+        '''Reverse this segment. Completes in linear time with the number of points'''
+        new_segment = deepcopy(self)
+        new_segment.start = new_segment.end
+        new_segment.end = self.start
+        new_segment.all_points.reverse()
+        node_ids = new_segment.get_node_ids()
+        new_segment.id = node_ids[1] + ':' + node_ids[0] + ':' + self.id[-1]
+        return new_segment
 
 
 '-----------------------------------------------------------------------------------------'
@@ -114,11 +129,24 @@ class Timeline():
     deltas: list[float] = field(default_factory=lambda: [0.0])
     segments: list[Segment] = field(default_factory=list)
     total_time: float = 0.0
+    max_minutes: int = 180
+
+    def __post_init__(self):
+        self.insertion_queue = []
+
+    def get_segment_times(self) -> tuple[list[list[float]], list[list[float]]]:
+        segment_times = []
+        delta_times = []
+        running_time = 0
+        for delta, segment in zip(self.deltas, self.segments):
+            segment_times.append([delta * (1/60) + running_time, delta * (1/60) + running_time + segment.time_to_walk])
+            delta_times.append([running_time, running_time + delta * (1/60)])
+            running_time += delta * (1/60) + segment.time_to_walk
+        return segment_times, delta_times
 
     def calculate_time(self):
         self.total_time = 0.0
-        self.total_time += sum([segment.length * (1/60) for segment in self.segments])  # Walk the segments
-        self.total_time += sum([segment.num_houses * 1.5 for segment in self.segments])  # Talk to voters
+        self.total_time += sum([segment.time_to_walk for segment in self.segments])  # Walk it and talk to voters
         self.total_time += sum([dist * (1/60) for dist in self.deltas])  # Walk between segments
 
     def _insert(self, segment: Segment, index: int):
@@ -135,13 +163,24 @@ class Timeline():
         self.calculate_time()
 
     def insert(self, segment: Segment, index: int) -> bool:
-        # Test if we can fit this segment
+        # Test the bid of inserting this segment forward
         theoretical_timeline = deepcopy(self)
         theoretical_timeline._insert(segment, index)
-        if theoretical_timeline.total_time > 180:
+        bid_foward = theoretical_timeline.total_time
+
+        # Test the bid of inserting this segment backwards
+        theoretical_timeline = deepcopy(self)
+        theoretical_timeline._insert(segment.reversed(), index)
+        bid_backwards = theoretical_timeline.total_time
+
+        forward = bid_foward < bid_backwards
+
+        if (bid_foward if forward else bid_backwards) > self.max_minutes:
             return False
 
-        self._insert(segment, index)
+        # Insert the segment in the correct direction
+        self._insert(segment if forward else segment.reversed(), index)
+        self.insertion_queue.append(segment.id if forward else segment.reversed().id)
         return True
 
     def get_bid(self, segment: Segment, index: int) -> float | None:
@@ -151,3 +190,17 @@ class Timeline():
         if not possible or delta_delta > 200:
             return None
         return delta_delta
+
+    def generate_report(self):
+        '''
+        Generate a report of how this list was generated
+
+        Returns:
+            dict: a dictionary that maps the segment id (key) to the
+                (1) route index and (2) insertion index (in a list)
+        '''
+        segment_ids = [segment.id for segment in self.segments]
+        report = {}
+        for i, id in enumerate(segment_ids):
+            report[id] = [i + 1, self.insertion_queue.index(id) + 1]
+        return report
