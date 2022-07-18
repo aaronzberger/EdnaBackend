@@ -5,7 +5,7 @@ Save a json that maps node IDs to their GPS coordinates
 import json
 import os
 
-from config import BASE_DIR, node_t
+from config import BASE_DIR, node_coords_file, node_t
 
 # Returned from OSM query of all nodes and ways in a region
 read_file = os.path.join(BASE_DIR, 'input', 'squirrel_hill.json')
@@ -23,7 +23,5 @@ for item in loaded['elements']:
         }
 
 # Save the file as input for the data preparation in associate_houses.py
-save_file = os.path.join(BASE_DIR, 'store', 'node_coords.json')
-print('Saving node table to {}'.format(save_file))
-with open(save_file, 'w', encoding='utf-8') as f:
-    json.dump(node_coords, f, indent=4)
+print('Saving node table to {}'.format(node_coords_file))
+json.dump(node_coords, open(node_coords_file, 'w', encoding='utf-8'), indent=4)

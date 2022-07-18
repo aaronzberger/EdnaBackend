@@ -2,7 +2,7 @@ import json
 import os
 import pprint
 
-from config import BASE_DIR
+from config import BASE_DIR, block_output_file
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -195,4 +195,4 @@ for key in intersection_nodes:
 # # Print the JSON to the console in a readable way
 # pp.pprint(blocks)
 
-json.dump(blocks, open(os.path.join(BASE_DIR, 'block_output.json'), 'w', encoding='utf-8'), indent=4)
+json.dump(blocks, open(block_output_file, 'w', encoding='utf-8'), indent=4)

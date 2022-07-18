@@ -8,11 +8,12 @@ import sys
 from termcolor import colored
 from tqdm import tqdm
 
+from config import (BASE_DIR, block_output_file, blocks_file, node_coords_file,
+                    node_t)
 from gps_utils import Point, along_track_distance
-from config import BASE_DIR, node_t
 
 print('Loading associations')
-house_associations: dict[str, dict[str, list[str | node_t]]] = json.load(open(os.path.join(BASE_DIR, 'blocks.json')))
+house_associations: dict[str, dict[str, list[str | node_t]]] = json.load(open(blocks_file))
 
 # This file contains the addresses of the requested Squirrel Hill houses
 print('Loading requested houses...')
@@ -25,11 +26,11 @@ requested_reader = csv.DictReader(requested_houses_file)
 
 # Load the block_output file, containing the blocks returned from the OSM query
 print('Loading node and way coordinations query...')
-all_way_nodes = json.load(open(os.path.join(BASE_DIR, 'input/block_output.json'), 'r'))
+all_way_nodes = json.load(open(block_output_file))
 
 # Load the hash table containing node coordinates hashed by ID
 print('Loading hash table of nodes...')
-node_coords: dict[str, node_t] = json.load(open(os.path.join(BASE_DIR, 'store', 'node_coords.json'), 'r'))
+node_coords: dict[str, node_t] = json.load(open(node_coords_file, 'r'))
 
 walk_list = {
     'addresses': [],

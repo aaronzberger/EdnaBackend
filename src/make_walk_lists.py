@@ -11,16 +11,17 @@ import sklearn.cluster
 from scipy.spatial.distance import pdist, squareform
 from tqdm import tqdm
 
+from config import (ARBITRARY_LARGE_DISTANCE, BASE_DIR, requests_file,
+                    requests_file_t)
 from gps_utils import Point
-from config import BASE_DIR, requests_file_t
 from timeline_utils import NodeDistances, Segment, Timeline
 from viz_utils import (display_clustered_segments, display_requests,
-                       display_segments, display_walk_lists, generate_timelines)
+                       display_segments, display_walk_lists,
+                       generate_timelines)
 
 DISPLAY_VERBOSE = False
 
-
-requests: requests_file_t = json.load(open(os.path.join(BASE_DIR, 'requests.json')))
+requests: requests_file_t = json.load(open(requests_file))
 
 # Create the list of all segments
 segments = [Segment(id=i, start=Point(*d['start'].values()), end=Point(*d['end'].values()),
@@ -42,28 +43,55 @@ node_distances = NodeDistances(segments=segments)
 print('Beginning segment clustering...')
 
 
-def cluster_segments(segments: list[Segment]) -> list[int]:
+def generate_segment_distances(segments: list[Segment]) -> dict[str, dict[str, float]]:
     # TODO: Somehow enforce a policy that all clusters must be fully connected (no outliers)
-    segment_distance_matrix_file = os.path.join(BASE_DIR, 'store', 'segment_distance_matrix.pkl')
+    segment_distance_matrix_file = os.path.join(BASE_DIR, 'store', 'segment_distance_matrix.json')
     if os.path.exists(segment_distance_matrix_file):
         print('Segment distance matrix pickle found.')
-        segment_distance_matrix = pickle.load(open(segment_distance_matrix_file, 'rb'))
+        matrix = json.load(open(segment_distance_matrix_file))
     else:
-        print('No segment distance matrix pickle found. Generating now...')
+        print('No segment distance matrix found. Generating now...')
         with tqdm(total=(len(segments) ** 2) / 2, desc='Processing', unit='iters', colour='green') as progress:
-            def distance_metric(s1: Segment, s2: Segment):
-                progress.update()
-                return min([node_distances.get_distance(i, j) for i, j in
-                           [s1.start, s2.start, (s1.start, s2.end),
-                           (s1.end, s2.start), (s1.end, s2.end)]])
-            segment_distance_matrix = squareform(pdist(np.expand_dims(segments, axis=1), metric=distance_metric))
-            print('Saving segment distance matrix to {}'.format(segment_distance_matrix_file))
-            with open(segment_distance_matrix_file, 'wb') as output:
-                pickle.dump(segment_distance_matrix, output)
+            matrix: dict[str, dict[str, float]] = {}
+
+            # Similar code as in NodeDistances creation
+            def insert_pair(s1: Segment, s2: Segment):
+                try:
+                    matrix[s2.id][s1.id]
+                except KeyError:
+                    routed_distances = \
+                        [node_distances.get_distance(i, j) for i, j in
+                            [(s1.start, s2.start), (s1.start, s2.end), (s1.end, s2.start), (s1.end, s2.end)]]
+                    existing_distances = [i for i in routed_distances if i]
+                    matrix[s1.id][s2.id] = ARBITRARY_LARGE_DISTANCE if len(existing_distances) == 0 \
+                        else min(existing_distances)
+
+            for segment in segments:
+                matrix[segment.id] = {}
+                for other_segment in segments:
+                    insert_pair(segment, other_segment)
+                    progress.update()
+
+        print('Saving segment distance matrix to {}'.format(segment_distance_matrix_file), flush=True)
+        json.dump(matrix, open(segment_distance_matrix_file, 'w', encoding='utf-8'), indent=4)
+    return matrix
+
+
+segment_distance_matrix = generate_segment_distances(segments)
+
+
+def cluster_segments(segments: list[Segment], distances: dict[str, dict[str, float]]) -> list[int]:
+    def distance_metric(s1: list[Segment], s2: list[Segment]) -> float:
+        try:
+            return distances[s1[0].id][s2[0].id]
+        except KeyError:
+            return distances[s2[0].id][s1[0].id]
 
     # Perform the actual clustering
+    formatted_matrix = squareform(pdist(np.expand_dims(segments, axis=1), metric=distance_metric))
     clustered: sklearn.cluster.KMeans = sklearn.cluster.KMeans(
-        n_clusters=11, random_state=0, n_init=100).fit(segment_distance_matrix)
+        n_clusters=11, random_state=0, n_init=100).fit(formatted_matrix)
+    print(clustered.labels_)
     return clustered.labels_
 
 
@@ -72,7 +100,7 @@ def modify_labels(segments: list[Segment], labels: list[int]) -> list[int]:
     return labels
 
 
-labels = cluster_segments(segments)
+labels = cluster_segments(segments, segment_distance_matrix)
 
 '----------------------------------------------------------------------------------------'
 '                                Starting Point Selection                                '
@@ -81,9 +109,9 @@ print('Beginning starting point selection...')
 
 
 def select_starting_locations(segments: list[Segment], labels: list[int]) -> list[Point]:
-    pickle_path = os.path.join(BASE_DIR, 'store', 'centers.pkl')
-    if os.path.exists(pickle_path):
-        return pickle.load(open(pickle_path, 'rb'))
+    centers_file = os.path.join(BASE_DIR, 'store', 'centers.json')
+    if os.path.exists(centers_file):
+        return json.load(open(centers_file))
     else:
         centers: list[Point] = []
         clusters: list[list[Segment]] = [[segments[i] for i in range(len(segments)) if labels[i] == k]
@@ -93,10 +121,13 @@ def select_starting_locations(segments: list[Segment], labels: list[int]) -> lis
             all_points: list[Point] = list(itertools.chain.from_iterable((s.start, s.end) for s in cluster))
             distances: list[float] = []
             for point in all_points:
-                distances.append(sum([node_distances.get_distance(point, i) for i in all_points]))
+                point_distances = [node_distances.get_distance(point, i) for i in all_points]
+                existent_distances = [i for i in point_distances if i]
+                distances.append(ARBITRARY_LARGE_DISTANCE if len(existent_distances) == 0 else sum(existent_distances))
             centers.append(all_points[distances.index(min(distances))])
-        with open(os.path.join(pickle_path), 'wb') as output:
-            pickle.dump(centers, output)
+
+        # Convert points to their json-exportable format
+        json.dump([pt.__dict__ for pt in centers], open(centers_file, 'w', encoding='utf-8'), indent=4)
         return centers
 
 
@@ -149,7 +180,7 @@ else:
         for request in ordered_requests:
             progress.update()
             # Look through each delta
-            min_delta = sys.float_info.max
+            min_delta = ARBITRARY_LARGE_DISTANCE
             min_timeline = min_slot = -1
             for i, timeline in enumerate(timelines):
                 bids = [timeline.get_bid(request, i) for i in range(len(timeline.deltas))]

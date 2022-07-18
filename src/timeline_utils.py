@@ -1,16 +1,17 @@
 from __future__ import annotations
 
 import itertools
+import json
 import os
-import pickle
 from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Optional
 
 from tqdm import tqdm
 
-from config import BASE_DIR, MINS_PER_HOUSE
-from gps_utils import Point
+from config import (MAX_NODE_STORAGE_DISTANCE, MINS_PER_HOUSE,
+                    node_distance_table_file)
+from gps_utils import Point, great_circle_distance
 from route import get_distance
 
 
@@ -50,7 +51,24 @@ class Segment():
 
 
 class NodeDistances():
-    node_distance_table: dict[str, dict[str, float]] = {}
+    node_distances: dict[str, dict[str, Optional[float]]] = {}
+
+    @classmethod
+    def _insert_pair(cls, node_1: Point, node_2: Point) -> bool:
+        node_1_id = str(node_1.lat) + ':' + str(node_1.lon)
+        node_2_id = str(node_2.lat) + ':' + str(node_2.lon)
+        # If this pair already exists in the opposite order, skip
+        try:
+            cls.node_distances[node_2_id][node_1_id]
+            return False
+        except KeyError:
+            # Calculate a fast great circle distance
+            distance = great_circle_distance(node_1, node_2)
+
+            # Only calculate and insert the routed distance if needed
+            cls.node_distances[node_1_id][node_2_id] = None if distance > MAX_NODE_STORAGE_DISTANCE \
+                else get_distance(node_1, node_2)
+            return True
 
     @classmethod
     def __init__(cls, segments: list[Segment]):
@@ -58,52 +76,39 @@ class NodeDistances():
 
         cls.all_nodes = list(itertools.chain.from_iterable((i.start, i.end) for i in segments))
 
-        cls.node_distance_table_file = os.path.join(BASE_DIR, 'store', 'node_distance_table.pkl')
-        if os.path.exists(cls.node_distance_table_file):
+        if os.path.exists(node_distance_table_file):
             print('Node distance table file found.')
-            cls.node_distance_table = pickle.load(open(cls.node_distance_table_file, 'rb'))
-        else:
-            print('No node distance table file found at {}. Generating now...'.format(cls.node_distance_table_file))
-            cls.node_distance_table = {}
-            with tqdm(total=len(cls.all_nodes) ** 2 / 2, desc='Generating', unit='pairs', colour='green') as progress:
-                for node in cls.all_nodes:
-                    node_id = str(node.lat) + ':' + str(node.lon)
-                    cls.node_distance_table[node_id] = {}
-                    for other_node in cls.all_nodes:
-                        other_id = str(other_node.lat) + ':' + str(other_node.lon)
-                        # If this pair already exists in the opposite order, skip
-                        try:
-                            cls.node_distance_table[other_id][node_id]
-                            continue
-                        except KeyError:
-                            cls.node_distance_table[node_id][other_id] = get_distance(node, other_node)
-                            progress.update()
+            cls.node_distances = json.load(open(node_distance_table_file, 'r'))
+            return
 
-                print('Saving to {}'.format(cls.node_distance_table_file))
-                with open(cls.node_distance_table_file, 'wb') as output:
-                    pickle.dump(cls.node_distance_table, output)
+        print('No node distance table file found at {}. Generating now...'.format(node_distance_table_file))
+        cls.node_distances = {}
+        with tqdm(total=len(cls.all_nodes) ** 2 / 2, desc='Generating', unit='pairs', colour='green') as progress:
+            for node in cls.all_nodes:
+                node_id = str(node.lat) + ':' + str(node.lon)
+                cls.node_distances[node_id] = {}
+                for other_node in cls.all_nodes:
+                    if cls._insert_pair(node, other_node):
+                        progress.update()
+
+            print('Saving to {}'.format(node_distance_table_file))
+            json.dump(cls.node_distances, open(node_distance_table_file, 'w', encoding='utf-8'), indent=4)
 
     @classmethod
     def add_nodes(cls, nodes: list[Point]):
-        # First, check if these nodes have already been added
         with tqdm(total=len(nodes) * len(cls.all_nodes), desc='Adding Nodes', unit='pairs', colour='green') as progress:
             for node in nodes:
                 node_id = str(node.lat) + ':' + str(node.lon)
-                if node_id not in cls.node_distance_table:
-                    cls.node_distance_table[node_id] = {}
-                for other_node in cls.all_nodes:
-                    other_id = str(other_node.lat) + ':' + str(other_node.lon)
-                    try:
-                        cls.node_distance_table[node_id][other_id]
-                    except KeyError:
-                        cls.node_distance_table[node_id][other_id] = get_distance(node, other_node)
-                    progress.update()
+                if node_id not in cls.node_distances:
+                    cls.node_distances[node_id] = {}
+                    for other_node in cls.all_nodes:
+                        cls._insert_pair(node, other_node)
+                        progress.update()
 
-        with open(cls.node_distance_table_file, 'wb') as output:
-            pickle.dump(cls.node_distance_table, output)
+        json.dump(cls.node_distances, open(node_distance_table_file, 'w', encoding='utf-8'), indent=4)
 
     @classmethod
-    def get_distance(cls, p1: Point, p2: Point) -> float:
+    def get_distance(cls, p1: Point, p2: Point) -> Optional[float]:
         '''
         Get the distance between two nodes by their coordinates
 
@@ -120,9 +125,9 @@ class NodeDistances():
         p1_id = str(p1.lat) + ':' + str(p1.lon)
         p2_id = str(p2.lat) + ':' + str(p2.lon)
         try:
-            return cls.node_distance_table[p1_id][p2_id]
+            return cls.node_distances[p1_id][p2_id]
         except KeyError:
-            return cls.node_distance_table[p2_id][p1_id]
+            return cls.node_distances[p2_id][p1_id]
 
 
 @dataclass

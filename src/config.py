@@ -1,7 +1,18 @@
+import os
 from typing import TypedDict
 
-
 BASE_DIR = '/Users/aaron/Documents/GitHub/WLC'
+
+node_distance_table_file = os.path.join(BASE_DIR, 'store', 'node_distances.json')
+node_coords_file = os.path.join(BASE_DIR, 'store', 'node_coords.json')
+address_pts_file = os.path.join(BASE_DIR, 'input', 'address_pts.csv')
+block_output_file = os.path.join(BASE_DIR, 'input', 'block_output.json')
+blocks_file = os.path.join(BASE_DIR, 'blocks.json')
+requests_file = os.path.join(BASE_DIR, 'requests.json')
+
+# Maximum distance between two nodes where they should be stored
+MAX_NODE_STORAGE_DISTANCE = 800
+ARBITRARY_LARGE_DISTANCE = 10000
 
 # JSON type hints
 node_t = dict[str, float]

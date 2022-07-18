@@ -6,13 +6,13 @@ import csv
 import json
 import os
 
-from config import BASE_DIR, node_t
+from config import BASE_DIR, block_output_file, node_coords_file, node_t
 
-file = json.load(open(os.path.join(BASE_DIR, 'input', 'block_output.json'), 'r'))
+file = json.load(open(block_output_file))
 
 # Load the hash table containing node coordinates hashed by ID
 print('Loading hash table of nodes...')
-node_coords: dict[str, node_t] = json.load(open(os.path.join(BASE_DIR, 'store', 'node_coords.pkl')))
+node_coords: dict[str, node_t] = json.load(open(node_coords_file))
 
 # Create the qgis directory if it doesn't exist
 os.makedirs(os.path.join(BASE_DIR, 'qgis'), exist_ok=True)

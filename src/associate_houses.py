@@ -5,15 +5,17 @@ Associate houses with their block segments and save to associated.csv
 '''
 
 import csv
-from dataclasses import dataclass
 import json
 import os
 from copy import deepcopy
+from dataclasses import dataclass
 from typing import Optional
 
 from tqdm import tqdm
 
-from config import BASE_DIR, SegmentDict, house_t, node_list_t, node_t, blocks_file_t
+from config import (BASE_DIR, SegmentDict, address_pts_file, block_output_file,
+                    blocks_file, blocks_file_t, house_t, node_coords_file,
+                    node_list_t, node_t)
 from gps_utils import Point, cross_track_distance
 
 SEPARATE_SIDES = False
@@ -22,11 +24,11 @@ DEBUG = False
 
 # Load the hash table containing node coordinates hashed by ID
 print('Loading node coordinates table...')
-node_coords: dict[str, node_t] = json.load(open(os.path.join(BASE_DIR, 'store', 'node_coords.json')))
+node_coords: dict[str, node_t] = json.load(open(node_coords_file))
 
 # This file contains the coordinates of every building in the county
 print('Loading coordinates of houses...')
-house_points_file = open(os.path.join(BASE_DIR, 'input', 'address_pts.csv'), 'r')
+house_points_file = open(address_pts_file)
 num_rows = -1
 for line in house_points_file:
     num_rows += 1
@@ -35,7 +37,7 @@ house_points_reader = csv.DictReader(house_points_file)
 
 # Load the block_output file, containing the blocks returned from the OSM query
 print('Loading node and way coordinations query...')
-blocks: dict[str, node_list_t | house_t] = json.load(open(os.path.join(BASE_DIR, 'input', 'block_output.json')))
+blocks: dict[str, node_list_t | house_t] = json.load(open(block_output_file))
 
 # Map segment IDs to a dict containting the addresses and node IDs
 segments_by_id: blocks_file_t = {}
@@ -141,4 +143,4 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
             print('best block for {}, {} is {}.'.format(house_pt.lat, house_pt.lon, best_segment))
 
 print('Writing...')
-json.dump(segments_by_id, open(os.path.join(BASE_DIR, 'blocks.json'), 'w', encoding='utf-8'), indent=4)
+json.dump(segments_by_id, open(blocks_file, 'w', encoding='utf-8'), indent=4)

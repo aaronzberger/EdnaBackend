@@ -108,7 +108,7 @@ def cross_track_distance(p1: Point, p2: Point, p3: Point, debug=False) -> float:
         return cross_track_distance
 
 
-def distance(p1: Point, p2: Point) -> float:
+def great_circle_distance(p1: Point, p2: Point) -> float:
     '''
     Calculate the distance between points in GPS coordinates
 
