@@ -5,10 +5,12 @@ import os
 import pickle
 from copy import deepcopy
 from dataclasses import dataclass, field
+from typing import Optional
 
 from tqdm import tqdm
 
-from gps_utils import BASE_DIR, Point
+from config import BASE_DIR, MINS_PER_HOUSE
+from gps_utils import Point
 from route import get_distance
 
 
@@ -21,13 +23,14 @@ class Segment():
     all_points: list[Point]
 
     def __post_init__(self):
-        self.length = 0
+        self.length: float = 0.0
         for first, second in itertools.pairwise(self.all_points):
             self.length += get_distance(first, second)
-        self.time_to_walk = self.num_houses * 1.5 + self.length * (1/60)
+        self.time_to_walk = self.num_houses * MINS_PER_HOUSE + self.length * (1/60)
 
-    def get_node_ids(self):
+    def get_node_ids(self) -> tuple[str, str]:
         split = self.id.find(':')
+        # TODO: Maybe make these separate in the json
         return self.id[:split], self.id[split + 1:self.id.find(':', split + 1)]
 
     def reversed(self):
@@ -47,7 +50,7 @@ class Segment():
 
 
 class NodeDistances():
-    node_distance_table = {}
+    node_distance_table: dict[str, dict[str, float]] = {}
 
     @classmethod
     def __init__(cls, segments: list[Segment]):
@@ -100,7 +103,7 @@ class NodeDistances():
             pickle.dump(cls.node_distance_table, output)
 
     @classmethod
-    def get_distance(cls, p1: Point, p2: Point):
+    def get_distance(cls, p1: Point, p2: Point) -> float:
         '''
         Get the distance between two nodes by their coordinates
 
@@ -126,17 +129,21 @@ class NodeDistances():
 class Timeline():
     start: Point
     end: Point
+    # TODO: Calculate distance for default value
     deltas: list[float] = field(default_factory=lambda: [0.0])
     segments: list[Segment] = field(default_factory=list)
     total_time: float = 0.0
+    # TODO: Make class variable
     max_minutes: int = 180
 
     def __post_init__(self):
-        self.insertion_queue = []
+        self.insertion_queue: list[str] = []
 
     def get_segment_times(self) -> tuple[list[list[float]], list[list[float]]]:
-        segment_times = []
-        delta_times = []
+        # For each segment or delta, the start and end time
+        segment_times: list[list[float]] = []
+        delta_times: list[list[float]] = []
+
         running_time = 0
         for delta, segment in zip(self.deltas, self.segments):
             segment_times.append([delta * (1/60) + running_time, delta * (1/60) + running_time + segment.time_to_walk])
@@ -183,7 +190,7 @@ class Timeline():
         self.insertion_queue.append(segment.id if forward else segment.reversed().id)
         return True
 
-    def get_bid(self, segment: Segment, index: int) -> float | None:
+    def get_bid(self, segment: Segment, index: int) -> Optional[float]:
         theoretical_timeline = deepcopy(self)
         possible = theoretical_timeline.insert(segment, index)
         delta_delta = sum(theoretical_timeline.deltas) - sum(self.deltas)
@@ -191,7 +198,7 @@ class Timeline():
             return None
         return delta_delta
 
-    def generate_report(self):
+    def generate_report(self) -> dict[str, dict[str, int]]:
         '''
         Generate a report of how this list was generated
 
@@ -200,7 +207,10 @@ class Timeline():
                 (1) route index and (2) insertion index (in a list)
         '''
         segment_ids = [segment.id for segment in self.segments]
-        report = {}
+        report: dict[str, dict[str, int]] = {}
         for i, id in enumerate(segment_ids):
-            report[id] = [i + 1, self.insertion_queue.index(id) + 1]
+            report[id] = {
+                'route_order': i + 1,
+                'insertion_order': self.insertion_queue.index(id) + 1
+            }
         return report

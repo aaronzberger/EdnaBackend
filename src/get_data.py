@@ -7,11 +7,9 @@ import os
 import overpass
 from termcolor import colored
 
-from gps_utils import BASE_DIR
+from config import BASE_DIR
 
-OUPTUT_NAME = 'squirrel_hill'
-
-print(colored('Please wait. This query takes 2m 30s for Squirrel Hill...', color='yellow'))
+print(colored('Please wait. This query takes ~ 2m 30s for Squirrel Hill...', color='yellow'))
 print('Querying Overpass API...', end=' ')
 
 api = overpass.API(endpoint='https://overpass.kumi.systems/api/interpreter')
@@ -69,10 +67,4 @@ response = api.get(
     build=False,
 )
 print('Response Received.\nWriting file...')
-jsonResponse = json.dumps(response)
-
-# Create the input directory if it doesn't exist
-os.makedirs(os.path.join(BASE_DIR, 'input'), exist_ok=True)
-
-with open(os.path.join(BASE_DIR, 'input/{}.json').format(OUPTUT_NAME), 'w') as output_file:
-    output_file.write(jsonResponse)
+json.dump(response, open(os.path.join(BASE_DIR, 'input', 'squirrel_hill.json'), 'w', encoding='utf-8'), indent=4)

@@ -1,18 +1,18 @@
+# TODO: Fix with updated type hints
+
 import csv
 import json
 import os
-import pickle
 import sys
 
 from termcolor import colored
 from tqdm import tqdm
 
-from gps_utils import BASE_DIR, Point, along_track_distance
+from gps_utils import Point, along_track_distance
+from config import BASE_DIR, node_t
 
-# This file contains associations for every house
-print('Loading associations...')
-association_file = open(os.path.join(BASE_DIR, 'associated.csv'), 'r')
-association_reader = csv.DictReader(association_file)
+print('Loading associations')
+house_associations: dict[str, dict[str, list[str | node_t]]] = json.load(open(os.path.join(BASE_DIR, 'blocks.json')))
 
 # This file contains the addresses of the requested Squirrel Hill houses
 print('Loading requested houses...')
@@ -29,9 +29,12 @@ all_way_nodes = json.load(open(os.path.join(BASE_DIR, 'input/block_output.json')
 
 # Load the hash table containing node coordinates hashed by ID
 print('Loading hash table of nodes...')
-node_coords_table = pickle.load(open(os.path.join(BASE_DIR, 'store', 'hash_nodes.pkl'), 'rb'))
+node_coords: dict[str, node_t] = json.load(open(os.path.join(BASE_DIR, 'store', 'node_coords.json'), 'r'))
 
-walk_list = {"addresses": [], "route": []}
+walk_list = {
+    'addresses': [],
+    'route': []
+}
 
 block_order = []
 
@@ -48,11 +51,14 @@ with tqdm(total=num_requested_houses, desc='Matching', unit='houses', colour='gr
             continue
         last_address = formatted_address
 
-        # Reset the reader to the start of the list
-        association_file.seek(0)
-
         # Find this house (and it's coordinates and segments)
         found = False
+
+        for block in house_associations:
+            if formatted_address in block['addresses']:
+                found = True
+                walk_list['addresses'].append([formatted_address, ])
+
         for item in association_reader:
             if formatted_address == item['Address']:
                 found = True
@@ -119,9 +125,9 @@ for block in block_order:
             block_ends[block][0][2] = block_ends[block][0][3]
             block_ends[block][0][3] = temp
 
-        segment_start_coords = node_coords_table.get(int(block_ends[block][0][2]))
+        segment_start_coords = node_coords[block_ends[block][0][2]]
         segment_start_pt = Point(lat=segment_start_coords['lat'], lon=segment_start_coords['lon'])
-        segment_end_coords = node_coords_table.get(int(block_ends[block][0][3]))
+        segment_end_coords = node_coords[block_ends[block][0][3]]
         segment_end_pt = Point(lat=segment_end_coords['lat'], lon=segment_end_coords['lon'])
 
         # ALD to beginning of segment relative to start

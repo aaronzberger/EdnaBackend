@@ -2,11 +2,11 @@ import json
 import os
 import pprint
 
-from gps_utils import BASE_DIR
+from config import BASE_DIR
 
 pp = pprint.PrettyPrinter(indent=4)
 
-response = json.load(open(os.path.join(BASE_DIR, 'input/squirrel_hill.json'), 'r'))
+response = json.load(open(os.path.join(BASE_DIR, 'input', 'squirrel_hill.json'), 'r'))
 
 # Groups the JSON in a more manageable way because I couldn't figure out how to make Overpass nest the data
 
@@ -195,7 +195,4 @@ for key in intersection_nodes:
 # # Print the JSON to the console in a readable way
 # pp.pprint(blocks)
 
-block_json = json.dumps(blocks)
-file = open(os.path.join(BASE_DIR, 'input/block_output.json'), 'w')
-file.write(block_json)
-file.close()
+json.dump(blocks, open(os.path.join(BASE_DIR, 'block_output.json'), 'w', encoding='utf-8'), indent=4)

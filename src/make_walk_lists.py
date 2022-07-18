@@ -11,7 +11,8 @@ import sklearn.cluster
 from scipy.spatial.distance import pdist, squareform
 from tqdm import tqdm
 
-from gps_utils import BASE_DIR, Point
+from gps_utils import Point
+from config import BASE_DIR, requests_file_t
 from timeline_utils import NodeDistances, Segment, Timeline
 from viz_utils import (display_clustered_segments, display_requests,
                        display_segments, display_walk_lists, generate_timelines)
@@ -19,11 +20,11 @@ from viz_utils import (display_clustered_segments, display_requests,
 DISPLAY_VERBOSE = False
 
 
-requests = json.load(open(os.path.join(BASE_DIR, 'requests.json')))
+requests: requests_file_t = json.load(open(os.path.join(BASE_DIR, 'requests.json')))
 
 # Create the list of all segments
-segments = [Segment(id=i, start=Point(*d['start']), end=Point(*d['end']),
-            num_houses=d['num_houses'], all_points=[Point(*k) for k in d['nodes']])
+segments = [Segment(id=i, start=Point(*d['start'].values()), end=Point(*d['end'].values()),
+            num_houses=d['num_houses'], all_points=[Point(*k.values()) for k in d['nodes']])
             for i, d in zip(requests.keys(), requests.values())]
 
 if DISPLAY_VERBOSE:
@@ -32,6 +33,7 @@ if DISPLAY_VERBOSE:
 '-----------------------------------------------------------------------------------------'
 '                                Node Distances Generation                                '
 '-----------------------------------------------------------------------------------------'
+# TODO: Maybe to Json
 node_distances = NodeDistances(segments=segments)
 
 '----------------------------------------------------------------------------------'
@@ -40,7 +42,7 @@ node_distances = NodeDistances(segments=segments)
 print('Beginning segment clustering...')
 
 
-def cluster_segments(segments: list[Segment]):
+def cluster_segments(segments: list[Segment]) -> list[int]:
     # TODO: Somehow enforce a policy that all clusters must be fully connected (no outliers)
     segment_distance_matrix_file = os.path.join(BASE_DIR, 'store', 'segment_distance_matrix.pkl')
     if os.path.exists(segment_distance_matrix_file):
@@ -60,16 +62,17 @@ def cluster_segments(segments: list[Segment]):
                 pickle.dump(segment_distance_matrix, output)
 
     # Perform the actual clustering
-    clustered = sklearn.cluster.KMeans(n_clusters=11, random_state=0, n_init=100).fit(segment_distance_matrix)
-    return segments, clustered.labels_
+    clustered: sklearn.cluster.KMeans = sklearn.cluster.KMeans(
+        n_clusters=11, random_state=0, n_init=100).fit(segment_distance_matrix)
+    return clustered.labels_
 
 
-def modify_labels(segments: list[Segment], labels):
+def modify_labels(segments: list[Segment], labels: list[int]) -> list[int]:
     # TODO: Implement
     return labels
 
 
-segments, labels = cluster_segments(segments)
+labels = cluster_segments(segments)
 
 '----------------------------------------------------------------------------------------'
 '                                Starting Point Selection                                '
@@ -77,17 +80,18 @@ segments, labels = cluster_segments(segments)
 print('Beginning starting point selection...')
 
 
-def select_starting_locations(segments, labels):
+def select_starting_locations(segments: list[Segment], labels: list[int]) -> list[Point]:
     pickle_path = os.path.join(BASE_DIR, 'store', 'centers.pkl')
     if os.path.exists(pickle_path):
         return pickle.load(open(pickle_path, 'rb'))
     else:
-        centers = []
-        clusters = [[segments[i] for i in range(len(segments)) if labels[i] == k] for k in range(max(labels))]
+        centers: list[Point] = []
+        clusters: list[list[Segment]] = [[segments[i] for i in range(len(segments)) if labels[i] == k]
+                                         for k in range(max(labels))]
         for cluster in clusters:
             # Center is the one closest to all the other nodes
-            all_points = list(itertools.chain.from_iterable((s.start, s.end) for s in cluster))
-            distances = []
+            all_points: list[Point] = list(itertools.chain.from_iterable((s.start, s.end) for s in cluster))
+            distances: list[float] = []
             for point in all_points:
                 distances.append(sum([node_distances.get_distance(point, i) for i in all_points]))
             centers.append(all_points[distances.index(min(distances))])
@@ -112,7 +116,7 @@ print('Beginning request ordering...')
 def order_requests(requests: list[Segment]) -> list[Segment]:
     '''Variable ordering for the timeline construction'''
     # Order by house density
-    def score(segment: Segment):
+    def score(segment: Segment) -> float:
         return segment.num_houses / segment.length
     scores = [score(s) for s in requests]
     return [s for _, s in sorted(zip(scores, requests), key=lambda pair: pair[0], reverse=True)]
@@ -129,13 +133,13 @@ if DISPLAY_VERBOSE:
 print('Beginning timeline population... ')
 
 # List of lists of TimelineData
-timelines = []
+timelines: list[Timeline] = []
 
 # Add starting locations
 for center in centers:
     timelines.append(Timeline(start=center, end=center))
 
-# ordered_requests *= 10
+ordered_requests *= 10
 
 timeline_file = os.path.join(BASE_DIR, 'timelines.pkl')
 if os.path.exists(timeline_file):
@@ -162,6 +166,7 @@ else:
                     min_slot = bids.index(min_bid)
 
             # It didn't fit into any timeline
+            # TODO: Ben says make optional
             if min_timeline == -1:
                 continue
             timelines[min_timeline].insert(request, min_slot)

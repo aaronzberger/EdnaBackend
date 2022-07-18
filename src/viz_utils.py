@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import itertools
+from typing import Optional
 
 import folium
 import matplotlib
@@ -9,17 +10,19 @@ from folium.features import DivIcon
 from PIL import Image, ImageDraw, ImageFont
 from statistics import mean
 
-from gps_utils import angle_between_pts, middle
+from gps_utils import Point, angle_between_pts, middle
 from timeline_utils import Segment, Timeline
 
 
-def generate_starter_map(segments: list[Segment] | None,
-                         lats: list[float] | None = None, lons: list[float] | None = None):
+def generate_starter_map(segments: Optional[list[Segment]] = None,
+                         lats: Optional[list[float]] = None, lons: Optional[list[float]] = None) -> folium.Map:
     # Store all the latitudes and longitudes
-    if lats is None:
+    if lats is None and lons is None and segments:
         lats = list(itertools.chain.from_iterable((i.start.lat, i.end.lat) for i in segments))
-    if lons is None:
         lons = list(itertools.chain.from_iterable((i.start.lon, i.end.lon) for i in segments))
+
+    if not lats or not lons:
+        raise RuntimeError('Must pass either \'lats\' and \'lons\' argument, or \'segments\', not both or neither')
 
     return folium.Map(location=[(min(lats) + max(lats)) / 2,
                                 (min(lons) + max(lons)) / 2],
@@ -31,11 +34,12 @@ class ColorMap():
         self.norm = matplotlib.colors.Normalize(vmin=min, vmax=max)
         self.cmap = cm.get_cmap(cmap)
 
-    def get(self, value):
+    def get(self, value: float) -> str:
+        '''Get the hex code as a string from the value'''
         return matplotlib.colors.rgb2hex(self.cmap(self.norm(value))[:3])
 
 
-def display_segments(segments: list[Segment]):
+def display_segments(segments: list[Segment]) -> folium.Map:
     m = generate_starter_map(segments)
 
     min_houses, max_houses = min([s.num_houses for s in segments]), max([s.num_houses for s in segments])
@@ -52,9 +56,8 @@ def display_segments(segments: list[Segment]):
     return m
 
 
-def display_clustered_segments(segments: list[Segment], labels: list, centers: list = []):
-    assert len(centers) == max(labels)
-
+def display_clustered_segments(segments: list[Segment],
+                               labels: list[int], centers: Optional[list[Point]]) -> folium.Map:
     m = generate_starter_map(segments)
     cmap = ColorMap(0, max(labels))
 
@@ -66,19 +69,21 @@ def display_clustered_segments(segments: list[Segment], labels: list, centers: l
             opacity=0.6
         ).add_to(m)
 
-    for i in range(len(centers)):
-        folium.Circle(
-            [centers[i].lat, centers[i].lon],
-            weight=10,
-            color=cmap.get(i),
-            opacity=1.0,
-            radius=30
-        ).add_to(m)
+    if centers:
+        assert len(centers) == max(labels)
+        for i in range(len(centers)):
+            folium.Circle(
+                [centers[i].lat, centers[i].lon],
+                weight=10,
+                color=cmap.get(i),
+                opacity=1.0,
+                radius=30
+            ).add_to(m)
 
     return m
 
 
-def display_walk_list(timeline: Timeline, m: folium.Map, color):
+def display_walk_list(timeline: Timeline, m: folium.Map, color: str) -> folium.Map:
     folium.Marker(
         location=[timeline.start.lat, timeline.start.lon],
         icon=folium.Icon(icon='play', color='green')
@@ -101,15 +106,6 @@ def display_walk_list(timeline: Timeline, m: folium.Map, color):
             opacity=0.6
         ).add_to(m)
 
-        # if i == 0:
-        #     folium.RegularPolygonMarker(
-        #         location=[segment.start.lat, segment.start.lon],
-        #         number_of_sides=3,
-        #         color='green',
-        #         radius=15,
-        #         rotation=angle_between_pts(segment.start, segment.end)
-        #     ).add_to(m)
-
         mid = middle(segment.start, segment.end)
         folium.Marker(
             location=[mid.lat, mid.lon],
@@ -131,7 +127,7 @@ def display_walk_list(timeline: Timeline, m: folium.Map, color):
     return m
 
 
-def display_walk_lists(timelines: list[Timeline]):
+def display_walk_lists(timelines: list[Timeline]) -> folium.Map:
     lats = list(itertools.chain.from_iterable(
         (i.start.lat, i.end.lat) for timeline in timelines for i in timeline.segments))
     lons = list(itertools.chain.from_iterable(
@@ -146,7 +142,7 @@ def display_walk_lists(timelines: list[Timeline]):
     return m
 
 
-def display_requests(requests: list[Segment]):
+def display_requests(requests: list[Segment]) -> folium.Map:
     m = generate_starter_map(requests)
     cmap = ColorMap(0, len(requests) - 1, cmap='RdYlGn')
 
@@ -180,7 +176,7 @@ def generate_timelines(timelines: list[Timeline]):
 
     for i, timeline in enumerate(timelines):
         report = timeline.generate_report()
-        segment_insertion_order = [i[1] for i in report.values()]
+        insertion_order = [i['insertion_order'] for i in report.values()]
 
         row_top = HEIGHT_MARGIN + i * BETWEEN_MARGIN + i * ROW_WIDTH
         row_bottom = row_top + ROW_WIDTH
@@ -188,7 +184,8 @@ def generate_timelines(timelines: list[Timeline]):
         drawer.line([(width - WIDTH_MARGIN, row_top), (width - WIDTH_MARGIN, row_bottom)], fill=(50, 50, 50), width=5)
 
         segment_times, delta_times = timeline.get_segment_times()
-        for segment, segment_time, delta_time, order in zip(timeline.segments, segment_times, delta_times, segment_insertion_order):
+        for segment, segment_time, delta_time, order in \
+                zip(timeline.segments, segment_times, delta_times, insertion_order):
             drawer.rectangle([(TIMELINE_START + segment_time[0] * MIN_TO_PIX, row_top + 20),
                               (TIMELINE_START + segment_time[1] * MIN_TO_PIX, row_bottom)], fill=cmap.get(i))
 
