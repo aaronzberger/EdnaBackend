@@ -10,7 +10,8 @@ from typing import Optional
 from tqdm import tqdm
 
 from config import (MAX_NODE_STORAGE_DISTANCE, MAX_TIMELINE_MINS,
-                    MINS_PER_HOUSE, WALKING_M_PER_S, node_distance_table_file)
+                    MINS_PER_HOUSE, WALKING_M_PER_S, node_distance_table_file,
+                    segment_distance_matrix_file)
 from gps_utils import Point, great_circle_distance
 from route import get_distance
 
@@ -51,7 +52,7 @@ class Segment():
 
 
 class NodeDistances():
-    node_distances: dict[str, dict[str, Optional[float]]] = {}
+    _node_distances: dict[str, dict[str, Optional[float]]] = {}
 
     @classmethod
     def _insert_pair(cls, node_1: Point, node_2: Point):
@@ -59,13 +60,13 @@ class NodeDistances():
         node_2_id = str(node_2.lat) + ':' + str(node_2.lon)
         # If this pair already exists in the opposite order, skip
         try:
-            cls.node_distances[node_2_id][node_1_id]
+            cls._node_distances[node_2_id][node_1_id]
         except KeyError:
             # Calculate a fast great circle distance
             distance = great_circle_distance(node_1, node_2)
 
             # Only calculate and insert the routed distance if needed
-            cls.node_distances[node_1_id][node_2_id] = None if distance > MAX_NODE_STORAGE_DISTANCE \
+            cls._node_distances[node_1_id][node_2_id] = None if distance > MAX_NODE_STORAGE_DISTANCE \
                 else get_distance(node_1, node_2)
 
     @classmethod
@@ -76,36 +77,36 @@ class NodeDistances():
 
         if os.path.exists(node_distance_table_file):
             print('Node distance table file found.')
-            cls.node_distances = json.load(open(node_distance_table_file, 'r'))
+            cls._node_distances = json.load(open(node_distance_table_file))
             return
 
         print('No node distance table file found at {}. Generating now...'.format(node_distance_table_file))
-        cls.node_distances = {}
+        cls._node_distances = {}
         with tqdm(total=len(cls.all_nodes) ** 2, desc='Generating', unit='pairs', colour='green') as progress:
             for node in cls.all_nodes:
                 node_id = str(node.lat) + ':' + str(node.lon)
-                cls.node_distances[node_id] = {}
+                cls._node_distances[node_id] = {}
                 for other_node in cls.all_nodes:
                     cls._insert_pair(node, other_node)
                     progress.update()
 
             print('Saving to {}'.format(node_distance_table_file))
-            json.dump(cls.node_distances, open(node_distance_table_file, 'w', encoding='utf-8'), indent=4)
+            json.dump(cls._node_distances, open(node_distance_table_file, 'w', encoding='utf-8'), indent=4)
 
     @classmethod
     def add_nodes(cls, nodes: list[Point]):
         with tqdm(total=len(nodes) * len(cls.all_nodes), desc='Adding Nodes', unit='pairs', colour='green') as progress:
             for node in nodes:
                 node_id = str(node.lat) + ':' + str(node.lon)
-                if node_id not in cls.node_distances:
-                    cls.node_distances[node_id] = {}
+                if node_id not in cls._node_distances:
+                    cls._node_distances[node_id] = {}
                     for other_node in cls.all_nodes:
                         cls._insert_pair(node, other_node)
                         progress.update()
                 else:
                     progress.update(len(cls.all_nodes))
 
-        json.dump(cls.node_distances, open(node_distance_table_file, 'w', encoding='utf-8'), indent=4)
+        json.dump(cls._node_distances, open(node_distance_table_file, 'w', encoding='utf-8'), indent=4)
 
     @classmethod
     def get_distance(cls, p1: Point, p2: Point) -> Optional[float]:
@@ -125,9 +126,71 @@ class NodeDistances():
         p1_id = str(p1.lat) + ':' + str(p1.lon)
         p2_id = str(p2.lat) + ':' + str(p2.lon)
         try:
-            return cls.node_distances[p1_id][p2_id]
+            return cls._node_distances[p1_id][p2_id]
         except KeyError:
-            return cls.node_distances[p2_id][p1_id]
+            return cls._node_distances[p2_id][p1_id]
+
+
+'-----------------------------------------------------------------------------------------'
+'                                Segment Distances Generation                                '
+'-----------------------------------------------------------------------------------------'
+
+
+class SegmentDistances():
+    _segment_distances: dict[str, dict[str, Optional[float]]] = {}
+
+    @classmethod
+    def _insert_pair(cls, s1: Segment, s2: Segment):
+        # If this pair already exists in the opposite order, skip
+        try:
+            cls._segment_distances[s2.id][s1.id]
+        except KeyError:
+            routed_distances = \
+                [NodeDistances.get_distance(i, j) for i, j in
+                    [(s1.start, s2.start), (s1.start, s2.end), (s1.end, s2.start), (s1.end, s2.end)]]
+            existing_distances = [i for i in routed_distances if i is not None]
+            cls._segment_distances[s1.id][s2.id] = None if len(existing_distances) == 0 else min(existing_distances)
+
+    @classmethod
+    def __init__(cls, segments: list[Segment]):
+        print('Beginning segment distances generation... ')
+
+        if os.path.exists(segment_distance_matrix_file):
+            print('Segment distance table file found.')
+            cls._segment_distances = json.load(open(segment_distance_matrix_file))
+            return
+
+        print('No segment distance table file found at {}. Generating now...'.format(segment_distance_matrix_file))
+        cls._segment_distances = {}
+        with tqdm(total=len(segments) ** 2, desc='Generating', unit='pairs', colour='green') as progress:
+            for segment in segments:
+                cls._segment_distances[segment.id] = {}
+                for other_segment in segments:
+                    cls._insert_pair(segment, other_segment)
+                    progress.update()
+
+            print('Saving to {}'.format(segment_distance_matrix_file))
+            json.dump(cls._segment_distances, open(segment_distance_matrix_file, 'w', encoding='utf-8'), indent=4)
+
+    @classmethod
+    def get_distance(cls, s1: Segment, s2: Segment) -> Optional[float]:
+        '''
+        Get the distance between two segments
+
+        Parameters:
+            s1 (Segment): the first segment
+            s2 (Segment): the second segment
+
+        Returns:
+            float: distance between the two segments
+
+        Raises:
+            KeyError: if the pair does not exist in the table
+        '''
+        try:
+            return cls._segment_distances[s1.id][s2.id]
+        except KeyError:
+            return cls._segment_distances[s2.id][s1.id]
 
 
 class Timeline():
