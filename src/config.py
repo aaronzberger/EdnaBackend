@@ -13,6 +13,8 @@ requests_file = os.path.join(BASE_DIR, 'requests.json')
 # Maximum distance between two nodes where they should be stored
 MAX_NODE_STORAGE_DISTANCE = 800
 ARBITRARY_LARGE_DISTANCE = 10000
+MAX_TIMELINE_MINS = 180
+WALKING_M_PER_S = 1
 
 # JSON type hints
 node_t = dict[str, float]

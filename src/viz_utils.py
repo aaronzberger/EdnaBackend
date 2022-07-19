@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import itertools
+from statistics import mean
 from typing import Optional
 
 import folium
@@ -8,7 +9,6 @@ import matplotlib
 import matplotlib.cm as cm
 from folium.features import DivIcon
 from PIL import Image, ImageDraw, ImageFont
-from statistics import mean
 
 from gps_utils import Point, angle_between_pts, middle
 from timeline_utils import Segment, Timeline
@@ -17,12 +17,16 @@ from timeline_utils import Segment, Timeline
 def generate_starter_map(segments: Optional[list[Segment]] = None,
                          lats: Optional[list[float]] = None, lons: Optional[list[float]] = None) -> folium.Map:
     # Store all the latitudes and longitudes
-    if lats is None and lons is None and segments:
+    if lats is None and lons is None and segments is not None:
         lats = list(itertools.chain.from_iterable((i.start.lat, i.end.lat) for i in segments))
         lons = list(itertools.chain.from_iterable((i.start.lon, i.end.lon) for i in segments))
-
-    if not lats or not lons:
+    # Check if it's not the only other possible correct arguments
+    elif not ((lats is not None and lons is not None) and segments is None):
         raise RuntimeError('Must pass either \'lats\' and \'lons\' argument, or \'segments\', not both or neither')
+
+    if len(lats) == 0:
+        raise RuntimeError(
+            'Unable to create map with no coordinates. Timeline population likely produced empty timelines.')
 
     return folium.Map(location=[(min(lats) + max(lats)) / 2,
                                 (min(lons) + max(lons)) / 2],
@@ -89,14 +93,15 @@ def display_walk_list(timeline: Timeline, m: folium.Map, color: str) -> folium.M
         icon=folium.Icon(icon='play', color='green')
     ).add_to(m)
 
-    folium.Marker(
-        location=[timeline.start.lat, timeline.start.lon],
-        icon=DivIcon(
-            icon_size=(50, 50),
-            icon_anchor=(5, 40),  # left-right, up-down
-            html='<div style="font-size: 15pt; color:red">{}</div>'.format(timeline.segments[0].id)
-        )
-    ).add_to(m)
+    if len(timeline.segments) != 0:
+        folium.Marker(
+            location=[timeline.start.lat, timeline.start.lon],
+            icon=DivIcon(
+                icon_size=(50, 50),
+                icon_anchor=(5, 40),  # left-right, up-down
+                html='<div style="font-size: 15pt; color:red">{}</div>'.format(timeline.segments[0].id[:timeline.segments[0].id.find(':')])
+            )
+        ).add_to(m)
 
     for i, segment in enumerate(timeline.segments):
         folium.PolyLine(
@@ -133,7 +138,7 @@ def display_walk_lists(timelines: list[Timeline]) -> folium.Map:
     lons = list(itertools.chain.from_iterable(
         (i.start.lon, i.end.lon) for timeline in timelines for i in timeline.segments))
 
-    m = generate_starter_map(segments=None, lats=lats, lons=lons)
+    m = generate_starter_map(lats=lats, lons=lons)
     cmap = ColorMap(0, len(timelines) - 1)
 
     for i in range(len(timelines)):

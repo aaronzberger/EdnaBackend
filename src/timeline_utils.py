@@ -4,13 +4,13 @@ import itertools
 import json
 import os
 from copy import deepcopy
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 from tqdm import tqdm
 
-from config import (MAX_NODE_STORAGE_DISTANCE, MINS_PER_HOUSE,
-                    node_distance_table_file)
+from config import (MAX_NODE_STORAGE_DISTANCE, MAX_TIMELINE_MINS,
+                    MINS_PER_HOUSE, WALKING_M_PER_S, node_distance_table_file)
 from gps_utils import Point, great_circle_distance
 from route import get_distance
 
@@ -27,7 +27,7 @@ class Segment():
         self.length: float = 0.0
         for first, second in itertools.pairwise(self.all_points):
             self.length += get_distance(first, second)
-        self.time_to_walk = self.num_houses * MINS_PER_HOUSE + self.length * (1/60)
+        self.time_to_walk = self.num_houses * MINS_PER_HOUSE + (self.length / WALKING_M_PER_S * (1/60))
 
     def get_node_ids(self) -> tuple[str, str]:
         split = self.id.find(':')
@@ -54,13 +54,12 @@ class NodeDistances():
     node_distances: dict[str, dict[str, Optional[float]]] = {}
 
     @classmethod
-    def _insert_pair(cls, node_1: Point, node_2: Point) -> bool:
+    def _insert_pair(cls, node_1: Point, node_2: Point):
         node_1_id = str(node_1.lat) + ':' + str(node_1.lon)
         node_2_id = str(node_2.lat) + ':' + str(node_2.lon)
         # If this pair already exists in the opposite order, skip
         try:
             cls.node_distances[node_2_id][node_1_id]
-            return False
         except KeyError:
             # Calculate a fast great circle distance
             distance = great_circle_distance(node_1, node_2)
@@ -68,7 +67,6 @@ class NodeDistances():
             # Only calculate and insert the routed distance if needed
             cls.node_distances[node_1_id][node_2_id] = None if distance > MAX_NODE_STORAGE_DISTANCE \
                 else get_distance(node_1, node_2)
-            return True
 
     @classmethod
     def __init__(cls, segments: list[Segment]):
@@ -83,13 +81,13 @@ class NodeDistances():
 
         print('No node distance table file found at {}. Generating now...'.format(node_distance_table_file))
         cls.node_distances = {}
-        with tqdm(total=len(cls.all_nodes) ** 2 / 2, desc='Generating', unit='pairs', colour='green') as progress:
+        with tqdm(total=len(cls.all_nodes) ** 2, desc='Generating', unit='pairs', colour='green') as progress:
             for node in cls.all_nodes:
                 node_id = str(node.lat) + ':' + str(node.lon)
                 cls.node_distances[node_id] = {}
                 for other_node in cls.all_nodes:
-                    if cls._insert_pair(node, other_node):
-                        progress.update()
+                    cls._insert_pair(node, other_node)
+                    progress.update()
 
             print('Saving to {}'.format(node_distance_table_file))
             json.dump(cls.node_distances, open(node_distance_table_file, 'w', encoding='utf-8'), indent=4)
@@ -104,6 +102,8 @@ class NodeDistances():
                     for other_node in cls.all_nodes:
                         cls._insert_pair(node, other_node)
                         progress.update()
+                else:
+                    progress.update(len(cls.all_nodes))
 
         json.dump(cls.node_distances, open(node_distance_table_file, 'w', encoding='utf-8'), indent=4)
 
@@ -130,18 +130,17 @@ class NodeDistances():
             return cls.node_distances[p2_id][p1_id]
 
 
-@dataclass
 class Timeline():
-    start: Point
-    end: Point
-    # TODO: Calculate distance for default value
-    deltas: list[float] = field(default_factory=lambda: [0.0])
-    segments: list[Segment] = field(default_factory=list)
-    total_time: float = 0.0
-    # TODO: Make class variable
-    max_minutes: int = 180
+    def __init__(self, start: Point, end: Point):
+        self.start = start
+        self.end = end
 
-    def __post_init__(self):
+        # Calculate the distance from the start to end point. This is the first delta
+        start_distance = 0.0 if start == end else NodeDistances.get_distance(start, end)
+        self.deltas: list[float] = [start_distance if start_distance is not None else get_distance(start, end)]
+
+        self.segments: list[Segment] = []
+        self.total_time: float = 0.0
         self.insertion_queue: list[str] = []
 
     def get_segment_times(self) -> tuple[list[list[float]], list[list[float]]]:
@@ -151,15 +150,16 @@ class Timeline():
 
         running_time = 0
         for delta, segment in zip(self.deltas, self.segments):
-            segment_times.append([delta * (1/60) + running_time, delta * (1/60) + running_time + segment.time_to_walk])
-            delta_times.append([running_time, running_time + delta * (1/60)])
-            running_time += delta * (1/60) + segment.time_to_walk
+            segment_times.append([delta / WALKING_M_PER_S * (1/60) + running_time,
+                                  delta / WALKING_M_PER_S * (1/60) + running_time + segment.time_to_walk])
+            delta_times.append([running_time, running_time + delta / WALKING_M_PER_S * (1/60)])
+            running_time += delta / WALKING_M_PER_S * (1/60) + segment.time_to_walk
         return segment_times, delta_times
 
     def calculate_time(self):
         self.total_time = 0.0
         self.total_time += sum([segment.time_to_walk for segment in self.segments])  # Walk it and talk to voters
-        self.total_time += sum([dist * (1/60) for dist in self.deltas])  # Walk between segments
+        self.total_time += sum([dist / WALKING_M_PER_S * (1/60) for dist in self.deltas])  # Walk between segments
 
     def _insert(self, segment: Segment, index: int):
         self.segments.insert(index, segment)
@@ -167,11 +167,20 @@ class Timeline():
 
         # Add the distance from the point before this segment to the start
         point_before = self.start if index == 0 else self.segments[index - 1].end
-        self.deltas.insert(index, NodeDistances.get_distance(point_before, segment.start))
+        distance_before = NodeDistances.get_distance(point_before, segment.start)
 
         # Add the distance from the end of this segment to the point after
         point_after = self.end if index == len(self.segments) - 1 else self.segments[index + 1].start
-        self.deltas.insert(index + 1, NodeDistances.get_distance(segment.end, point_after))
+        distance_after = NodeDistances.get_distance(segment.end, point_after)
+
+        # If the distance doesn't exist in the distance table, this segment is too far anyway. Leave a terminal bid
+        if distance_before is None or distance_after is None:
+            self.total_time = MAX_TIMELINE_MINS
+            self.deltas.insert(index, MAX_TIMELINE_MINS * 60 * WALKING_M_PER_S)
+            return
+
+        self.deltas.insert(index, distance_before)
+        self.deltas.insert(index + 1, distance_after)
         self.calculate_time()
 
     def insert(self, segment: Segment, index: int) -> bool:
@@ -187,7 +196,7 @@ class Timeline():
 
         forward = bid_foward < bid_backwards
 
-        if (bid_foward if forward else bid_backwards) > self.max_minutes:
+        if (bid_foward if forward else bid_backwards) > MAX_TIMELINE_MINS:
             return False
 
         # Insert the segment in the correct direction

@@ -4,7 +4,7 @@ import itertools
 import json
 import os
 import pickle
-import sys
+from typing import Optional
 
 import numpy as np
 import sklearn.cluster
@@ -19,7 +19,8 @@ from viz_utils import (display_clustered_segments, display_requests,
                        display_segments, display_walk_lists,
                        generate_timelines)
 
-DISPLAY_VERBOSE = False
+DISPLAY_VERBOSE = True
+LOAD_CENTERS = False  # Set to true if you are providing custom starting point locations
 
 requests: requests_file_t = json.load(open(requests_file))
 
@@ -90,8 +91,7 @@ def cluster_segments(segments: list[Segment], distances: dict[str, dict[str, flo
     # Perform the actual clustering
     formatted_matrix = squareform(pdist(np.expand_dims(segments, axis=1), metric=distance_metric))
     clustered: sklearn.cluster.KMeans = sklearn.cluster.KMeans(
-        n_clusters=11, random_state=0, n_init=100).fit(formatted_matrix)
-    print(clustered.labels_)
+        n_clusters=20, random_state=0, n_init=100).fit(formatted_matrix)
     return clustered.labels_
 
 
@@ -110,8 +110,9 @@ print('Beginning starting point selection...')
 
 def select_starting_locations(segments: list[Segment], labels: list[int]) -> list[Point]:
     centers_file = os.path.join(BASE_DIR, 'store', 'centers.json')
-    if os.path.exists(centers_file):
-        return json.load(open(centers_file))
+    if os.path.exists(centers_file) and LOAD_CENTERS:
+        loaded = json.load(open(centers_file))
+        return [Point(*item.values()) for item in loaded]
     else:
         centers: list[Point] = []
         clusters: list[list[Segment]] = [[segments[i] for i in range(len(segments)) if labels[i] == k]
@@ -122,7 +123,9 @@ def select_starting_locations(segments: list[Segment], labels: list[int]) -> lis
             distances: list[float] = []
             for point in all_points:
                 point_distances = [node_distances.get_distance(point, i) for i in all_points]
-                existent_distances = [i for i in point_distances if i]
+                existent_distances = [i for i in point_distances if i is not None]
+
+                # Adding the large distance also pushes the centers away from edges and towards the middle of neighborhoods
                 distances.append(ARBITRARY_LARGE_DISTANCE if len(existent_distances) == 0 else sum(existent_distances))
             centers.append(all_points[distances.index(min(distances))])
 
@@ -170,8 +173,6 @@ timelines: list[Timeline] = []
 for center in centers:
     timelines.append(Timeline(start=center, end=center))
 
-ordered_requests *= 10
-
 timeline_file = os.path.join(BASE_DIR, 'timelines.pkl')
 if os.path.exists(timeline_file):
     timelines = pickle.load(open(timeline_file, 'rb'))
@@ -181,15 +182,15 @@ else:
             progress.update()
             # Look through each delta
             min_delta = ARBITRARY_LARGE_DISTANCE
-            min_timeline = min_slot = -1
+            min_timeline: Optional[int] = None
+            min_slot: Optional[int] = None
             for i, timeline in enumerate(timelines):
                 bids = [timeline.get_bid(request, i) for i in range(len(timeline.deltas))]
-                # If no timeline can fit this request, we are done
+                # If no timeline can fit this request, continue
                 existent_bids = [b for b in bids if b is not None]
                 if len(existent_bids) == 0:
                     continue
-                # TODO: continue for a few
-
+                # TODO: Implement a stop after a certain number of failed requests (or full iterations through)
                 min_bid = min(existent_bids)
                 if min_bid < min_delta:
                     min_delta = min_bid
@@ -197,12 +198,11 @@ else:
                     min_slot = bids.index(min_bid)
 
             # It didn't fit into any timeline
-            # TODO: Ben says make optional
-            if min_timeline == -1:
+            if min_timeline is None or min_slot is None:
                 continue
             timelines[min_timeline].insert(request, min_slot)
-        with open(timeline_file, 'wb') as output:
-            pickle.dump(timelines, output)
+        # with open(timeline_file, 'wb') as output:
+        #     pickle.dump(timelines, output)
 
 generate_timelines(timelines)
 
