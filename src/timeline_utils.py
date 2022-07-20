@@ -5,11 +5,13 @@ import json
 import os
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Optional
 
+import numpy as np
+from nptyping import Float32, NDArray, Shape
 from tqdm import tqdm
 
-from config import (MAX_NODE_STORAGE_DISTANCE, MAX_TIMELINE_MINS,
+from config import (ARBITRARY_LARGE_DISTANCE, MAX_NODE_STORAGE_DISTANCE, MAX_TIMELINE_MINS,
                     MINS_PER_HOUSE, WALKING_M_PER_S, node_distance_table_file,
                     segment_distance_matrix_file)
 from gps_utils import Point, great_circle_distance
@@ -138,6 +140,7 @@ class NodeDistances():
 
 class SegmentDistances():
     _segment_distances: dict[str, dict[str, Optional[float]]] = {}
+    _segments: list[Segment] = []
 
     @classmethod
     def _insert_pair(cls, s1: Segment, s2: Segment):
@@ -154,6 +157,8 @@ class SegmentDistances():
     @classmethod
     def __init__(cls, segments: list[Segment]):
         print('Beginning segment distances generation... ')
+
+        cls._segments = deepcopy(segments)
 
         if os.path.exists(segment_distance_matrix_file):
             print('Segment distance table file found.')
@@ -191,6 +196,15 @@ class SegmentDistances():
             return cls._segment_distances[s1.id][s2.id]
         except KeyError:
             return cls._segment_distances[s2.id][s1.id]
+
+    @classmethod
+    def get_distance_matrix(cls) -> NDArray[Shape[len(_segments), len(_segments)], Float32]:
+        matrix = np.empty((len(cls._segments), len(cls._segments)), dtype=np.float32)
+        for r, segment in enumerate(cls._segments):
+            for c, other_segment in enumerate(cls._segments):
+                distance = cls.get_distance(segment, other_segment)
+                matrix[r][c] = ARBITRARY_LARGE_DISTANCE if distance is None else distance
+        return matrix
 
 
 class Timeline():

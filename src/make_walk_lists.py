@@ -6,11 +6,10 @@ import os
 import pickle
 from typing import Optional
 
-import numpy as np
-import sklearn.cluster
-from scipy.spatial.distance import pdist, squareform
+import kmedoids
 
-from config import (ARBITRARY_LARGE_DISTANCE, BASE_DIR, CLUSTERING_CONNECTED_THRESHOLD, requests_file,
+from config import (ARBITRARY_LARGE_DISTANCE, BASE_DIR,
+                    CLUSTERING_CONNECTED_THRESHOLD, requests_file,
                     requests_file_t)
 from gps_utils import Point
 from timeline_utils import NodeDistances, Segment, SegmentDistances, Timeline
@@ -41,21 +40,10 @@ NodeDistances(segments)
 '----------------------------------------------------------------------------------'
 SegmentDistances(segments)
 
-
-def cluster_segments(segments: list[Segment]) -> list[int]:
-    def distance_metric(s1: list[Segment], s2: list[Segment]) -> float:
-        try:
-            dist = SegmentDistances.get_distance(s1[0], s2[0])
-            return dist if dist is not None else ARBITRARY_LARGE_DISTANCE
-        except KeyError:
-            dist = SegmentDistances.get_distance(s2[0], s1[0])
-            return dist if dist is not None else ARBITRARY_LARGE_DISTANCE
-
-    # Perform the actual clustering
-    formatted_matrix = squareform(pdist(np.expand_dims(segments, axis=1), metric=distance_metric))
-    clustered: sklearn.cluster.KMeans = sklearn.cluster.KMeans(
-        n_clusters=20, random_state=0, n_init=100).fit(formatted_matrix)
-    return clustered.labels_
+# Cluster the segments using kmedoids
+distance_matrix = SegmentDistances.get_distance_matrix()
+km: kmedoids.KMedoidsResult = kmedoids.fasterpam(diss=distance_matrix, medoids=20, max_iter=100, random_state=0)
+labels = km.labels
 
 
 def modify_labels(segments: list[Segment], labels: list[int]) -> list[int]:
@@ -99,8 +87,8 @@ def modify_labels(segments: list[Segment], labels: list[int]) -> list[int]:
     return labels
 
 
-labels = cluster_segments(segments)
-labels = modify_labels(segments, labels)
+# If needed, run post-processing on the created labels
+# labels = modify_labels(segments, labels)
 
 '----------------------------------------------------------------------------------------'
 '                                Starting Point Selection                                '
