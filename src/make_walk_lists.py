@@ -9,7 +9,6 @@ from typing import Optional
 import numpy as np
 import sklearn.cluster
 from scipy.spatial.distance import pdist, squareform
-from tqdm import tqdm
 
 from config import (ARBITRARY_LARGE_DISTANCE, BASE_DIR, CLUSTERING_CONNECTED_THRESHOLD, requests_file,
                     requests_file_t)
@@ -35,12 +34,12 @@ if DISPLAY_VERBOSE:
 '-----------------------------------------------------------------------------------------'
 '                                Node Distances Generation                                '
 '-----------------------------------------------------------------------------------------'
-node_distances = NodeDistances(segments)
+NodeDistances(segments)
 
 '----------------------------------------------------------------------------------'
 '                                Segment Clustering                                '
 '----------------------------------------------------------------------------------'
-segment_distances = SegmentDistances(segments)
+SegmentDistances(segments)
 
 
 def cluster_segments(segments: list[Segment]) -> list[int]:
@@ -123,7 +122,7 @@ def select_starting_locations(segments: list[Segment], labels: list[int]) -> lis
             all_points: list[Point] = list(itertools.chain.from_iterable((s.start, s.end) for s in cluster))
             distances: list[float] = []
             for point in all_points:
-                point_distances = [node_distances.get_distance(point, i) for i in all_points]
+                point_distances = [NodeDistances.get_distance(point, i) for i in all_points]
                 existent_distances = [i for i in point_distances if i is not None]
 
                 # Adding the large distance also pushes the centers away from edges and towards the middle of neighborhoods
@@ -137,7 +136,7 @@ def select_starting_locations(segments: list[Segment], labels: list[int]) -> lis
 
 centers = select_starting_locations(segments, labels)
 
-node_distances.add_nodes(centers)
+NodeDistances.add_nodes(centers)
 
 if DISPLAY_VERBOSE:
     display_clustered_segments(segments, labels, centers).save(os.path.join(BASE_DIR, 'viz', 'clustered.html'))
@@ -148,45 +147,59 @@ if DISPLAY_VERBOSE:
 print('Beginning request ordering...')
 
 
-# def order_requests(requests: list[Segment]) -> list[Segment]:
-#     '''Variable ordering for the timeline construction'''
-#     # Order by house density
-#     def score(segment: Segment) -> float:
-#         return segment.num_houses / segment.length
-#     scores = [score(s) for s in requests]
-#     return [s for _, s in sorted(zip(scores, requests), key=lambda pair: pair[0], reverse=True)]
+class RequestHandler():
+    @classmethod
+    def __init__(cls, requests: list[Segment], labels: list[int], centers: list[Point], max_fails: int = 5):
+        '''Order by closeness to center, then density'''
+        assert max(labels) == len(centers), \
+            'Mismatch: received {} clusters but {} centers'.format(max(labels), len(centers))
+        cls.max_fails = max_fails
+        cls.ordered_requests: list[Segment] = []
 
-def order_requests(requests: list[Segment], labels: list[int], centers: list[Point]) -> list[Segment]:
-    '''Order by closeness to center, then density'''
-    assert max(labels) == len(centers)
-    ordered_requests: list[Segment] = []
+        def density(segment: Segment) -> float:
+            return segment.num_houses / segment.length
 
-    def density(segment: Segment) -> float:
-        return segment.num_houses / segment.length
+        clusters: list[list[Segment]] = [[requests[i] for i in range(len(requests)) if labels[i] == k]
+                                         for k in range(max(labels))]
+        for cluster in clusters:
+            density_scores = [density(s) for s in cluster]
+            cls.ordered_requests.extend([s for _, s in sorted(zip(density_scores, cluster),
+                                        key=lambda pair: pair[0], reverse=True)])
 
-    # def distance_to_center(center: Point, request: Segment) -> float:
-    #     distance_from_start = NodeDistances.get_distance(request.start, center)
-    #     if distance_from_start is None:
-    #         distance_from_start = get_distance(request.start, center)
-    #     distance_from_end = NodeDistances.get_distance(request.end, center)
-    #     if distance_from_end is None:
-    #         distance_from_end = get_distance(request.end, center)
-    #     return min(distance_from_start, distance_from_end)
+        cls.last_idx = 0
+        cls.running_idx = 0
 
-    clusters: list[list[Segment]] = [[requests[i] for i in range(len(requests)) if labels[i] == k]
-                                     for k in range(max(labels))]
-    for cluster in clusters:
-        density_scores = [density(s) for s in cluster]
-        ordered_requests.extend([s for _, s in sorted(zip(density_scores, cluster),
-                                 key=lambda pair: pair[0], reverse=True)])
+        cls.fails: list[int] = [0] * len(cls.ordered_requests)
 
-    return ordered_requests
+    @classmethod
+    def get_request(cls) -> Optional[Segment]:
+        try:
+            return cls.ordered_requests[cls.running_idx]
+        except IndexError:
+            # This means there are no more requests
+            return None
+        finally:
+            cls.last_idx = cls.running_idx
+            cls.running_idx = 0 if cls.running_idx == len(cls.ordered_requests) - 1 else cls.running_idx + 1
+
+    @classmethod
+    def report_success(cls):
+        '''Report that the last request was inserted successfully'''
+        del cls.ordered_requests[cls.last_idx]
+        del cls.fails[cls.last_idx]
+
+    @classmethod
+    def report_fail(cls):
+        '''Report that the last request was not inserted'''
+        cls.fails[cls.last_idx] += 1
+        if cls.fails[cls.last_idx] >= cls.max_fails:
+            cls.report_success()
 
 
-ordered_requests = order_requests(segments, labels, centers)
+RequestHandler(segments, labels, centers)
 
 if DISPLAY_VERBOSE:
-    display_requests(ordered_requests).save(os.path.join(BASE_DIR, 'viz', 'requests.html'))
+    display_requests(RequestHandler.ordered_requests).save(os.path.join(BASE_DIR, 'viz', 'requests.html'))
 
 '-----------------------------------------------------------------------------------'
 '                                Timeline Population                                '
@@ -204,32 +217,45 @@ timeline_file = os.path.join(BASE_DIR, 'timelines.pkl')
 if os.path.exists(timeline_file):
     timelines = pickle.load(open(timeline_file, 'rb'))
 else:
-    with tqdm(total=len(ordered_requests), desc='Populating', unit='requests', colour='green') as progress:
-        for request in ordered_requests:
-            progress.update()
-            # Look through each delta
-            min_delta = ARBITRARY_LARGE_DISTANCE
-            min_timeline: Optional[int] = None
-            min_slot: Optional[int] = None
-            for i, timeline in enumerate(timelines):
-                bids = [timeline.get_bid(request, i) for i in range(len(timeline.deltas))]
-                # If no timeline can fit this request, continue
-                existent_bids = [b for b in bids if b is not None]
-                if len(existent_bids) == 0:
-                    continue
-                # TODO: Implement a stop after a certain number of failed requests (or full iterations through)
-                min_bid = min(existent_bids)
-                if min_bid < min_delta:
-                    min_delta = min_bid
-                    min_timeline = i
-                    min_slot = bids.index(min_bid)
+    requests_inserted = 0
+    print('Populating: {:<4} requests inserted, {} remaining to insert '.format(
+        requests_inserted, len(RequestHandler.ordered_requests)), end='', flush=True)
+    request = RequestHandler.get_request()
+    while request is not None:
+        print('\rPopulating: {:<4} requests inserted, {} remaining to insert '.format(
+            requests_inserted, len(RequestHandler.ordered_requests)), end='', flush=True)
+        min_delta = ARBITRARY_LARGE_DISTANCE
+        min_timeline: Optional[int] = None
+        min_slot: Optional[int] = None
 
-            # It didn't fit into any timeline
-            if min_timeline is None or min_slot is None:
+        # Check if this request fits in each timeline
+        for i, timeline in enumerate(timelines):
+            bids = timeline.get_bids(request)
+            existent_bids = [b for b in bids if b is not None]
+            if len(existent_bids) == 0:
+                # It does not fit in this timeline, so move to the next
                 continue
-            timelines[min_timeline].insert(request, min_slot)
-        # with open(timeline_file, 'wb') as output:
-        #     pickle.dump(timelines, output)
+
+            min_bid = min(existent_bids)
+            if min_bid < min_delta:
+                min_delta = min_bid
+                min_timeline = i
+                min_slot = bids.index(min_bid)
+
+        # It doesn't fit into any timeline
+        if min_timeline is None or min_slot is None:
+            RequestHandler.report_fail()
+            request = RequestHandler.get_request()
+            continue
+
+        timelines[min_timeline].insert(request, min_slot)
+        RequestHandler.report_success()
+        requests_inserted += 1
+
+        request = RequestHandler.get_request()
+
+    # with open(timeline_file, 'wb') as output:
+    #     pickle.dump(timelines, output)
 
 generate_timelines(timelines)
 

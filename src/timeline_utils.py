@@ -203,8 +203,9 @@ class Timeline():
         self.deltas: list[float] = [start_distance if start_distance is not None else get_distance(start, end)]
 
         self.segments: list[Segment] = []
-        self.total_time: float = 0.0
         self.insertion_queue: list[str] = []
+
+        self.total_time: float = 0.0
 
     def get_segment_times(self) -> tuple[list[list[float]], list[list[float]]]:
         # For each segment or delta, the start and end time
@@ -267,13 +268,19 @@ class Timeline():
         self.insertion_queue.append(segment.id if forward else segment.reversed().id)
         return True
 
-    def get_bid(self, segment: Segment, index: int) -> Optional[float]:
+    def _get_bid(self, segment: Segment, index: int) -> Optional[float]:
         theoretical_timeline = deepcopy(self)
         possible = theoretical_timeline.insert(segment, index)
         delta_delta = sum(theoretical_timeline.deltas) - sum(self.deltas)
         if not possible or delta_delta > 200:
             return None
         return delta_delta
+
+    def get_bids(self, segment: Segment) -> list[Optional[float]]:
+        if segment.time_to_walk > MAX_TIMELINE_MINS - self.total_time:
+            return [None] * len(self.deltas)
+        else:
+            return [self._get_bid(segment, i) for i in range(len(self.deltas))]
 
     def generate_report(self) -> dict[str, dict[str, int]]:
         '''
