@@ -11,7 +11,7 @@ import sklearn.cluster
 from scipy.spatial.distance import pdist, squareform
 from tqdm import tqdm
 
-from config import (ARBITRARY_LARGE_DISTANCE, BASE_DIR, requests_file,
+from config import (ARBITRARY_LARGE_DISTANCE, BASE_DIR, CLUSTERING_CONNECTED_THRESHOLD, requests_file,
                     requests_file_t)
 from gps_utils import Point
 from timeline_utils import NodeDistances, Segment, SegmentDistances, Timeline
@@ -59,24 +59,49 @@ def cluster_segments(segments: list[Segment]) -> list[int]:
     return clustered.labels_
 
 
-# def modify_labels(segments: list[Segment], labels: list[int]) -> list[int]:
-#     # Apply DFS to split clusters into multiple clusters if they are not fully connected
-#     clusters: list[list[Segment]] = [[segments[i] for i in range(len(segments)) if labels[i] == k]
-#                                      for k in range(max(labels))]
+def modify_labels(segments: list[Segment], labels: list[int]) -> list[int]:
+    '''Apply DFS to split clusters into multiple clusters if they are not fully connected'''
+    clusters: list[list[Segment]] = [[segments[i] for i in range(len(segments)) if labels[i] == k]
+                                     for k in range(max(labels))]
 
-#     visited: set[str] = set()
+    def dfs(segment: Segment, cluster: list[Segment], visited: set[str]):
+        '''Depth-first search on a connected tree, tracking all visited nodes'''
+        if segment.id in visited:
+            return
 
-#     for cluster in clusters:
-#         def dfs(segment_id: str):
-#             if segment_id not in visited:
-#                 visited.add(segment_id)
-#             neighbords = [s.id for s in cluster if ]
+        visited.add(segment.id)
 
+        # Continuously update the visited set until it includes all segments connected to the original segment
+        distances = [SegmentDistances.get_distance(s, segment) for s in cluster]
+        neighbors = [cluster[i] for i in range(len(cluster)) if distances[i] is not None
+                     and distances[i] < CLUSTERING_CONNECTED_THRESHOLD]
+        for neighbor in neighbors:
+            dfs(neighbor, cluster, visited)
 
-#     return labels
+    def split_cluster(cluster: list[Segment]):
+        '''Split a cluster recursively until all sub-clusters are fully connected'''
+        sub_cluster: set[str] = set()
+        dfs(cluster[0], cluster, sub_cluster)
+
+        # Check if there are non-connected sub-clusters
+        if len(sub_cluster) < len(cluster):
+            # Change the indices of the subcluster to a new cluster
+            indices = [i for i in range(len(segments)) if segments[i].id in sub_cluster]
+            new_idx = max(labels) + 1
+            for idx in indices:
+                labels[idx] = new_idx
+
+            # Continously split the remaining parts of the cluster until each are fully connected
+            split_cluster(cluster=[segment for segment in cluster if segment.id not in sub_cluster])
+
+    for cluster in clusters:
+        split_cluster(cluster)
+
+    return labels
 
 
 labels = cluster_segments(segments)
+labels = modify_labels(segments, labels)
 
 '----------------------------------------------------------------------------------------'
 '                                Starting Point Selection                                '

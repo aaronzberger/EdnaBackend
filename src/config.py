@@ -17,6 +17,7 @@ ARBITRARY_LARGE_DISTANCE = 10000
 MAX_TIMELINE_MINS = 180
 WALKING_M_PER_S = 1
 MINS_PER_HOUSE = 1
+CLUSTERING_CONNECTED_THRESHOLD = 100  # Meters where blocks are connected
 
 # JSON type hints
 node_t = dict[str, float]
