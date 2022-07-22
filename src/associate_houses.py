@@ -5,18 +5,18 @@ Associate houses with their block segments and save to associated.csv
 '''
 
 import csv
+import itertools
 import json
-import os
 from copy import deepcopy
 from dataclasses import dataclass
 from typing import Optional
 
 from tqdm import tqdm
 
-from config import (BASE_DIR, SegmentDict, address_pts_file, block_output_file,
+from config import (SegmentDict, address_pts_file, block_output_file,
                     blocks_file, blocks_file_t, house_t, node_coords_file,
                     node_list_t, node_t)
-from gps_utils import Point, cross_track_distance
+from gps_utils import Point, along_track_distance, cross_track_distance, great_circle_distance
 
 SEPARATE_SIDES = False
 MAX_DISTANCE = 500  # meters from house to segment
@@ -117,15 +117,9 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
             if SEPARATE_SIDES:
                 segment_id += ':' + str(best_segment.side)
 
-            if segment_id in segments_by_id:
-                segments_by_id[segment_id]['addresses'][item['full_address']] = house_pt.__dict__
-            else:
-                segments_by_id[segment_id] = SegmentDict(
-                    addresses={
-                        item['full_address']: house_pt.__dict__
-                        },
-                    nodes=[]
-                )
+            # If this segment has not been inserted yet, generate an entry
+            if segment_id not in segments_by_id:
+                # Create the list of sub points in this segment
                 all_nodes_coords: list[node_t] = []
                 for id in best_segment.all_nodes:
                     try:
@@ -133,11 +127,53 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
                     except KeyError:
                         continue
                     all_nodes_coords.append(coords)
-                # Set the node IDs in the correct direction
-                if best_segment.all_nodes.index(best_segment.start_node_id) == 0:
-                    segments_by_id[segment_id]['nodes'] = all_nodes_coords
-                else:
-                    segments_by_id[segment_id]['nodes'] = reversed(all_nodes_coords)
+
+                if best_segment.all_nodes.index(best_segment.start_node_id) != 0:
+                    all_nodes_coords = list(reversed(all_nodes_coords))
+
+                # Place this segment in the table
+                segments_by_id[segment_id] = SegmentDict(
+                    addresses={},
+                    nodes=all_nodes_coords
+                )
+
+            all_points = segments_by_id[segment_id]['nodes']
+            sub_nodes = [all_points.index(best_segment.sub_node_1),
+                         all_points.index(best_segment.sub_node_2)]
+
+            # Calculate distances to the start and end of the block
+            distance_to_start: float = 0
+            distance_to_end: float = 0
+
+            # Calculate the distance from the start of the block to the beginning of this house's sub-segment
+            for first, second in itertools.pairwise(all_points[:min(sub_nodes) + 1]):
+                distance_to_start += great_circle_distance(
+                    Point(first['lat'], first['lon']), Point(second['lat'], second['lon']))
+
+            # Split this sub-segment's length between the two distances, based on this house's location
+            sub_start = all_points[min(sub_nodes)]
+            sub_end = all_points[max(sub_nodes)]
+            distances = along_track_distance(
+                p1=house_pt,
+                p2=Point(sub_start['lat'], sub_start['lon']),
+                p3=Point(sub_end['lat'], sub_end['lon']))
+            distance_to_start += distances[0]
+            distance_to_end += distances[1]
+
+            # Lastly, calculate the distance from the end of this house's sub-segment to the end of the block
+            for first, second in itertools.pairwise(all_points[min(sub_nodes) + 1:]):
+                distance_to_end += great_circle_distance(
+                    Point(first['lat'], first['lon']), Point(second['lat'], second['lon']))
+
+            output_house: node_t = {
+                'lat': house_pt.lat,
+                'lon': house_pt.lon,
+                'distance_to_start': distance_to_start,
+                'distance_to_end': distance_to_end
+            }
+
+            # Add the house to the list of addresses in the output
+            segments_by_id[segment_id]['addresses'][item['full_address']] = output_house
 
         if DEBUG:
             print('best block for {}, {} is {}.'.format(house_pt.lat, house_pt.lon, best_segment))

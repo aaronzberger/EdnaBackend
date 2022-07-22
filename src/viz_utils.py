@@ -42,6 +42,11 @@ class ColorMap():
         '''Get the hex code as a string from the value'''
         return matplotlib.colors.rgb2hex(self.cmap(self.norm(value))[:3])
 
+    def get_reverse(self, value: float) -> str:
+        '''Get the opposite color for this value'''
+        rgb = self.cmap(self.norm(value))[:3]
+        return matplotlib.colors.rgb2hex([1 - rgb[0], 1 - rgb[1], 1 - rgb[2]])
+
 
 def display_segments(segments: list[Segment]) -> folium.Map:
     m = generate_starter_map(segments)
@@ -87,7 +92,7 @@ def display_clustered_segments(segments: list[Segment],
     return m
 
 
-def display_walk_list(timeline: Timeline, m: folium.Map, color: str) -> folium.Map:
+def display_walk_list(timeline: Timeline, id: int, m: folium.Map, color: str) -> folium.Map:
     folium.Marker(
         location=[timeline.start.lat, timeline.start.lon],
         icon=folium.Icon(icon='play', color='green')
@@ -99,7 +104,7 @@ def display_walk_list(timeline: Timeline, m: folium.Map, color: str) -> folium.M
             icon=DivIcon(
                 icon_size=(50, 50),
                 icon_anchor=(5, 40),  # left-right, up-down
-                html='<div style="font-size: 15pt; color:red">{}</div>'.format(timeline.segments[0].id[:timeline.segments[0].id.find(':')])
+                html='<div style="font-size: 15pt; color:red">{}</div>'.format(id)
             )
         ).add_to(m)
 
@@ -126,7 +131,7 @@ def display_walk_list(timeline: Timeline, m: folium.Map, color: str) -> folium.M
             number_of_sides=3,
             color=color,
             radius=15,
-            rotation=angle_between_pts(segment.start, segment.end)
+            rotation=angle_between_pts(segment.start, segment.all_points[1])
         ).add_to(m)
 
     return m
@@ -142,7 +147,7 @@ def display_walk_lists(timelines: list[Timeline]) -> folium.Map:
     cmap = ColorMap(0, len(timelines) - 1)
 
     for i in range(len(timelines)):
-        m = display_walk_list(timelines[i], m, cmap.get(i))
+        m = display_walk_list(timelines[i], i, m, cmap.get(i))
 
     return m
 
@@ -158,6 +163,28 @@ def display_requests(requests: list[Segment]) -> folium.Map:
             color=cmap.get(i),
             opacity=0.6
         ).add_to(m)
+
+    return m
+
+
+def display_house_orders(walk_lists: list[list[Point]]) -> folium.Map:
+    lats = [i.lat for walk_list in walk_lists for i in walk_list]
+    lons = [i.lon for walk_list in walk_lists for i in walk_list]
+    m = generate_starter_map(lats=lats, lons=lons)
+
+    cmap = ColorMap(0, len(walk_lists) - 1, cmap='RdYlGn')
+
+    for i, walk_list in enumerate(walk_lists):
+        text_color = cmap.get(i)
+        for j, house in enumerate(walk_list[:-1]):
+            folium.Marker(
+                location=[house.lat, house.lon],
+                icon=DivIcon(
+                    icon_size=(25, 25),
+                    icon_anchor=(10, 10),  # left-right, up-down
+                    html='<div style="font-size: 15pt; color:{}">{}</div>'.format(text_color, j)
+                )
+            ).add_to(m)
 
     return m
 
@@ -189,18 +216,23 @@ def generate_timelines(timelines: list[Timeline]):
         drawer.line([(width - WIDTH_MARGIN, row_top), (width - WIDTH_MARGIN, row_bottom)], fill=(50, 50, 50), width=5)
 
         segment_times, delta_times = timeline.get_segment_times()
-        for segment, segment_time, delta_time, order in \
-                zip(timeline.segments, segment_times, delta_times, insertion_order):
-            drawer.rectangle([(TIMELINE_START + segment_time[0] * MIN_TO_PIX, row_top + 20),
+        for route_order, segment_time, delta_time, order in \
+                zip(range(len(segment_times)), segment_times, delta_times, insertion_order):
+            drawer.rectangle([(TIMELINE_START + segment_time[0] * MIN_TO_PIX, row_top + 13),
                               (TIMELINE_START + segment_time[1] * MIN_TO_PIX, row_bottom)], fill=cmap.get(i))
 
-            drawer.line([(TIMELINE_START + mean(delta_time) * MIN_TO_PIX, row_top + 20),
+            drawer.line([(TIMELINE_START + mean(delta_time) * MIN_TO_PIX, row_top + 13),
                          (TIMELINE_START + mean(delta_time) * MIN_TO_PIX, row_bottom)], fill=(255, 255, 255), width=10)
 
-            drawer.regular_polygon(bounding_circle=(TIMELINE_START + mean(delta_time) * MIN_TO_PIX, row_bottom - 4, 6),
+            drawer.regular_polygon(bounding_circle=(TIMELINE_START + mean(delta_time) * MIN_TO_PIX, row_bottom - 4, 5),
                                    n_sides=3, fill=(0, 0, 0), outline=(0, 0, 0))
 
-            drawer.text((TIMELINE_START + mean(segment_time) * MIN_TO_PIX, row_top + 10),
+            drawer.text((TIMELINE_START + mean(segment_time) * MIN_TO_PIX - 1, row_top + 3),
                         str(order), fill=(0, 0, 0), font=ImageFont.load_default())
+
+            drawer.text((TIMELINE_START + mean(segment_time) * MIN_TO_PIX - 1, row_top + 18),
+                        str(route_order + 1), fill=cmap.get_reverse(i), font=ImageFont.load_default())
+
+            drawer.text((13, row_top + 15), str(i), fill=(0, 0, 0), font=ImageFont.load_default())
 
     out.show()

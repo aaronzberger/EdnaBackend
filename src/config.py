@@ -10,6 +10,7 @@ address_pts_file = os.path.join(BASE_DIR, 'input', 'address_pts.csv')
 block_output_file = os.path.join(BASE_DIR, 'input', 'block_output.json')
 blocks_file = os.path.join(BASE_DIR, 'blocks.json')
 requests_file = os.path.join(BASE_DIR, 'requests.json')
+associated_file = os.path.join(BASE_DIR, 'associated.csv')
 
 # Maximum distance between two nodes where they should be stored
 MAX_NODE_STORAGE_DISTANCE = 800

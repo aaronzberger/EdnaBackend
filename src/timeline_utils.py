@@ -5,7 +5,7 @@ import json
 import os
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Optional
 
 import numpy as np
 from nptyping import Float32, NDArray, Shape
@@ -40,8 +40,8 @@ class Segment():
     def reversed(self):
         '''Reverse this segment. Completes in linear time with the number of points'''
         new_segment = deepcopy(self)
-        new_segment.start = new_segment.end
-        new_segment.end = self.start
+        new_segment.start = deepcopy(new_segment.end)
+        new_segment.end = deepcopy(self.start)
         new_segment.all_points.reverse()
         node_ids = new_segment.get_node_ids()
         new_segment.id = node_ids[1] + ':' + node_ids[0] + ':' + self.id[-1]
@@ -58,17 +58,15 @@ class NodeDistances():
 
     @classmethod
     def _insert_pair(cls, node_1: Point, node_2: Point):
-        node_1_id = str(node_1.lat) + ':' + str(node_1.lon)
-        node_2_id = str(node_2.lat) + ':' + str(node_2.lon)
         # If this pair already exists in the opposite order, skip
         try:
-            cls._node_distances[node_2_id][node_1_id]
+            cls._node_distances[node_2.id][node_1.id]
         except KeyError:
             # Calculate a fast great circle distance
             distance = great_circle_distance(node_1, node_2)
 
             # Only calculate and insert the routed distance if needed
-            cls._node_distances[node_1_id][node_2_id] = None if distance > MAX_NODE_STORAGE_DISTANCE \
+            cls._node_distances[node_1.id][node_2.id] = None if distance > MAX_NODE_STORAGE_DISTANCE \
                 else get_distance(node_1, node_2)
 
     @classmethod
@@ -86,8 +84,7 @@ class NodeDistances():
         cls._node_distances = {}
         with tqdm(total=len(cls.all_nodes) ** 2, desc='Generating', unit='pairs', colour='green') as progress:
             for node in cls.all_nodes:
-                node_id = str(node.lat) + ':' + str(node.lon)
-                cls._node_distances[node_id] = {}
+                cls._node_distances[node.id] = {}
                 for other_node in cls.all_nodes:
                     cls._insert_pair(node, other_node)
                     progress.update()
@@ -99,9 +96,8 @@ class NodeDistances():
     def add_nodes(cls, nodes: list[Point]):
         with tqdm(total=len(nodes) * len(cls.all_nodes), desc='Adding Nodes', unit='pairs', colour='green') as progress:
             for node in nodes:
-                node_id = str(node.lat) + ':' + str(node.lon)
-                if node_id not in cls._node_distances:
-                    cls._node_distances[node_id] = {}
+                if node.id not in cls._node_distances:
+                    cls._node_distances[node.id] = {}
                     for other_node in cls.all_nodes:
                         cls._insert_pair(node, other_node)
                         progress.update()
@@ -125,12 +121,10 @@ class NodeDistances():
         Raises:
             KeyError: if the pair does not exist in the table
         '''
-        p1_id = str(p1.lat) + ':' + str(p1.lon)
-        p2_id = str(p2.lat) + ':' + str(p2.lon)
         try:
-            return cls._node_distances[p1_id][p2_id]
+            return cls._node_distances[p1.id][p2.id]
         except KeyError:
-            return cls._node_distances[p2_id][p1_id]
+            return cls._node_distances[p2.id][p1.id]
 
 
 '-----------------------------------------------------------------------------------------'

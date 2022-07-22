@@ -1,0 +1,15 @@
+
+.DS_Store
+.vscode/settings.json
+src/__pycache__/config.cpython-310.pyc
+src/__pycache__/gps_utils.cpython-310.pyc
+src/__pycache__/hash_table.cpython-38.pyc
+src/__pycache__/optimize.cpython-310.pyc
+src/__pycache__/optimize.cpython-38.pyc
+src/__pycache__/route.cpython-310.pyc
+src/__pycache__/route.cpython-38.pyc
+src/__pycache__/timeline_utils.cpython-310.pyc
+src/__pycache__/utils.cpython-310.pyc
+src/__pycache__/utils.cpython-38.pyc
+src/__pycache__/viz_utils.cpython-310.pyc
+viz/.DS_Store
