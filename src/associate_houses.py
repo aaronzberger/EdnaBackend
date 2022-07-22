@@ -13,7 +13,7 @@ from typing import Optional
 
 from tqdm import tqdm
 
-from config import (SegmentDict, address_pts_file, block_output_file,
+from config import (HouseAssociationDict, SegmentDict, address_pts_file, block_output_file,
                     blocks_file, blocks_file_t, house_t, node_coords_file,
                     node_list_t, node_t)
 from gps_utils import Point, along_track_distance, cross_track_distance, great_circle_distance
@@ -165,12 +165,11 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
                 distance_to_end += great_circle_distance(
                     Point(first['lat'], first['lon']), Point(second['lat'], second['lon']))
 
-            output_house: node_t = {
-                'lat': house_pt.lat,
-                'lon': house_pt.lon,
-                'distance_to_start': distance_to_start,
-                'distance_to_end': distance_to_end
-            }
+            output_house = HouseAssociationDict(
+                lat=house_pt.lat, lon=house_pt.lon,
+                distance_to_start=distance_to_start,
+                distance_to_end=distance_to_end
+            )
 
             # Add the house to the list of addresses in the output
             segments_by_id[segment_id]['addresses'][item['full_address']] = output_house

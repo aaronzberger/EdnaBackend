@@ -1,15 +1,15 @@
 import itertools
 import json
-import math
 import os
+import sys
 import time
 
 import numpy as np
 from ortools.constraint_solver import pywrapcp, routing_enums_pb2
 from tqdm import tqdm
 
-from config import BASE_DIR, SegmentDict, blocks_file, blocks_file_t
-from gps_utils import Point, along_track_distance, great_circle_distance
+from config import BASE_DIR, blocks_file, blocks_file_t
+from gps_utils import Point
 from timeline_utils import NodeDistances, Segment, Timeline
 from viz_utils import display_house_orders
 
@@ -21,51 +21,42 @@ class HouseDistances():
 
     @classmethod
     def _insert_pair(cls, s1: Segment, s2: Segment):
-        # If this pair already exists in the opposite order, skip
+        s1_houses = cls._blocks[s1.id]['addresses']
+        s2_houses = cls._blocks[s2.id]['addresses']
+
+        # If any combination of houses on these two segments is inserted, they all are
+        try:
+            cls._house_distances[next(iter(s1_houses))][next(iter(s2_houses))]
+            return
+        except KeyError:
+            pass
+
+        # Calculate the distances between the segment endpoints
         end_distances = [NodeDistances.get_distance(i, j) for i, j in
                          [(s1.start, s2.start), (s1.start, s2.end), (s1.end, s2.start), (s1.end, s2.end)]]
-        end_distances = [i for i in end_distances if i is not None]
 
         # If this pair is too far away, don't add to the table.
-        if len(end_distances) == 0 or min(end_distances) > 1600:
+        if None in end_distances or min(end_distances) > 1600:
             return
 
-        s1_houses = cls._blocks[s1.id]['addresses']
-        s1_distances_to_start = []
-        for address, info in s1_houses.items():
-            distance = 0
-            sub_segment_start_idx = int(cls._blocks[s1.id]['addresses'][address]['sub_node_1'])
+        # Iterate over every possible pair of houses
+        for (address_1, info_1), (address_2, info_2) in itertools.product(s1_houses.items(), s2_houses.items()):
+            start_start = end_distances[0] + info_1['distance_to_start'] + info_2['distance_to_start']
+            start_end = end_distances[1] + info_1['distance_to_start'] + info_2['distance_to_end']
+            end_start = end_distances[2] + info_1['distance_to_end'] + info_2['distance_to_start']
+            end_end = end_distances[3] + info_1['distance_to_end'] + info_2['distance_to_end']
 
-            # Iterate over the block from the start to this subsegment
-            for first, second in itertools.pairwise(s1.all_points[:sub_segment_start_idx + 1]):
-                distance += great_circle_distance(first, second)
-            distance += along_track_distance(
-                p1=Point(s1_houses[address]['lat'], s1_houses[address]['lon']),
-                p2=s1.all_points[sub_segment_start_idx], p3=s1.all_points[sub_segment_start_idx + 1])[0]
-            s1_distances_to_start
+            if address_1 not in cls._house_distances:
+                cls._house_distances[address_1] = {}
 
-        # try:
-        #     cls._house_distances[p2.id][p1.id]
-        # except KeyError:
-        #     # The distance between these houses is simply the minimum of the distances between the ends of the blocks
-        #     # plus the ALD of the houses to those endpoints
-
-        #     endpoints = 
-        #     distances = [NodeDistances.get_distance]
-        #     # distance = great_circle_distance(p1, p2)
-        #     # cls._point_distances[p1.id][p2.id] = great_circle_distance(p1, p2)
-        #     # if distance > 800:
-        #     #     # Assumimg great circle distance is the hypotenuse of a right triangle, track the outside
-        #     #     cls._point_distances[p1.id][p2.id] = math.sqrt(math.pow(distance, 2))
-        #     # else:
-        #     #     cls._point_distances[p1.id][p2.id] = get_distance(p1, p2)
+            cls._house_distances[address_1][address_2] = round(min([start_start, start_end, end_start, end_end]))
 
     @classmethod
     def __init__(cls, cluster: list[Segment]):
         print('Beginning house distances generation... ')
 
         if os.path.exists(cls._save_file):
-            print('House distance table file found.')
+            print('House distance table file found. Loading may take a while...')
             cls._house_distances = json.load(open(cls._save_file))
             return
 
@@ -159,11 +150,13 @@ def cluster_to_houses(cluster: list[Segment]) -> dict[str, Point]:
 
 
 def optimize_cluster(cluster: list[Segment]):
-    data = {}
+    # data = {}
 
-    houses_in_cluster = cluster_to_houses(cluster)
-    points = list(houses_in_cluster.values())
+    # houses_in_cluster = cluster_to_houses(cluster)
+    # points = list(houses_in_cluster.values())
     HouseDistances(cluster)
+
+    sys.exit()
 
     matrix = np.empty((len(houses_in_cluster) + 1, len(houses_in_cluster) + 1), dtype=int)
     for r, point in enumerate(points):

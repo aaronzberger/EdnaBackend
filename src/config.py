@@ -13,7 +13,7 @@ requests_file = os.path.join(BASE_DIR, 'requests.json')
 associated_file = os.path.join(BASE_DIR, 'associated.csv')
 
 # Maximum distance between two nodes where they should be stored
-MAX_NODE_STORAGE_DISTANCE = 800
+MAX_NODE_STORAGE_DISTANCE = 1600
 ARBITRARY_LARGE_DISTANCE = 10000
 MAX_TIMELINE_MINS = 180
 WALKING_M_PER_S = 1
@@ -33,8 +33,15 @@ class RequestDict(TypedDict):
     nodes: node_list_t
 
 
+class HouseAssociationDict(TypedDict):
+    lat: float
+    lon: float
+    distance_to_start: float
+    distance_to_end: float
+
+
 class SegmentDict(TypedDict):
-    addresses: house_t
+    addresses: dict[str, HouseAssociationDict]
     nodes: node_list_t
 
 
