@@ -1,18 +1,16 @@
 import itertools
 import json
 import os
-import pickle
-import sys
 import time
 
-import numpy as np
 from ortools.constraint_solver import pywrapcp, routing_enums_pb2
 from tqdm import tqdm
 
-from config import BASE_DIR, blocks_file, blocks_file_t
+from config import BASE_DIR, MINS_PER_HOUSE, WALKING_M_PER_S, blocks_file, blocks_file_t
 from gps_utils import Point
 from timeline_utils import NodeDistances, Segment, Timeline
 from viz_utils import display_house_orders
+from termcolor import colored
 
 
 class HouseDistances():
@@ -171,84 +169,117 @@ def cluster_to_houses(cluster: list[Segment]) -> dict[str, Point]:
 
 
 def optimize_cluster(cluster: list[Segment]):
-    data = {}
-
     houses_in_cluster = cluster_to_houses(cluster)
     points = list(houses_in_cluster.values())
 
     HouseDistances(cluster)
 
-    data['demands'] = [0] + [1] * len(points)  # Normally, this might reflect the number of voters
-    data['num_vehicles'] = 3
-    data['depot'] = 0
-    data['vehicle_capacities'] = [90] * data['num_vehicles']
+    print('Done generating')
+
+    MAX_HOUSES_PER_LIST = 90
+    NUM_WALKERS = 3
+    TIME_LIMIT = 10
+    MAX_TIME_PER_LIST = 180 * 60
 
     start_time = time.time()
 
     # Create the routing index manager.
-    manager = pywrapcp.RoutingIndexManager(len(points) + 1, data['num_vehicles'], data['depot'])
+    manager = pywrapcp.RoutingIndexManager(len(points) + 1, NUM_WALKERS, 0)
 
     # Create Routing Model.
     routing = pywrapcp.RoutingModel(manager)
 
-    # Create and register a transit callback.
-    def distance_callback(from_index, to_index):
-        """Returns the distance between the two nodes."""
+    def time_callback(from_index, to_index):
+        '''Returns the time to walk between two nodes.'''
         # Convert from routing variable Index to distance matrix NodeIndex.
         from_node = manager.IndexToNode(from_index)
         to_node = manager.IndexToNode(to_index)
+
+        # To allow arbitrary starting locations, we assign a ghost depot house at index 0 with 0 distance to all others
         if from_node == 0 or to_node == 0:
             return 0
         try:
-            return HouseDistances.get_distance(points[from_node - 1], points[to_node - 1])
+            return round(HouseDistances.get_distance(points[from_node - 1], points[to_node - 1]) / WALKING_M_PER_S +
+                         MINS_PER_HOUSE * 60)
         except KeyError:
-            return 3200
+            # This house is too far away, so return a value greather than the maximum allowed
+            return MAX_TIME_PER_LIST
 
-    transit_callback_index = routing.RegisterTransitCallback(distance_callback)
+    transit_callback_index = routing.RegisterTransitCallback(time_callback)
 
     # Define cost of each arc.
     routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
 
-    # Add Capacity constraint.
+    # Add the capacity constraint, which sets a maximum number of allowed houses per list
     def demand_callback(from_index):
-        """Returns the demand of the node."""
-        # Convert from routing variable Index to demands NodeIndex.
         from_node = manager.IndexToNode(from_index)
-        return data['demands'][from_node]
-
+        return 0 if from_node == 0 else 1
     demand_callback_index = routing.RegisterUnaryTransitCallback(demand_callback)
-
     routing.AddDimensionWithVehicleCapacity(
         demand_callback_index,
         0,  # null capacity slack
-        data['vehicle_capacities'],  # vehicle maximum capacities
+        [MAX_HOUSES_PER_LIST] * NUM_WALKERS,  # vehicle maximum capacities
         True,  # start cumul to zero
         'Capacity')
 
-    # Allow to drop nodes.
+    # Add the duration constraint, which sets a maximum allowed duration per list
+    routing.AddDimension(
+        transit_callback_index,
+        MAX_TIME_PER_LIST,
+        MAX_TIME_PER_LIST,
+        False,
+        'Duration')
+    time_dimension = routing.GetDimensionOrDie('Duration')
+    for i in range(NUM_WALKERS):
+        time_dimension.SetSpanUpperBoundForVehicle(MAX_TIME_PER_LIST, i)
+
+    # Allow the solver to drop nodes it cannot fit given the above constraints.
     penalty = 1000
     for node in range(1, len(points) + 1):
         routing.AddDisjunction([manager.NodeToIndex(node)], penalty)
 
-    # Setting first solution heuristic.
+    # Assign the first guess
     search_parameters = pywrapcp.DefaultRoutingSearchParameters()
     search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC)
     search_parameters.local_search_metaheuristic = (routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH)
-    search_parameters.time_limit.FromSeconds(1)
+    search_parameters.time_limit.seconds = TIME_LIMIT
 
-    # Solve the problem.
+    # Solve
     assignment = routing.SolveWithParameters(search_parameters)
 
-    print('Finished in', time.time() - start_time)
+    print(colored('Finished in {:.2f} seconds'.format(time.time() - start_time), color='green'))
 
-    # Print solution on console.
-    if assignment:
-        print_solution(data, manager, routing, assignment)
+    dropped_nodes = 0
+    for node in range(routing.Size()):
+        if routing.IsStart(node) or routing.IsEnd(node):
+            continue
+        if assignment.Value(routing.NextVar(node)) == node:
+            dropped_nodes += 1
+    print(colored('Didn\'t use {} houses'.format(dropped_nodes), color='yellow'))
+
+    total_time = 0
+    total_load = 0
+    for vehicle_id in range(NUM_WALKERS):
+        index = routing.Start(vehicle_id)
+        route_time = 0
+        route_load = 0
+        while not routing.IsEnd(index):
+            node_index = manager.IndexToNode(index)
+            route_load += 0 if node_index == 0 else 1
+            previous_index = index
+            index = assignment.Value(routing.NextVar(index))
+            route_time += routing.GetArcCostForVehicle(
+                previous_index, index, vehicle_id)
+        print('List {:<2} takes {:<3} minutes to walk and has {:<3} houses'.format(
+            vehicle_id, round(route_time / 60), route_load))
+        total_time += route_time
+        total_load += route_load
+    print('In total, {} walk lists hit {} houses.'.format(NUM_WALKERS, total_load))
 
     walk_lists: list[list[Point]] = []
 
     # Display routes
-    for vehicle_id in range(data['num_vehicles']):
+    for vehicle_id in range(NUM_WALKERS):
         index = routing.Start(vehicle_id)
         walk_lists.append([points[manager.IndexToNode(index) - 1]])
         while not routing.IsEnd(index):
