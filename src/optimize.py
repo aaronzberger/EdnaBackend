@@ -1,6 +1,7 @@
 import itertools
 import json
 import os
+import pickle
 import sys
 import time
 
@@ -24,12 +25,29 @@ class HouseDistances():
         s1_houses = cls._blocks[s1.id]['addresses']
         s2_houses = cls._blocks[s2.id]['addresses']
 
+        if len(s1_houses) == 0 or len(s2_houses) == 0:
+            return
+
         # If any combination of houses on these two segments is inserted, they all are
         try:
-            cls._house_distances[next(iter(s1_houses))][next(iter(s2_houses))]
+            cls._house_distances[next(iter(s2_houses))][next(iter(s1_houses))]
             return
         except KeyError:
             pass
+
+        # Check if the segments are the same
+        if s1.id == s2.id:
+            for (address_1, info_1), (address_2, info_2) in itertools.product(s1_houses.items(), s2_houses.items()):
+                if address_1 not in cls._house_distances:
+                    cls._house_distances[address_1] = {}
+
+                if address_1 == address_2:
+                    cls._house_distances[address_1][address_2] = 0
+                else:
+                    # Simply use the difference of the distances to the start
+                    cls._house_distances[address_1][address_2] = round(
+                        abs(info_1['distance_to_start'] - info_2['distance_to_start']))
+            return
 
         # Calculate the distances between the segment endpoints
         end_distances = [NodeDistances.get_distance(i, j) for i, j in
@@ -41,13 +59,13 @@ class HouseDistances():
 
         # Iterate over every possible pair of houses
         for (address_1, info_1), (address_2, info_2) in itertools.product(s1_houses.items(), s2_houses.items()):
+            if address_1 not in cls._house_distances:
+                cls._house_distances[address_1] = {}
+
             start_start = end_distances[0] + info_1['distance_to_start'] + info_2['distance_to_start']
             start_end = end_distances[1] + info_1['distance_to_start'] + info_2['distance_to_end']
             end_start = end_distances[2] + info_1['distance_to_end'] + info_2['distance_to_start']
             end_end = end_distances[3] + info_1['distance_to_end'] + info_2['distance_to_end']
-
-            if address_1 not in cls._house_distances:
-                cls._house_distances[address_1] = {}
 
             cls._house_distances[address_1][address_2] = round(min([start_start, start_end, end_start, end_end]))
 
@@ -58,6 +76,7 @@ class HouseDistances():
         if os.path.exists(cls._save_file):
             print('House distance table file found. Loading may take a while...')
             cls._house_distances = json.load(open(cls._save_file))
+            # cls._house_distances = pickle.load(open(cls._save_file, 'rb'))
             return
 
         print('No house distance table file found at {}. Generating now...'.format(cls._save_file))
@@ -68,8 +87,10 @@ class HouseDistances():
                     cls._insert_pair(segment, other_segment)
                     progress.update()
 
-            print('Saving to {}'.format(cls._save_file))
-            json.dump(cls._house_distances, open(cls._save_file, 'w', encoding='utf-8'), indent=4)
+        print('Saving to {}'.format(cls._save_file))
+        # with open(cls._save_file, 'wb') as output:
+        #     pickle.dump(cls._house_distances, output)
+        json.dump(cls._house_distances, open(cls._save_file, 'w', encoding='utf-8'), indent=4)
 
     @classmethod
     def get_distance(cls, p1: Point, p2: Point) -> float:
@@ -150,34 +171,22 @@ def cluster_to_houses(cluster: list[Segment]) -> dict[str, Point]:
 
 
 def optimize_cluster(cluster: list[Segment]):
-    # data = {}
+    data = {}
 
-    # houses_in_cluster = cluster_to_houses(cluster)
-    # points = list(houses_in_cluster.values())
+    houses_in_cluster = cluster_to_houses(cluster)
+    points = list(houses_in_cluster.values())
+
     HouseDistances(cluster)
 
-    sys.exit()
-
-    matrix = np.empty((len(houses_in_cluster) + 1, len(houses_in_cluster) + 1), dtype=int)
-    for r, point in enumerate(points):
-        for c, other_point in enumerate(points):
-            distance = HouseDistances.get_distance(point, other_point)
-            matrix[r + 1][c + 1] = round(distance)
-
-    # For arbitrary start and end locations, fill in the first column and row with 0s
-    matrix[:, 0] = 0
-    matrix[0, :] = 0
-
-    data['distance_matrix'] = matrix
     data['demands'] = [0] + [1] * len(points)  # Normally, this might reflect the number of voters
-    data['num_vehicles'] = 15
+    data['num_vehicles'] = 3
     data['depot'] = 0
     data['vehicle_capacities'] = [90] * data['num_vehicles']
 
     start_time = time.time()
 
     # Create the routing index manager.
-    manager = pywrapcp.RoutingIndexManager(len(data['distance_matrix']), data['num_vehicles'], data['depot'])
+    manager = pywrapcp.RoutingIndexManager(len(points) + 1, data['num_vehicles'], data['depot'])
 
     # Create Routing Model.
     routing = pywrapcp.RoutingModel(manager)
@@ -188,7 +197,12 @@ def optimize_cluster(cluster: list[Segment]):
         # Convert from routing variable Index to distance matrix NodeIndex.
         from_node = manager.IndexToNode(from_index)
         to_node = manager.IndexToNode(to_index)
-        return data['distance_matrix'][from_node][to_node]
+        if from_node == 0 or to_node == 0:
+            return 0
+        try:
+            return HouseDistances.get_distance(points[from_node - 1], points[to_node - 1])
+        except KeyError:
+            return 3200
 
     transit_callback_index = routing.RegisterTransitCallback(distance_callback)
 
@@ -213,7 +227,7 @@ def optimize_cluster(cluster: list[Segment]):
 
     # Allow to drop nodes.
     penalty = 1000
-    for node in range(1, len(data['distance_matrix'])):
+    for node in range(1, len(points) + 1):
         routing.AddDisjunction([manager.NodeToIndex(node)], penalty)
 
     # Setting first solution heuristic.

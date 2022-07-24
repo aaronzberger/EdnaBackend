@@ -53,7 +53,9 @@ labels = km.labels
 
 clusters: list[list[Segment]] = [[segments[i] for i in range(len(segments)) if labels[i] == k]
                                  for k in range(max(labels))]
-optimize_cluster(segments)
+
+area = clusters[4]
+optimize_cluster(area)
 sys.exit()
 
 
