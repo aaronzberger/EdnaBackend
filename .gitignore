@@ -13,3 +13,6 @@ src/__pycache__/utils.cpython-310.pyc
 src/__pycache__/utils.cpython-38.pyc
 src/__pycache__/viz_utils.cpython-310.pyc
 viz/.DS_Store
+*.pyc
+viz/.DS_Store
+viz/unordered1pm.html

@@ -11,7 +11,7 @@ import numpy as np
 from nptyping import Float32, NDArray, Shape
 from tqdm import tqdm
 
-from config import (ARBITRARY_LARGE_DISTANCE, MAX_NODE_STORAGE_DISTANCE, MAX_TIMELINE_MINS,
+from config import (ARBITRARY_LARGE_DISTANCE, MAX_NODE_STORAGE_DISTANCE,
                     MINS_PER_HOUSE, WALKING_M_PER_S, node_distance_table_file,
                     segment_distance_matrix_file)
 from gps_utils import Point, great_circle_distance
@@ -199,110 +199,3 @@ class SegmentDistances():
                 distance = cls.get_distance(segment, other_segment)
                 matrix[r][c] = ARBITRARY_LARGE_DISTANCE if distance is None else distance
         return matrix
-
-
-class Timeline():
-    def __init__(self, start: Point, end: Point):
-        self.start = start
-        self.end = end
-
-        # Calculate the distance from the start to end point. This is the first delta
-        start_distance = 0.0 if start == end else NodeDistances.get_distance(start, end)
-        self.deltas: list[float] = [start_distance if start_distance is not None else get_distance(start, end)]
-
-        self.segments: list[Segment] = []
-        self.insertion_queue: list[str] = []
-
-        self.total_time: float = 0.0
-
-    def get_segment_times(self) -> tuple[list[list[float]], list[list[float]]]:
-        # For each segment or delta, the start and end time
-        segment_times: list[list[float]] = []
-        delta_times: list[list[float]] = []
-
-        running_time = 0
-        for delta, segment in zip(self.deltas, self.segments):
-            segment_times.append([delta / WALKING_M_PER_S * (1/60) + running_time,
-                                  delta / WALKING_M_PER_S * (1/60) + running_time + segment.time_to_walk])
-            delta_times.append([running_time, running_time + delta / WALKING_M_PER_S * (1/60)])
-            running_time += delta / WALKING_M_PER_S * (1/60) + segment.time_to_walk
-        return segment_times, delta_times
-
-    def calculate_time(self):
-        self.total_time = 0.0
-        self.total_time += sum([segment.time_to_walk for segment in self.segments])  # Walk it and talk to voters
-        self.total_time += sum([dist / WALKING_M_PER_S * (1/60) for dist in self.deltas])  # Walk between segments
-
-    def _insert(self, segment: Segment, index: int):
-        self.segments.insert(index, segment)
-        del self.deltas[index]
-
-        # Add the distance from the point before this segment to the start
-        point_before = self.start if index == 0 else self.segments[index - 1].end
-        distance_before = NodeDistances.get_distance(point_before, segment.start)
-
-        # Add the distance from the end of this segment to the point after
-        point_after = self.end if index == len(self.segments) - 1 else self.segments[index + 1].start
-        distance_after = NodeDistances.get_distance(segment.end, point_after)
-
-        # If the distance doesn't exist in the distance table, this segment is too far anyway. Leave a terminal bid
-        if distance_before is None or distance_after is None:
-            self.total_time = MAX_TIMELINE_MINS
-            self.deltas.insert(index, MAX_TIMELINE_MINS * 60 * WALKING_M_PER_S)
-            return
-
-        self.deltas.insert(index, distance_before)
-        self.deltas.insert(index + 1, distance_after)
-        self.calculate_time()
-
-    def insert(self, segment: Segment, index: int) -> bool:
-        # Test the bid of inserting this segment forward
-        theoretical_timeline = deepcopy(self)
-        theoretical_timeline._insert(segment, index)
-        bid_foward = theoretical_timeline.total_time
-
-        # Test the bid of inserting this segment backwards
-        theoretical_timeline = deepcopy(self)
-        theoretical_timeline._insert(segment.reversed(), index)
-        bid_backwards = theoretical_timeline.total_time
-
-        forward = bid_foward < bid_backwards
-
-        if (bid_foward if forward else bid_backwards) > MAX_TIMELINE_MINS:
-            return False
-
-        # Insert the segment in the correct direction
-        self._insert(segment if forward else segment.reversed(), index)
-        self.insertion_queue.append(segment.id if forward else segment.reversed().id)
-        return True
-
-    def _get_bid(self, segment: Segment, index: int) -> Optional[float]:
-        theoretical_timeline = deepcopy(self)
-        possible = theoretical_timeline.insert(segment, index)
-        delta_delta = sum(theoretical_timeline.deltas) - sum(self.deltas)
-        if not possible or delta_delta > 200:
-            return None
-        return delta_delta
-
-    def get_bids(self, segment: Segment) -> list[Optional[float]]:
-        if segment.time_to_walk > MAX_TIMELINE_MINS - self.total_time:
-            return [None] * len(self.deltas)
-        else:
-            return [self._get_bid(segment, i) for i in range(len(self.deltas))]
-
-    def generate_report(self) -> dict[str, dict[str, int]]:
-        '''
-        Generate a report of how this list was generated
-
-        Returns:
-            dict: a dictionary that maps the segment id (key) to the
-                (1) route index and (2) insertion index (in a list)
-        '''
-        segment_ids = [segment.id for segment in self.segments]
-        report: dict[str, dict[str, int]] = {}
-        for i, id in enumerate(segment_ids):
-            report[id] = {
-                'route_order': i + 1,
-                'insertion_order': self.insertion_queue.index(id) + 1
-            }
-        return report

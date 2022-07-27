@@ -130,4 +130,4 @@ class Optimizer():
             for stop in route['stops']:
                 walk_lists[i].append(self.points[stop['location']['index']])
 
-        display_house_orders(walk_lists).save(os.path.join(BASE_DIR, 'viz', 'rein.html'))
+        display_house_orders(walk_lists).save(os.path.join(BASE_DIR, 'viz', 'optimal.html'))
