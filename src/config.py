@@ -19,6 +19,9 @@ MAX_TIMELINE_MINS = 180
 WALKING_M_PER_S = 1
 MINS_PER_HOUSE = 2
 CLUSTERING_CONNECTED_THRESHOLD = 100  # Meters where blocks are connected
+KEEP_APARTMENTS = False
+DIFFERENT_SEGMENT_ADDITION = 30
+DIFFERENT_SIDE_ADDITION = 10
 
 # JSON type hints
 node_t = dict[str, float]
@@ -36,8 +39,10 @@ class RequestDict(TypedDict):
 class HouseAssociationDict(TypedDict):
     lat: float
     lon: float
-    distance_to_start: float
-    distance_to_end: float
+    distance_to_start: int
+    distance_to_end: int
+    side: bool
+    distance_to_road: int
 
 
 class SegmentDict(TypedDict):

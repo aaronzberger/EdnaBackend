@@ -88,6 +88,14 @@ def display_clustered_segments(segments: list[Segment],
                 opacity=1.0,
                 radius=30
             ).add_to(m)
+            folium.Marker(
+                location=[centers[i].lat, centers[i].lon],
+                icon=DivIcon(
+                    icon_size=(50, 50),
+                    icon_anchor=(5, 12),  # left-right, up-down
+                    html='<div style="font-size: 15pt">{}</div>'.format(i)
+                )
+            ).add_to(m)
 
     return m
 
@@ -176,7 +184,7 @@ def display_house_orders(walk_lists: list[list[Point]]) -> folium.Map:
 
     for i, walk_list in enumerate(walk_lists):
         text_color = cmap.get(i)
-        for j, house in enumerate(walk_list[:-1]):
+        for j, house in enumerate(walk_list):
             folium.Marker(
                 location=[house.lat, house.lon],
                 icon=DivIcon(

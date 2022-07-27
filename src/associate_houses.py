@@ -52,7 +52,7 @@ class Segment():
     end_node_id: str
     distance: float
     id: int
-    side: int
+    side: bool
     all_nodes: list[str]
 
 
@@ -107,7 +107,7 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
                                 end_node_id=str(block[0]),
                                 distance=abs(house_to_segment),
                                 id=block[1],
-                                side=1 if house_to_segment > 0 else 0,
+                                side=True if house_to_segment > 0 else False,
                                 all_nodes=[str(id) for id in block[2]['nodes']])
 
         if best_segment is not None and best_segment.distance <= MAX_DISTANCE:
@@ -167,8 +167,10 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
 
             output_house = HouseAssociationDict(
                 lat=house_pt.lat, lon=house_pt.lon,
-                distance_to_start=distance_to_start,
-                distance_to_end=distance_to_end
+                distance_to_start=round(distance_to_start),
+                distance_to_end=round(distance_to_end),
+                side=best_segment.side,
+                distance_to_road=round(best_segment.distance)
             )
 
             # Add the house to the list of addresses in the output

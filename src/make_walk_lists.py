@@ -11,7 +11,8 @@ import kmedoids
 import numpy as np
 from sklearn.preprocessing import normalize
 from termcolor import colored
-from optimize import optimize_cluster
+# from optimize import Optimizer
+from rein import Optimizer
 
 from config import (ARBITRARY_LARGE_DISTANCE, BASE_DIR,
                     CLUSTERING_CONNECTED_THRESHOLD, requests_file,
@@ -48,14 +49,20 @@ SegmentDistances(segments)
 
 # Cluster the segments using kmedoids
 distance_matrix = SegmentDistances.get_distance_matrix()
-km: kmedoids.KMedoidsResult = kmedoids.fasterpam(diss=distance_matrix, medoids=20, max_iter=100, random_state=0)
+km: kmedoids.KMedoidsResult = kmedoids.fasterpam(diss=distance_matrix, medoids=10, max_iter=100, random_state=0)
 labels = km.labels
 
 clusters: list[list[Segment]] = [[segments[i] for i in range(len(segments)) if labels[i] == k]
                                  for k in range(max(labels))]
 
-area = clusters[4]
-optimize_cluster(area)
+# area = list(itertools.chain.from_iterable(clusters))
+center = Point(40.4418183, -79.9198965)
+git = Optimizer(clusters[3] + clusters[2], num_lists=3, starting_location=center)
+git.optimize()
+git.visualize()
+# optimizer = Optimizer(clusters[3] + clusters[2], num_lists=1, starting_location=center)
+# optimizer.optimize()
+# optimize_cluster(clusters[4])
 sys.exit()
 
 
@@ -146,7 +153,6 @@ if DISPLAY_VERBOSE:
 '                                Request Ordering                                '
 '--------------------------------------------------------------------------------'
 print('Beginning request ordering...')
-
 
 class RequestHandler():
     @classmethod
