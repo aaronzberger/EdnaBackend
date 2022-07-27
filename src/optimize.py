@@ -1,15 +1,15 @@
 import json
 import os
-import sys
+import subprocess
 import time
 
-from folium import Map
-from ortools.constraint_solver import (pywrapcp, routing_enums_pb2,
-                                       routing_parameters_pb2)
 from termcolor import colored
 
 from config import (BASE_DIR, KEEP_APARTMENTS, MINS_PER_HOUSE, WALKING_M_PER_S,
-                    blocks_file, blocks_file_t)
+                    Costs, DistanceMatrix, Fleet, Job, Location, Pickup, Place,
+                    Plan, Problem, Profile, Shift, ShiftEnd, ShiftStart,
+                    Vehicle, VehicleLimits, VehicleProfile, blocks_file,
+                    blocks_file_t)
 from gps_utils import Point
 from house_distances import HouseDistances
 from timeline_utils import Segment
@@ -37,10 +37,19 @@ def cluster_to_houses(cluster: list[Segment]) -> dict[str, Point]:
     return houses_in_cluster
 
 
+class Deserializer:
+    @classmethod
+    def from_dict(cls, dict):
+        obj = cls()
+        obj.__dict__.update(dict)
+        return obj
+
+
 class Optimizer():
     MAX_HOUSES_PER_LIST = 90
     TIME_LIMIT = 10
     MAX_TIME_PER_LIST = 180 * 60
+    distance_matrix_save = os.path.join(BASE_DIR, 'optimize', 'distances.json')
 
     def __init__(self, cluster: list[Segment], num_lists: int, starting_location: Point):
         houses_in_cluster = cluster_to_houses(cluster)
@@ -48,136 +57,77 @@ class Optimizer():
         self.points.append(starting_location)
         self.start_idx = len(self.points) - 1
 
-        self.num_lists = num_lists
-
         HouseDistances(cluster, starting_location)
 
-        # Create the routing index manager.
-        self.manager = pywrapcp.RoutingIndexManager(len(self.points), self.num_lists, self.start_idx)
+        # Construct the distance matrix file
+        distance_matrix = DistanceMatrix(profile='person', travelTimes=[], distances=[])
+        for pt in self.points:
+            for other_pt in self.points:
+                try:
+                    distance = HouseDistances.get_distance(pt, other_pt)
+                except KeyError:
+                    distance = 1600
+                distance_matrix['distances'].append(round(distance))
+                distance_matrix['travelTimes'].append(round(distance / WALKING_M_PER_S))
 
-        # Create Routing Model.
-        self.routing = pywrapcp.RoutingModel(self.manager)
+        json.dump(distance_matrix, open(self.distance_matrix_save, 'w'), indent=2)
 
-    def get_time_index(self) -> int:
-        def time_callback(from_index, to_index):
-            '''Returns the time to walk between two nodes.'''
-            # Convert from routing variable Index to distance matrix NodeIndex.
-            from_node = self.manager.IndexToNode(from_index)
-            to_node = self.manager.IndexToNode(to_index)
+        print('Saved distance matrix to {}'.format(self.distance_matrix_save))
 
-            if from_node == self.start_idx or to_node == self.start_idx:
-                return 0
+        problem = {}
 
-            try:
-                distance = round(HouseDistances.get_distance(self.points[from_node], self.points[to_node]) /
-                                 WALKING_M_PER_S + MINS_PER_HOUSE * 60)
-                return distance
-                # return distance if distance < 400 else 1600
-            except KeyError:
-                if from_node == self.start_idx or to_node == self.start_idx:
-                    raise RuntimeError('Unable to find distance from depot to another point, which should never happen')
-                # This house is too far away, so return a value greather than the maximum allowed
-                return 420
+        # Create the plan
+        jobs: list[Job] = []
+        for i, house in enumerate(self.points):
+            pickup = Pickup(places=[Place(location=Location(index=i), duration=MINS_PER_HOUSE * 60)],
+                            demand=[1])
+            jobs.append(Job(id=house.id, pickups=[pickup]))
 
-        return self.routing.RegisterTransitCallback(time_callback)
+        # Create the fleet
+        walker = Vehicle(
+            typeId='person',
+            vehicleIds=['walker_{}'.format(i) for i in range(num_lists)],
+            profile=Profile(matrix='person'),
+            costs=Costs(fixed=0, distance=0, time=1),
+            shifts=[Shift(start=ShiftStart(earliest='2022-08-01T05:00:00Z', location=Location(index=self.start_idx)),
+                          end=ShiftEnd(latest='2022-08-01T08:00:00Z', location=Location(index=self.start_idx)))],
+            capacity=[100],
+            limits=VehicleLimits(shiftTime=self.MAX_TIME_PER_LIST, maxDistance=3200))
 
-    def add_capacity_constraint(self):
-        # Add the capacity constraint, which sets a maximum number of allowed houses per list
-        def demand_callback(from_index):
-            from_node = self.manager.IndexToNode(from_index)
-            return 1 if from_node != self.start_idx else 0
-        demand_callback_index = self.routing.RegisterUnaryTransitCallback(demand_callback)
-        self.routing.AddDimensionWithVehicleCapacity(
-            demand_callback_index,
-            0,  # null capacity slack
-            [self.MAX_HOUSES_PER_LIST] * self.num_lists,  # vehicle maximum capacities
-            True,  # start cumul to zero
-            'Capacity')
+        fleet = Fleet(vehicles=[walker], profiles=[VehicleProfile(name='person')])
+        problem = Problem(plan=Plan(jobs=jobs), fleet=fleet)
 
-    def add_duration_constraint(self, transit_index: int):
-        # Add the duration constraint, which sets a maximum allowed duration per list
-        self.routing.AddDimension(
-            transit_index,
-            self.MAX_TIME_PER_LIST,
-            self.MAX_TIME_PER_LIST,
-            False,
-            'Duration')
-        time_dimension: pywrapcp.RoutingDimension = self.routing.GetDimensionOrDie('Duration')
-        for i in range(self.num_lists):
-            time_dimension.SetSpanUpperBoundForVehicle(self.MAX_TIME_PER_LIST, i)
-
-    def print_solution(self, assignment: pywrapcp.Assignment):
-        dropped_nodes = 0
-        for node in range(self.routing.Size()):
-            if self.routing.IsStart(node) or self.routing.IsEnd(node):
-                continue
-            if assignment.Value(self.routing.NextVar(node)) == node:
-                dropped_nodes += 1
-        print(colored('Didn\'t use {} houses'.format(dropped_nodes), color='yellow'))
-
-        total_time = 0
-        total_load = 0
-        for vehicle_id in range(self.num_lists):
-            index = self.routing.Start(vehicle_id)
-            route_time = 0
-            route_load = 0
-            while not self.routing.IsEnd(index):
-                node_index = self.manager.IndexToNode(index)
-                route_load += 0 if node_index == 0 else 1
-                previous_index = index
-                index = assignment.Value(self.routing.NextVar(index))
-                route_time += self.routing.GetArcCostForVehicle(
-                    previous_index, index, vehicle_id)
-            print('List {:<2} takes {:<3} minutes to walk and has {:<3} houses'.format(
-                vehicle_id, round(route_time / 60), route_load))
-            total_time += route_time
-            total_load += route_load
-        print('In total, {} walk lists hit {} houses.'.format(self.num_lists, total_load))
-
-    def visualize_solution(self, assignment: pywrapcp.Assignment) -> Map:
-        walk_lists: list[list[Point]] = []
-
-        # Display routes
-        for vehicle_id in range(self.num_lists):
-            index = self.routing.Start(vehicle_id)
-            walk_lists.append([self.points[self.manager.IndexToNode(index)]])
-            while not self.routing.IsEnd(index):
-                index = assignment.Value(self.routing.NextVar(index))
-                walk_lists[vehicle_id].append(self.points[self.manager.IndexToNode(index)])
-
-        return display_house_orders(walk_lists)
+        json.dump(problem, open(os.path.join(BASE_DIR, 'optimize', 'problem.json'), 'w'), indent=2)
 
     def optimize(self):
+        cli_path = "/Users/aaron/.cargo/bin/vrp-cli"
+        problem_path = os.path.join(BASE_DIR, 'optimize', 'problem.json')
+        solution_path = os.path.join(BASE_DIR, 'optimize', 'solution.json')
+
         start_time = time.time()
 
-        transit_callback_index = self.get_time_index()
-        self.routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
+        # NOTE: modify example to pass matrix, config, initial solution, etc.
+        p = subprocess.run(
+            [cli_path, 'solve', 'pragmatic', problem_path, '-m', self.distance_matrix_save,
+             '-o', solution_path, '-t', '20', '--log'])
 
-        self.add_capacity_constraint()
-        self.add_duration_constraint(transit_callback_index)
-
-        # Allow the solver to drop nodes it cannot fit given the above constraints.
-        penalty = 1000
-        for node in range(0, self.start_idx):
-            # Here, add differing penalties based on number of voters in the house
-            self.routing.AddDisjunction([self.manager.NodeToIndex(node)], penalty)
-
-        # Assign the first guess
-        search_parameters: routing_parameters_pb2.RoutingSearchParameters = pywrapcp.DefaultRoutingSearchParameters()
-        search_parameters.first_solution_strategy = (routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC)
-        search_parameters.local_search_metaheuristic = (routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH)
-        search_parameters.time_limit.seconds = self.TIME_LIMIT
-
-        print('Beginning solving')
-
-        # Solve
-        assignment: pywrapcp.Assignment = self.routing.SolveWithParameters(search_parameters)
-
-        if assignment is None:
-            print(colored('Failed', color='red'))
-            sys.exit()
+        if p.returncode == 0:
+            with open(solution_path, 'r') as f:
+                solution_str = f.read()
+                return json.loads(solution_str, object_hook=Deserializer.from_dict)
 
         print(colored('Finished in {:.2f} seconds'.format(time.time() - start_time), color='green'))
 
-        self.print_solution(assignment)
-        self.visualize_solution(assignment).save(os.path.join(BASE_DIR, 'viz', 'optimal.html'))
+    def visualize(self):
+        solution_path = os.path.join(BASE_DIR, 'optimize', 'solution.json')
+
+        solutions = json.load(open(solution_path))
+
+        walk_lists: list[list[Point]] = []
+
+        for i, route in enumerate(solutions['tours']):
+            walk_lists.append([])
+            for stop in route['stops']:
+                walk_lists[i].append(self.points[stop['location']['index']])
+
+        display_house_orders(walk_lists).save(os.path.join(BASE_DIR, 'viz', 'rein.html'))

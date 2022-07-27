@@ -1,5 +1,9 @@
 import os
-from typing import TypedDict
+from typing import Any, TypedDict
+
+'----------------------------------------------------------------------------------'
+'                                     File Paths                                   '
+'----------------------------------------------------------------------------------'
 
 BASE_DIR = '/Users/aaron/Documents/GitHub/WLC'
 
@@ -12,6 +16,10 @@ blocks_file = os.path.join(BASE_DIR, 'blocks.json')
 requests_file = os.path.join(BASE_DIR, 'requests.json')
 associated_file = os.path.join(BASE_DIR, 'associated.csv')
 
+'----------------------------------------------------------------------------------'
+'                                     Constants                                    '
+'----------------------------------------------------------------------------------'
+
 # Maximum distance between two nodes where they should be stored
 MAX_NODE_STORAGE_DISTANCE = 1600
 ARBITRARY_LARGE_DISTANCE = 10000
@@ -22,6 +30,10 @@ CLUSTERING_CONNECTED_THRESHOLD = 100  # Meters where blocks are connected
 KEEP_APARTMENTS = False
 DIFFERENT_SEGMENT_ADDITION = 30
 DIFFERENT_SIDE_ADDITION = 10
+
+'----------------------------------------------------------------------------------'
+'                                       Type Hints                                 '
+'----------------------------------------------------------------------------------'
 
 # JSON type hints
 node_t = dict[str, float]
@@ -53,3 +65,129 @@ class SegmentDict(TypedDict):
 # JSON store file type hints
 requests_file_t = dict[str, RequestDict]
 blocks_file_t = dict[str, SegmentDict]
+
+
+'----------------------------------------------------------------------------------'
+'                                 Solution Type Hints                              '
+'----------------------------------------------------------------------------------'
+
+
+class Statistic(TypedDict):
+    cost: float
+    distance: float
+    duration: float
+    times: dict[str, int]
+
+
+class Location(TypedDict):
+    index: int
+
+
+class Time(TypedDict):
+    arrival: str
+    departure: str
+
+
+class Stop(TypedDict):
+    location: Location
+    time: Time
+    distance: int
+    load: list[int]
+    activities: list[dict[str, str]]
+
+
+class Tour(TypedDict):
+    vehicleId: str
+    typeID: str
+    shiftIndex: int
+    stops: list[Stop]
+
+
+class Solution(TypedDict):
+    statistic: Statistic
+    tours: list[Tour]
+    unassigned: list[Any]
+
+
+'----------------------------------------------------------------------------------'
+'                                  Problem Type Hints                              '
+'----------------------------------------------------------------------------------'
+
+
+class Profile(TypedDict):
+    matrix: str
+
+
+class Costs(TypedDict):
+    fixed: int
+    distance: int
+    time: int
+
+
+class ShiftStart(TypedDict):
+    earliest: str
+    location: Location
+
+
+class ShiftEnd(TypedDict):
+    latest: str
+    location: Location
+
+
+class Shift(TypedDict):
+    start: ShiftStart
+    end: ShiftEnd
+
+
+class VehicleLimits(TypedDict):
+    shiftTime: int
+    maxDistance: int
+
+
+class Vehicle(TypedDict):
+    typeId: str
+    vehicleIds: list[str]
+    profile: Profile
+    costs: Costs
+    shifts: list[Shift]
+    capacity: list[int]
+    limits: VehicleLimits
+
+
+class VehicleProfile(TypedDict):
+    name: str
+
+
+class Fleet(TypedDict):
+    vehicles: list[Vehicle]
+    profiles: list[VehicleProfile]
+
+
+class Place(TypedDict):
+    location: Location
+    duration: int
+
+
+class Pickup(TypedDict):
+    places: list[Place]
+    demand: list[int]
+
+
+class Job(TypedDict):
+    id: str
+    pickups: list[Pickup]
+
+
+class Plan(TypedDict):
+    jobs: list[Job]
+
+
+class Problem(TypedDict):
+    plan: Plan
+    fleet: Fleet
+
+
+class DistanceMatrix(TypedDict):
+    profile: str
+    travelTimes: list[int]
+    distances: list[int]
