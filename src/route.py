@@ -1,7 +1,7 @@
 import polyline
 import requests
 
-from gps_utils import Point
+from src.gps_utils import Point
 
 SERVER = 'http://0.0.0.0:5000'
 

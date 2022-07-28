@@ -2,39 +2,17 @@ import json
 import os
 import subprocess
 import time
+from copy import deepcopy
 
 from termcolor import colored
 
-from config import (BASE_DIR, KEEP_APARTMENTS, MINS_PER_HOUSE, WALKING_M_PER_S,
-                    Costs, DistanceMatrix, Fleet, Job, Location, Pickup, Place,
-                    Plan, Problem, Profile, Shift, ShiftEnd, ShiftStart,
-                    Vehicle, VehicleLimits, VehicleProfile, blocks_file,
-                    blocks_file_t)
-from gps_utils import Point
-from house_distances import HouseDistances
-from timeline_utils import Segment
-from viz_utils import display_house_orders
-
-
-def cluster_to_houses(cluster: list[Segment]) -> dict[str, Point]:
-    # Load address_points.csv into a dictionary with address as key
-    print('Loading coordinates of houses...')
-    blocks: blocks_file_t = json.load(open(blocks_file))
-
-    houses_in_cluster: dict[str, Point] = {}
-
-    for segment in cluster:
-        try:
-            for address in blocks[segment.id]['addresses']:
-                if not KEEP_APARTMENTS and ' APT ' in address:
-                    continue
-                houses_in_cluster[address] = Point(blocks[segment.id]['addresses'][address]['lat'],
-                                                   blocks[segment.id]['addresses'][address]['lon'],
-                                                   id=address)
-        except KeyError:
-            print('Couldn\'t find segment with ID {}'.format(segment.id))
-
-    return houses_in_cluster
+from src.config import (BASE_DIR, MINS_PER_HOUSE, WALKING_M_PER_S, Costs,
+                        DistanceMatrix, Fleet, Job, Location, Pickup, Place, Plan,
+                        Problem, Profile, Shift, ShiftEnd, ShiftStart, Vehicle,
+                        VehicleLimits, VehicleProfile)
+from src.gps_utils import Point
+from src.distances.houses import HouseDistances
+from src.viz_utils import display_house_orders
 
 
 class Deserializer:
@@ -51,13 +29,10 @@ class Optimizer():
     MAX_TIME_PER_LIST = 180 * 60
     distance_matrix_save = os.path.join(BASE_DIR, 'optimize', 'distances.json')
 
-    def __init__(self, cluster: list[Segment], num_lists: int, starting_location: Point):
-        houses_in_cluster = cluster_to_houses(cluster)
-        self.points = list(houses_in_cluster.values())
+    def __init__(self, cluster: list[Point], num_lists: int, starting_location: Point):
+        self.points = deepcopy(cluster)
         self.points.append(starting_location)
         self.start_idx = len(self.points) - 1
-
-        HouseDistances(cluster, starting_location)
 
         # Construct the distance matrix file
         distance_matrix = DistanceMatrix(profile='person', travelTimes=[], distances=[])

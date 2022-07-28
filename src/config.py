@@ -13,8 +13,8 @@ node_coords_file = os.path.join(BASE_DIR, 'store', 'node_coords.json')
 address_pts_file = os.path.join(BASE_DIR, 'input', 'address_pts.csv')
 block_output_file = os.path.join(BASE_DIR, 'input', 'block_output.json')
 blocks_file = os.path.join(BASE_DIR, 'blocks.json')
-requests_file = os.path.join(BASE_DIR, 'requests.json')
 associated_file = os.path.join(BASE_DIR, 'associated.csv')
+houses_file = os.path.join(BASE_DIR, 'houses.json')
 
 '----------------------------------------------------------------------------------'
 '                                     Constants                                    '
@@ -41,13 +41,6 @@ house_t = dict[str, node_t]
 node_list_t = list[node_t]
 
 
-class RequestDict(TypedDict):
-    start: node_t
-    end: node_t
-    num_houses: int
-    nodes: node_list_t
-
-
 class HouseAssociationDict(TypedDict):
     lat: float
     lon: float
@@ -63,8 +56,8 @@ class SegmentDict(TypedDict):
 
 
 # JSON store file type hints
-requests_file_t = dict[str, RequestDict]
 blocks_file_t = dict[str, SegmentDict]
+houses_file_t = dict[str, str]
 
 
 '----------------------------------------------------------------------------------'

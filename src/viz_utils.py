@@ -8,8 +8,8 @@ import matplotlib
 import matplotlib.cm as cm
 from folium.features import DivIcon
 
-from gps_utils import Point
-from timeline_utils import Segment
+from src.gps_utils import Point
+from src.timeline_utils import Segment
 
 
 def generate_starter_map(segments: Optional[list[Segment]] = None,
@@ -24,7 +24,7 @@ def generate_starter_map(segments: Optional[list[Segment]] = None,
 
     if len(lats) == 0:
         raise RuntimeError(
-            'Unable to create map with no coordinates. Timeline population likely produced empty timelines.')
+            'Unable to create map with no coordinates. Passed in data had no points.')
 
     return folium.Map(location=[(min(lats) + max(lats)) / 2,
                                 (min(lons) + max(lons)) / 2],

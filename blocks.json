@@ -20041,14 +20041,6 @@
                 "side": true,
                 "distance_to_road": 69
             },
-            "6524 WILKINS AVE": {
-                "lat": 40.444380922601,
-                "lon": -79.9167643064846,
-                "distance_to_start": 454,
-                "distance_to_end": 316,
-                "side": true,
-                "distance_to_road": 323
-            },
             "5898 WILKINS AVE": {
                 "lat": 40.4435721096863,
                 "lon": -79.9212354175004,
@@ -20056,30 +20048,6 @@
                 "distance_to_end": 60,
                 "side": true,
                 "distance_to_road": 34
-            },
-            "6520 WILKINS AVE": {
-                "lat": 40.4443464403126,
-                "lon": -79.9168314842525,
-                "distance_to_start": 449,
-                "distance_to_end": 310,
-                "side": true,
-                "distance_to_road": 317
-            },
-            "6518 WILKINS AVE": {
-                "lat": 40.4443252677082,
-                "lon": -79.9169062774267,
-                "distance_to_start": 442,
-                "distance_to_end": 304,
-                "side": true,
-                "distance_to_road": 310
-            },
-            "6536 WILKINS AVE": {
-                "lat": 40.4443728204556,
-                "lon": -79.9160833478456,
-                "distance_to_start": 512,
-                "distance_to_end": 374,
-                "side": true,
-                "distance_to_road": 380
             },
             "5851 WILKINS AVE": {
                 "lat": 40.4441208358097,
@@ -20105,14 +20073,6 @@
                 "side": true,
                 "distance_to_road": 157
             },
-            "6533 WILKINS AVE": {
-                "lat": 40.4447601496506,
-                "lon": -79.9165137668146,
-                "distance_to_start": 474,
-                "distance_to_end": 336,
-                "side": true,
-                "distance_to_road": 354
-            },
             "6400 WILKINS AVE": {
                 "lat": 40.443926594337,
                 "lon": -79.9189689791011,
@@ -20120,22 +20080,6 @@
                 "distance_to_end": 131,
                 "side": true,
                 "distance_to_road": 131
-            },
-            "6539 WILKINS AVE": {
-                "lat": 40.4448472872993,
-                "lon": -79.9162743293788,
-                "distance_to_start": 494,
-                "distance_to_end": 356,
-                "side": true,
-                "distance_to_road": 376
-            },
-            "6537 WILKINS AVE": {
-                "lat": 40.4448377351601,
-                "lon": -79.9163444651069,
-                "distance_to_start": 488,
-                "distance_to_end": 350,
-                "side": true,
-                "distance_to_road": 370
             },
             "5859 WILKINS AVE": {
                 "lat": 40.4441842893043,
@@ -20201,38 +20145,6 @@
                 "side": true,
                 "distance_to_road": 166
             },
-            "6532 WILKINS AVE": {
-                "lat": 40.4443333702972,
-                "lon": -79.9162837027598,
-                "distance_to_start": 495,
-                "distance_to_end": 357,
-                "side": true,
-                "distance_to_road": 363
-            },
-            "6514 WILKINS AVE": {
-                "lat": 40.444215226845,
-                "lon": -79.9168441615421,
-                "distance_to_start": 448,
-                "distance_to_end": 310,
-                "side": true,
-                "distance_to_road": 314
-            },
-            "6535 WILKINS AVE": {
-                "lat": 40.4448255085159,
-                "lon": -79.9163961853297,
-                "distance_to_start": 484,
-                "distance_to_end": 346,
-                "side": true,
-                "distance_to_road": 365
-            },
-            "6541 WILKINS AVE": {
-                "lat": 40.4448591078859,
-                "lon": -79.9162150484577,
-                "distance_to_start": 499,
-                "distance_to_end": 361,
-                "side": true,
-                "distance_to_road": 381
-            },
             "6415 WILKINS AVE": {
                 "lat": 40.4444605584911,
                 "lon": -79.9184621445263,
@@ -20248,14 +20160,6 @@
                 "distance_to_end": 150,
                 "side": true,
                 "distance_to_road": 163
-            },
-            "6507 WILKINS AVE": {
-                "lat": 40.4446380608816,
-                "lon": -79.9170942273873,
-                "distance_to_start": 425,
-                "distance_to_end": 287,
-                "side": true,
-                "distance_to_road": 303
             },
             "6320 WILKINS AVE": {
                 "lat": 40.4438675460855,
@@ -24076,14 +23980,6 @@
                 "distance_to_end": 136,
                 "side": true,
                 "distance_to_road": 66
-            },
-            "5600 FORWARD AVE": {
-                "lat": 40.4275860455749,
-                "lon": -79.9269825224818,
-                "distance_to_start": 377,
-                "distance_to_end": 450,
-                "side": true,
-                "distance_to_road": 377
             },
             "5640 FORWARD AVE": {
                 "lat": 40.4284270445367,
@@ -35933,62 +35829,6 @@
                 "side": true,
                 "distance_to_road": 299
             },
-            "4131 MURRAY AVE": {
-                "lat": 40.4239817171303,
-                "lon": -79.9280477387811,
-                "distance_to_start": 375,
-                "distance_to_end": 494,
-                "side": true,
-                "distance_to_road": 404
-            },
-            "4147 MURRAY AVE": {
-                "lat": 40.4235669911734,
-                "lon": -79.9281989052946,
-                "distance_to_start": 418,
-                "distance_to_end": 537,
-                "side": true,
-                "distance_to_road": 452
-            },
-            "4123 MURRAY AVE": {
-                "lat": 40.4242103945576,
-                "lon": -79.9280213458453,
-                "distance_to_start": 355,
-                "distance_to_end": 474,
-                "side": true,
-                "distance_to_road": 380
-            },
-            "4146 MURRAY AVE": {
-                "lat": 40.4236615397184,
-                "lon": -79.9287473579159,
-                "distance_to_start": 441,
-                "distance_to_end": 561,
-                "side": true,
-                "distance_to_road": 461
-            },
-            "4152 MURRAY AVE": {
-                "lat": 40.4235541787645,
-                "lon": -79.9287618557634,
-                "distance_to_start": 451,
-                "distance_to_end": 570,
-                "side": true,
-                "distance_to_road": 472
-            },
-            "4127 MURRAY AVE": {
-                "lat": 40.4241009228743,
-                "lon": -79.9280458376584,
-                "distance_to_start": 365,
-                "distance_to_end": 485,
-                "side": true,
-                "distance_to_road": 392
-            },
-            "4112 MURRAY AVE": {
-                "lat": 40.4245992076375,
-                "lon": -79.9284143878358,
-                "distance_to_start": 346,
-                "distance_to_end": 465,
-                "side": true,
-                "distance_to_road": 355
-            },
             "4043 MURRAY AVE": {
                 "lat": 40.424980651978,
                 "lon": -79.9277418854039,
@@ -36004,30 +35844,6 @@
                 "distance_to_end": 371,
                 "side": true,
                 "distance_to_road": 264
-            },
-            "4143 MURRAY AVE": {
-                "lat": 40.4236612916974,
-                "lon": -79.9281635062715,
-                "distance_to_start": 408,
-                "distance_to_end": 527,
-                "side": true,
-                "distance_to_road": 441
-            },
-            "4136 MURRAY AVE": {
-                "lat": 40.423991997805,
-                "lon": -79.9286092811587,
-                "distance_to_start": 406,
-                "distance_to_end": 526,
-                "side": true,
-                "distance_to_road": 423
-            },
-            "4132 MURRAY AVE": {
-                "lat": 40.4240801738145,
-                "lon": -79.9285783550432,
-                "distance_to_start": 397,
-                "distance_to_end": 517,
-                "side": true,
-                "distance_to_road": 413
             },
             "3950 MURRAY AVE": {
                 "lat": 40.4264343959124,
@@ -36109,22 +35925,6 @@
                 "side": true,
                 "distance_to_road": 154
             },
-            "4134 MURRAY AVE": {
-                "lat": 40.4240184816621,
-                "lon": -79.9286755274069,
-                "distance_to_start": 408,
-                "distance_to_end": 527,
-                "side": true,
-                "distance_to_road": 422
-            },
-            "4125 MURRAY AVE": {
-                "lat": 40.4241314538483,
-                "lon": -79.9280867045846,
-                "distance_to_start": 365,
-                "distance_to_end": 484,
-                "side": true,
-                "distance_to_road": 390
-            },
             "4041 MURRAY AVE": {
                 "lat": 40.4250333035587,
                 "lon": -79.9277892156136,
@@ -36132,22 +35932,6 @@
                 "distance_to_end": 394,
                 "side": true,
                 "distance_to_road": 288
-            },
-            "4140 MURRAY AVE": {
-                "lat": 40.4238990485245,
-                "lon": -79.9287040072205,
-                "distance_to_start": 420,
-                "distance_to_end": 539,
-                "side": true,
-                "distance_to_road": 435
-            },
-            "4139 MURRAY AVE": {
-                "lat": 40.4237825714084,
-                "lon": -79.9281972416136,
-                "distance_to_start": 400,
-                "distance_to_end": 519,
-                "side": true,
-                "distance_to_road": 430
             },
             "4030 MURRAY AVE": {
                 "lat": 40.4254336419183,
@@ -36173,14 +35957,6 @@
                 "side": true,
                 "distance_to_road": 225
             },
-            "4144 MURRAY AVE": {
-                "lat": 40.4236972588953,
-                "lon": -79.9287898293391,
-                "distance_to_start": 441,
-                "distance_to_end": 560,
-                "side": true,
-                "distance_to_road": 459
-            },
             "4023 MURRAY AVE": {
                 "lat": 40.4255511148778,
                 "lon": -79.9276463989322,
@@ -36189,14 +35965,6 @@
                 "side": true,
                 "distance_to_road": 231
             },
-            "4121 MURRAY AVE": {
-                "lat": 40.4242381890503,
-                "lon": -79.9280617649703,
-                "distance_to_start": 355,
-                "distance_to_end": 474,
-                "side": true,
-                "distance_to_road": 378
-            },
             "4042 MURRAY AVE": {
                 "lat": 40.4251516521641,
                 "lon": -79.9283280273383,
@@ -36204,14 +35972,6 @@
                 "distance_to_end": 415,
                 "side": true,
                 "distance_to_road": 299
-            },
-            "4107 MURRAY AVE": {
-                "lat": 40.4246349249767,
-                "lon": -79.9279326504378,
-                "distance_to_start": 315,
-                "distance_to_end": 434,
-                "side": true,
-                "distance_to_road": 334
             },
             "4005 MURRAY AVE": {
                 "lat": 40.4260263349895,
@@ -36228,38 +35988,6 @@
                 "distance_to_end": 335,
                 "side": true,
                 "distance_to_road": 216
-            },
-            "4150 MURRAY AVE": {
-                "lat": 40.4235873914606,
-                "lon": -79.9288207736465,
-                "distance_to_start": 452,
-                "distance_to_end": 571,
-                "side": true,
-                "distance_to_road": 471
-            },
-            "4130 MURRAY AVE": {
-                "lat": 40.4241100720401,
-                "lon": -79.9286382436767,
-                "distance_to_start": 398,
-                "distance_to_end": 518,
-                "side": true,
-                "distance_to_road": 412
-            },
-            "4122 MURRAY AVE": {
-                "lat": 40.4242864570163,
-                "lon": -79.9285745959413,
-                "distance_to_start": 380,
-                "distance_to_end": 500,
-                "side": true,
-                "distance_to_road": 392
-            },
-            "4129 MURRAY AVE": {
-                "lat": 40.4240261119656,
-                "lon": -79.9281106093405,
-                "distance_to_start": 375,
-                "distance_to_end": 494,
-                "side": true,
-                "distance_to_road": 402
             },
             "4025 MURRAY AVE": {
                 "lat": 40.4254897694824,
@@ -36285,54 +36013,6 @@
                 "side": true,
                 "distance_to_road": 203
             },
-            "4145 MURRAY AVE": {
-                "lat": 40.4235938399443,
-                "lon": -79.9282457614591,
-                "distance_to_start": 418,
-                "distance_to_end": 538,
-                "side": true,
-                "distance_to_road": 451
-            },
-            "4120 MURRAY AVE": {
-                "lat": 40.4243458560331,
-                "lon": -79.9285553145775,
-                "distance_to_start": 374,
-                "distance_to_end": 494,
-                "side": true,
-                "distance_to_road": 386
-            },
-            "4114 MURRAY AVE": {
-                "lat": 40.4246019307807,
-                "lon": -79.9285175932188,
-                "distance_to_start": 351,
-                "distance_to_end": 471,
-                "side": true,
-                "distance_to_road": 359
-            },
-            "4116 MURRAY AVE": {
-                "lat": 40.4244998058656,
-                "lon": -79.9285455549618,
-                "distance_to_start": 361,
-                "distance_to_end": 481,
-                "side": true,
-                "distance_to_road": 370
-            },
-            "4118 MURRAY AVE": {
-                "lat": 40.4244437485362,
-                "lon": -79.9285624275748,
-                "distance_to_start": 367,
-                "distance_to_end": 486,
-                "side": true,
-                "distance_to_road": 376
-            },
-            "4142 MURRAY AVE": {
-                "lat": 40.4238062824322,
-                "lon": -79.9287308324752,
-                "distance_to_start": 429,
-                "distance_to_end": 548,
-                "side": true,
-                "distance_to_road": 446
-            },
             "4017 MURRAY AVE": {
                 "lat": 40.4257025136539,
                 "lon": -79.9275826599751,
@@ -36348,30 +36028,6 @@
                 "distance_to_end": 308,
                 "side": true,
                 "distance_to_road": 192
-            },
-            "4137 MURRAY AVE": {
-                "lat": 40.4238250885955,
-                "lon": -79.9281849615906,
-                "distance_to_start": 396,
-                "distance_to_end": 515,
-                "side": true,
-                "distance_to_road": 425
-            },
-            "4109 MURRAY AVE": {
-                "lat": 40.4245500937062,
-                "lon": -79.927975542959,
-                "distance_to_start": 324,
-                "distance_to_end": 444,
-                "side": true,
-                "distance_to_road": 344
-            },
-            "4100 MURRAY AVE": {
-                "lat": 40.4248886539505,
-                "lon": -79.9284125939833,
-                "distance_to_start": 322,
-                "distance_to_end": 441,
-                "side": true,
-                "distance_to_road": 327
             },
             "4033 MURRAY AVE": {
                 "lat": 40.4252537454174,
@@ -36396,14 +36052,6 @@
                 "distance_to_end": 377,
                 "side": true,
                 "distance_to_road": 258
-            },
-            "4104 MURRAY AVE": {
-                "lat": 40.4247855302658,
-                "lon": -79.9284207626076,
-                "distance_to_start": 331,
-                "distance_to_end": 450,
-                "side": true,
-                "distance_to_road": 338
             },
             "4038 MURRAY AVE": {
                 "lat": 40.425239359239,
@@ -36437,46 +36085,6 @@
                 "side": true,
                 "distance_to_road": 279
             },
-            "4110 MURRAY AVE": {
-                "lat": 40.4246798973066,
-                "lon": -79.9284310050128,
-                "distance_to_start": 340,
-                "distance_to_end": 459,
-                "side": true,
-                "distance_to_road": 348
-            },
-            "4160 MURRAY AVE": {
-                "lat": 40.4233462654552,
-                "lon": -79.9288118279462,
-                "distance_to_start": 471,
-                "distance_to_end": 590,
-                "side": true,
-                "distance_to_road": 495
-            },
-            "4157 MURRAY AVE": {
-                "lat": 40.4234324760015,
-                "lon": -79.9281536047065,
-                "distance_to_start": 426,
-                "distance_to_end": 545,
-                "side": true,
-                "distance_to_road": 465
-            },
-            "4138 MURRAY AVE": {
-                "lat": 40.4239304825873,
-                "lon": -79.9286971173279,
-                "distance_to_start": 417,
-                "distance_to_end": 536,
-                "side": true,
-                "distance_to_road": 432
-            },
-            "4117 MURRAY AVE": {
-                "lat": 40.4243318349371,
-                "lon": -79.9280464648174,
-                "distance_to_start": 346,
-                "distance_to_end": 466,
-                "side": true,
-                "distance_to_road": 368
-            },
             "4018 MURRAY AVE": {
                 "lat": 40.425733717191,
                 "lon": -79.9281269269933,
@@ -36485,22 +36093,6 @@
                 "side": true,
                 "distance_to_road": 237
             },
-            "4101 MURRAY AVE": {
-                "lat": 40.4248157265836,
-                "lon": -79.9278677048093,
-                "distance_to_start": 297,
-                "distance_to_end": 416,
-                "side": true,
-                "distance_to_road": 313
-            },
-            "4133 MURRAY AVE": {
-                "lat": 40.4239311354291,
-                "lon": -79.9281528142422,
-                "distance_to_start": 385,
-                "distance_to_end": 505,
-                "side": true,
-                "distance_to_road": 413
-            },
             "4020 MURRAY AVE": {
                 "lat": 40.4256662694251,
                 "lon": -79.9281653500046,
@@ -36508,14 +36100,6 @@
                 "distance_to_end": 363,
                 "side": true,
                 "distance_to_road": 245
-            },
-            "4124 MURRAY AVE": {
-                "lat": 40.4242101309823,
-                "lon": -79.928588658095,
-                "distance_to_start": 387,
-                "distance_to_end": 507,
-                "side": true,
-                "distance_to_road": 400
             },
             "4027 MURRAY AVE": {
                 "lat": 40.4254510660419,
@@ -36540,46 +36124,6 @@
                 "distance_to_end": 381,
                 "side": true,
                 "distance_to_road": 274
-            },
-            "4135 MURRAY AVE": {
-                "lat": 40.42389027665,
-                "lon": -79.9281644299675,
-                "distance_to_start": 389,
-                "distance_to_end": 509,
-                "side": true,
-                "distance_to_road": 418
-            },
-            "4103 MURRAY AVE": {
-                "lat": 40.4247282188655,
-                "lon": -79.9279069182068,
-                "distance_to_start": 306,
-                "distance_to_end": 425,
-                "side": true,
-                "distance_to_road": 323
-            },
-            "4113 MURRAY AVE": {
-                "lat": 40.4244475472152,
-                "lon": -79.9280113956015,
-                "distance_to_start": 335,
-                "distance_to_end": 454,
-                "side": true,
-                "distance_to_road": 355
-            },
-            "4141 MURRAY AVE": {
-                "lat": 40.4237058362974,
-                "lon": -79.928218477819,
-                "distance_to_start": 407,
-                "distance_to_end": 527,
-                "side": true,
-                "distance_to_road": 438
-            },
-            "4154 MURRAY AVE": {
-                "lat": 40.423475953986,
-                "lon": -79.9288329837764,
-                "distance_to_start": 462,
-                "distance_to_end": 581,
-                "side": true,
-                "distance_to_road": 482
             },
             "4036 MURRAY AVE": {
                 "lat": 40.4253275892304,
@@ -37203,22 +36747,6 @@
                 "side": true,
                 "distance_to_road": 29
             },
-            "3530 BEECHWOOD BLVD": {
-                "lat": 40.4237426780412,
-                "lon": -79.9270505417636,
-                "distance_to_start": 418,
-                "distance_to_end": 304,
-                "side": true,
-                "distance_to_road": 458
-            },
-            "3547 BEECHWOOD BLVD": {
-                "lat": 40.423997548626,
-                "lon": -79.9275501613006,
-                "distance_to_start": 469,
-                "distance_to_end": 354,
-                "side": true,
-                "distance_to_road": 487
-            },
             "3448 BEECHWOOD BLVD": {
                 "lat": 40.4211649703427,
                 "lon": -79.9271333647954,
@@ -37226,126 +36754,6 @@
                 "distance_to_end": 115,
                 "side": true,
                 "distance_to_road": 172
-            },
-            "3516 BEECHWOOD BLVD": {
-                "lat": 40.4232496324764,
-                "lon": -79.9271905642101,
-                "distance_to_start": 390,
-                "distance_to_end": 275,
-                "side": true,
-                "distance_to_road": 403
-            },
-            "3549 BEECHWOOD BLVD": {
-                "lat": 40.4240319088837,
-                "lon": -79.927540962957,
-                "distance_to_start": 471,
-                "distance_to_end": 356,
-                "side": true,
-                "distance_to_road": 491
-            },
-            "3533 BEECHWOOD BLVD": {
-                "lat": 40.4236103278427,
-                "lon": -79.9275751430667,
-                "distance_to_start": 441,
-                "distance_to_end": 327,
-                "side": true,
-                "distance_to_road": 444
-            },
-            "3528 BEECHWOOD BLVD": {
-                "lat": 40.4236358400074,
-                "lon": -79.926993560059,
-                "distance_to_start": 407,
-                "distance_to_end": 292,
-                "side": true,
-                "distance_to_road": 446
-            },
-            "3525 BEECHWOOD BLVD": {
-                "lat": 40.4233706508055,
-                "lon": -79.9276751942863,
-                "distance_to_start": 429,
-                "distance_to_end": 315,
-                "side": true,
-                "distance_to_road": 419
-            },
-            "3529 BEECHWOOD BLVD": {
-                "lat": 40.4234919363216,
-                "lon": -79.9276212630727,
-                "distance_to_start": 435,
-                "distance_to_end": 320,
-                "side": true,
-                "distance_to_road": 432
-            },
-            "3521 BEECHWOOD BLVD": {
-                "lat": 40.4232814344753,
-                "lon": -79.9277614185961,
-                "distance_to_start": 428,
-                "distance_to_end": 313,
-                "side": true,
-                "distance_to_road": 410
-            },
-            "3543 BEECHWOOD BLVD": {
-                "lat": 40.4239099838294,
-                "lon": -79.9275633007686,
-                "distance_to_start": 463,
-                "distance_to_end": 348,
-                "side": true,
-                "distance_to_road": 478
-            },
-            "3531 BEECHWOOD BLVD": {
-                "lat": 40.4236053377017,
-                "lon": -79.9276504323594,
-                "distance_to_start": 445,
-                "distance_to_end": 331,
-                "side": true,
-                "distance_to_road": 444
-            },
-            "3537 BEECHWOOD BLVD": {
-                "lat": 40.4237010032862,
-                "lon": -79.9275863335847,
-                "distance_to_start": 449,
-                "distance_to_end": 334,
-                "side": true,
-                "distance_to_road": 455
-            },
-            "3539 BEECHWOOD BLVD": {
-                "lat": 40.4238191348373,
-                "lon": -79.9275976899537,
-                "distance_to_start": 458,
-                "distance_to_end": 344,
-                "side": true,
-                "distance_to_road": 468
-            },
-            "3552 BEECHWOOD BLVD": {
-                "lat": 40.4241119464763,
-                "lon": -79.926980177309,
-                "distance_to_start": 442,
-                "distance_to_end": 327,
-                "side": true,
-                "distance_to_road": 499
-            },
-            "3548 BEECHWOOD BLVD": {
-                "lat": 40.4239899533951,
-                "lon": -79.9270279801213,
-                "distance_to_start": 436,
-                "distance_to_end": 321,
-                "side": true,
-                "distance_to_road": 485
-            },
-            "3532 BEECHWOOD BLVD": {
-                "lat": 40.4236110037948,
-                "lon": -79.9270876115623,
-                "distance_to_start": 411,
-                "distance_to_end": 296,
-                "side": true,
-                "distance_to_road": 443
-            },
-            "3542 BEECHWOOD BLVD": {
-                "lat": 40.4238602466897,
-                "lon": -79.9270334954766,
-                "distance_to_start": 426,
-                "distance_to_end": 312,
-                "side": true,
-                "distance_to_road": 471
             },
             "3449 BEECHWOOD BLVD": {
                 "lat": 40.4211517018718,
@@ -37363,14 +36771,6 @@
                 "side": true,
                 "distance_to_road": 177
             },
-            "3518 BEECHWOOD BLVD": {
-                "lat": 40.4233130169926,
-                "lon": -79.927192968843,
-                "distance_to_start": 395,
-                "distance_to_end": 280,
-                "side": true,
-                "distance_to_road": 410
-            },
             "3477 BEECHWOOD BLVD": {
                 "lat": 40.4219692839686,
                 "lon": -79.9279461361395,
@@ -37378,30 +36778,6 @@
                 "distance_to_end": 226,
                 "side": true,
                 "distance_to_road": 269
-            },
-            "3514 BEECHWOOD BLVD": {
-                "lat": 40.4231966743822,
-                "lon": -79.9272032269144,
-                "distance_to_start": 387,
-                "distance_to_end": 272,
-                "side": true,
-                "distance_to_road": 397
-            },
-            "3487 BEECHWOOD BLVD": {
-                "lat": 40.4224214019031,
-                "lon": -79.9279962972505,
-                "distance_to_start": 378,
-                "distance_to_end": 263,
-                "side": true,
-                "distance_to_road": 319
-            },
-            "3526 BEECHWOOD BLVD": {
-                "lat": 40.4237419016244,
-                "lon": -79.9270480012267,
-                "distance_to_start": 418,
-                "distance_to_end": 304,
-                "side": true,
-                "distance_to_road": 458
             },
             "3458 BEECHWOOD BLVD": {
                 "lat": 40.4214714278406,
@@ -37435,30 +36811,6 @@
                 "side": true,
                 "distance_to_road": 248
             },
-            "3492 BEECHWOOD BLVD": {
-                "lat": 40.4224492836643,
-                "lon": -79.9273037834152,
-                "distance_to_start": 337,
-                "distance_to_end": 222,
-                "side": true,
-                "distance_to_road": 314
-            },
-            "3522 BEECHWOOD BLVD": {
-                "lat": 40.4233856460994,
-                "lon": -79.9271126764421,
-                "distance_to_start": 395,
-                "distance_to_end": 281,
-                "side": true,
-                "distance_to_road": 418
-            },
-            "3491 BEECHWOOD BLVD": {
-                "lat": 40.4225094453179,
-                "lon": -79.9279869236678,
-                "distance_to_start": 384,
-                "distance_to_end": 269,
-                "side": true,
-                "distance_to_road": 328
-            },
             "3484 BEECHWOOD BLVD": {
                 "lat": 40.4221973795983,
                 "lon": -79.9273387689745,
@@ -37466,22 +36818,6 @@
                 "distance_to_end": 205,
                 "side": true,
                 "distance_to_road": 287
-            },
-            "3490 BEECHWOOD BLVD": {
-                "lat": 40.4223615893432,
-                "lon": -79.9273092168202,
-                "distance_to_start": 330,
-                "distance_to_end": 216,
-                "side": true,
-                "distance_to_road": 305
-            },
-            "3527 BEECHWOOD BLVD": {
-                "lat": 40.4234872478157,
-                "lon": -79.9276951250546,
-                "distance_to_start": 439,
-                "distance_to_end": 325,
-                "side": true,
-                "distance_to_road": 432
             },
             "3465 BEECHWOOD BLVD": {
                 "lat": 40.421564624115,
@@ -37491,22 +36827,6 @@
                 "side": true,
                 "distance_to_road": 225
             },
-            "3524 BEECHWOOD BLVD": {
-                "lat": 40.4234837888667,
-                "lon": -79.9270773987927,
-                "distance_to_start": 400,
-                "distance_to_end": 286,
-                "side": true,
-                "distance_to_road": 429
-            },
-            "3498 BEECHWOOD BLVD": {
-                "lat": 40.4226963967165,
-                "lon": -79.927289840435,
-                "distance_to_start": 354,
-                "distance_to_end": 240,
-                "side": true,
-                "distance_to_road": 342
-            },
             "3475 BEECHWOOD BLVD": {
                 "lat": 40.4218706844744,
                 "lon": -79.9279619950423,
@@ -37514,14 +36834,6 @@
                 "distance_to_end": 220,
                 "side": true,
                 "distance_to_road": 259
-            },
-            "3503 BEECHWOOD BLVD": {
-                "lat": 40.4228686707151,
-                "lon": -79.9279395960545,
-                "distance_to_start": 408,
-                "distance_to_end": 293,
-                "side": true,
-                "distance_to_road": 367
             },
             "3466 BEECHWOOD BLVD": {
                 "lat": 40.4217147720767,
@@ -37531,14 +36843,6 @@
                 "side": true,
                 "distance_to_road": 233
             },
-            "3515 BEECHWOOD BLVD": {
-                "lat": 40.4232218799124,
-                "lon": -79.92778895842,
-                "distance_to_start": 425,
-                "distance_to_end": 311,
-                "side": true,
-                "distance_to_road": 403
-            },
             "3452 BEECHWOOD BLVD": {
                 "lat": 40.4213030194176,
                 "lon": -79.9272535045577,
@@ -37546,14 +36850,6 @@
                 "distance_to_end": 133,
                 "side": true,
                 "distance_to_road": 187
-            },
-            "3523 BEECHWOOD BLVD": {
-                "lat": 40.4233933477316,
-                "lon": -79.9277675459213,
-                "distance_to_start": 437,
-                "distance_to_end": 322,
-                "side": true,
-                "distance_to_road": 422
             },
             "3460 BEECHWOOD BLVD": {
                 "lat": 40.4215458415427,
@@ -37579,14 +36875,6 @@
                 "side": true,
                 "distance_to_road": 242
             },
-            "3485 BEECHWOOD BLVD": {
-                "lat": 40.4223381534379,
-                "lon": -79.9279989994789,
-                "distance_to_start": 372,
-                "distance_to_end": 257,
-                "side": true,
-                "distance_to_road": 310
-            },
             "3476 BEECHWOOD BLVD": {
                 "lat": 40.4219527903798,
                 "lon": -79.9273790199658,
@@ -37594,14 +36882,6 @@
                 "distance_to_end": 189,
                 "side": true,
                 "distance_to_road": 260
-            },
-            "3481 BEECHWOOD BLVD": {
-                "lat": 40.4222576967521,
-                "lon": -79.9279845468346,
-                "distance_to_start": 365,
-                "distance_to_end": 250,
-                "side": true,
-                "distance_to_road": 301
             },
             "3423 BEECHWOOD BLVD": {
                 "lat": 40.4205293593858,
@@ -37627,14 +36907,6 @@
                 "side": true,
                 "distance_to_road": 64
             },
-            "3500 BEECHWOOD BLVD": {
-                "lat": 40.4228136175929,
-                "lon": -79.9273349402789,
-                "distance_to_start": 366,
-                "distance_to_end": 252,
-                "side": true,
-                "distance_to_road": 355
-            },
             "3454 BEECHWOOD BLVD": {
                 "lat": 40.4213913751397,
                 "lon": -79.9272567148806,
@@ -37651,22 +36923,6 @@
                 "side": true,
                 "distance_to_road": 238
             },
-            "3494 BEECHWOOD BLVD": {
-                "lat": 40.4225214548458,
-                "lon": -79.9273061121233,
-                "distance_to_start": 342,
-                "distance_to_end": 228,
-                "side": true,
-                "distance_to_road": 322
-            },
-            "3496 BEECHWOOD BLVD": {
-                "lat": 40.4226087536697,
-                "lon": -79.9273071325438,
-                "distance_to_start": 349,
-                "distance_to_end": 234,
-                "side": true,
-                "distance_to_road": 332
-            },
             "3464 BEECHWOOD BLVD": {
                 "lat": 40.4216278087589,
                 "lon": -79.927328653786,
@@ -37674,14 +36930,6 @@
                 "distance_to_end": 162,
                 "side": true,
                 "distance_to_road": 223
-            },
-            "3504 BEECHWOOD BLVD": {
-                "lat": 40.4229208127844,
-                "lon": -79.9272855851745,
-                "distance_to_start": 371,
-                "distance_to_end": 257,
-                "side": true,
-                "distance_to_road": 367
             },
             "3459 BEECHWOOD BLVD": {
                 "lat": 40.4213943080657,
@@ -37827,14 +37075,6 @@
                 "side": true,
                 "distance_to_road": 87
             },
-            "3502 BEECHWOOD BLVD": {
-                "lat": 40.4229414620203,
-                "lon": -79.9273408618689,
-                "distance_to_start": 376,
-                "distance_to_end": 262,
-                "side": true,
-                "distance_to_road": 369
-            },
             "3422 BEECHWOOD BLVD": {
                 "lat": 40.4203713470574,
                 "lon": -79.9270208163993,
@@ -37864,444 +37104,6 @@
             {
                 "lat": 40.4196206,
                 "lon": -79.9271582
-            }
-        ]
-    },
-    "104681145:105085045:0": {
-        "addresses": {
-            "960 LILAC ST": {
-                "lat": 40.423829434281,
-                "lon": -79.9309965404685,
-                "distance_to_start": 387,
-                "distance_to_end": 491,
-                "side": true,
-                "distance_to_road": 411
-            },
-            "970 LILAC ST": {
-                "lat": 40.4236738134534,
-                "lon": -79.9306437190672,
-                "distance_to_start": 359,
-                "distance_to_end": 464,
-                "side": true,
-                "distance_to_road": 379
-            },
-            "938 LILAC ST": {
-                "lat": 40.4241936673469,
-                "lon": -79.9317455795722,
-                "distance_to_start": 443,
-                "distance_to_end": 548,
-                "side": true,
-                "distance_to_road": 483
-            },
-            "1036 LILAC ST": {
-                "lat": 40.4230482598205,
-                "lon": -79.9282594067978,
-                "distance_to_start": 169,
-                "distance_to_end": 274,
-                "side": true,
-                "distance_to_road": 171
-            },
-            "933 1/2 LILAC ST": {
-                "lat": 40.424504534851,
-                "lon": -79.9316999405989,
-                "distance_to_start": 435,
-                "distance_to_end": 540,
-                "side": true,
-                "distance_to_road": 489
-            },
-            "969 LILAC ST": {
-                "lat": 40.4239085535427,
-                "lon": -79.9303106982232,
-                "distance_to_start": 328,
-                "distance_to_end": 433,
-                "side": true,
-                "distance_to_road": 357
-            },
-            "975 LILAC ST": {
-                "lat": 40.4238680043528,
-                "lon": -79.9301168089013,
-                "distance_to_start": 312,
-                "distance_to_end": 417,
-                "side": true,
-                "distance_to_road": 340
-            },
-            "947 LILAC ST": {
-                "lat": 40.4242283810653,
-                "lon": -79.9310414130741,
-                "distance_to_start": 384,
-                "distance_to_end": 489,
-                "side": true,
-                "distance_to_road": 426
-            },
-            "937 LILAC ST": {
-                "lat": 40.4244008960118,
-                "lon": -79.931459097499,
-                "distance_to_start": 416,
-                "distance_to_end": 521,
-                "side": true,
-                "distance_to_road": 466
-            },
-            "973 LILAC ST": {
-                "lat": 40.4238783093764,
-                "lon": -79.930240019152,
-                "distance_to_start": 322,
-                "distance_to_end": 427,
-                "side": true,
-                "distance_to_road": 350
-            },
-            "939 LILAC ST": {
-                "lat": 40.4243378904227,
-                "lon": -79.9313057986119,
-                "distance_to_start": 404,
-                "distance_to_end": 509,
-                "side": true,
-                "distance_to_road": 451
-            },
-            "953 LILAC ST": {
-                "lat": 40.4241576601508,
-                "lon": -79.9308749309288,
-                "distance_to_start": 371,
-                "distance_to_end": 476,
-                "side": true,
-                "distance_to_road": 410
-            },
-            "936 LILAC ST": {
-                "lat": 40.4241313575385,
-                "lon": -79.9317590151025,
-                "distance_to_start": 446,
-                "distance_to_end": 551,
-                "side": true,
-                "distance_to_road": 482
-            },
-            "976 LILAC ST": {
-                "lat": 40.4236306504382,
-                "lon": -79.9305593284906,
-                "distance_to_start": 353,
-                "distance_to_end": 458,
-                "side": true,
-                "distance_to_road": 371
-            },
-            "992 LILAC ST": {
-                "lat": 40.4233830725692,
-                "lon": -79.929913953026,
-                "distance_to_start": 303,
-                "distance_to_end": 408,
-                "side": true,
-                "distance_to_road": 313
-            },
-            "963 LILAC ST": {
-                "lat": 40.4240238113271,
-                "lon": -79.9305616144914,
-                "distance_to_start": 347,
-                "distance_to_end": 452,
-                "side": true,
-                "distance_to_road": 381
-            },
-            "962 LILAC ST": {
-                "lat": 40.423724738001,
-                "lon": -79.9309424977967,
-                "distance_to_start": 384,
-                "distance_to_end": 489,
-                "side": true,
-                "distance_to_road": 405
-            },
-            "959 LILAC ST": {
-                "lat": 40.4240716815534,
-                "lon": -79.9306731044384,
-                "distance_to_start": 355,
-                "distance_to_end": 460,
-                "side": true,
-                "distance_to_road": 391
-            },
-            "974 LILAC ST": {
-                "lat": 40.4236088551327,
-                "lon": -79.9305065274686,
-                "distance_to_start": 349,
-                "distance_to_end": 454,
-                "side": true,
-                "distance_to_road": 366
-            },
-            "935 LILAC ST": {
-                "lat": 40.4244682074818,
-                "lon": -79.9316024761814,
-                "distance_to_start": 427,
-                "distance_to_end": 532,
-                "side": true,
-                "distance_to_road": 480
-            },
-            "951 LILAC ST": {
-                "lat": 40.4241823443592,
-                "lon": -79.9309346521641,
-                "distance_to_start": 376,
-                "distance_to_end": 481,
-                "side": true,
-                "distance_to_road": 416
-            },
-            "981 LILAC ST": {
-                "lat": 40.4237805265313,
-                "lon": -79.9300234426153,
-                "distance_to_start": 306,
-                "distance_to_end": 411,
-                "side": true,
-                "distance_to_road": 330
-            },
-            "967 LILAC ST": {
-                "lat": 40.4239632902757,
-                "lon": -79.9304220513276,
-                "distance_to_start": 336,
-                "distance_to_end": 441,
-                "side": true,
-                "distance_to_road": 368
-            },
-            "965 LILAC ST": {
-                "lat": 40.4240004176732,
-                "lon": -79.9305062471904,
-                "distance_to_start": 343,
-                "distance_to_end": 448,
-                "side": true,
-                "distance_to_road": 376
-            },
-            "968 LILAC ST": {
-                "lat": 40.4236586910727,
-                "lon": -79.9306593983188,
-                "distance_to_start": 361,
-                "distance_to_end": 466,
-                "side": true,
-                "distance_to_road": 380
-            },
-            "955 LILAC ST": {
-                "lat": 40.4241190160218,
-                "lon": -79.9307838593586,
-                "distance_to_start": 364,
-                "distance_to_end": 469,
-                "side": true,
-                "distance_to_road": 402
-            },
-            "943 LILAC ST": {
-                "lat": 40.4242767864748,
-                "lon": -79.9311536388891,
-                "distance_to_start": 392,
-                "distance_to_end": 497,
-                "side": true,
-                "distance_to_road": 437
-            },
-            "932 LILAC ST": {
-                "lat": 40.4241361969857,
-                "lon": -79.9319244452236,
-                "distance_to_start": 459,
-                "distance_to_end": 564,
-                "side": true,
-                "distance_to_road": 496
-            },
-            "1111 LILAC ST": {
-                "lat": 40.4231882061397,
-                "lon": -79.9269094173617,
-                "distance_to_start": 54,
-                "distance_to_end": 159,
-                "side": true,
-                "distance_to_road": 57
-            },
-            "990 LILAC ST": {
-                "lat": 40.4234145317451,
-                "lon": -79.9300220374186,
-                "distance_to_start": 311,
-                "distance_to_end": 416,
-                "side": true,
-                "distance_to_road": 322
-            },
-            "986 LILAC ST": {
-                "lat": 40.423459718965,
-                "lon": -79.9301011034662,
-                "distance_to_start": 317,
-                "distance_to_end": 422,
-                "side": true,
-                "distance_to_road": 330
-            },
-            "1009 LILAC ST": {
-                "lat": 40.4233958887359,
-                "lon": -79.92909836385,
-                "distance_to_start": 234,
-                "distance_to_end": 339,
-                "side": true,
-                "distance_to_road": 244
-            },
-            "980 LILAC ST": {
-                "lat": 40.423540330492,
-                "lon": -79.9302819145825,
-                "distance_to_start": 331,
-                "distance_to_end": 436,
-                "side": true,
-                "distance_to_road": 346
-            },
-            "1115 LILAC ST": {
-                "lat": 40.4232030996674,
-                "lon": -79.9267748064206,
-                "distance_to_start": 42,
-                "distance_to_end": 147,
-                "side": true,
-                "distance_to_road": 47
-            },
-            "1114 LILAC ST": {
-                "lat": 40.4229104178756,
-                "lon": -79.9268900367049,
-                "distance_to_start": 57,
-                "distance_to_end": 162,
-                "side": true,
-                "distance_to_road": 58
-            },
-            "966 LILAC ST": {
-                "lat": 40.4236655777679,
-                "lon": -79.9308036955651,
-                "distance_to_start": 373,
-                "distance_to_end": 478,
-                "side": true,
-                "distance_to_road": 392
-            },
-            "961 LILAC ST": {
-                "lat": 40.4240467158313,
-                "lon": -79.9306137338292,
-                "distance_to_start": 351,
-                "distance_to_end": 456,
-                "side": true,
-                "distance_to_road": 386
-            },
-            "957 LILAC ST": {
-                "lat": 40.4240963843903,
-                "lon": -79.9307317487234,
-                "distance_to_start": 360,
-                "distance_to_end": 465,
-                "side": true,
-                "distance_to_road": 397
-            },
-            "964 LILAC ST": {
-                "lat": 40.4236979275299,
-                "lon": -79.9308791141826,
-                "distance_to_start": 379,
-                "distance_to_end": 484,
-                "side": true,
-                "distance_to_road": 399
-            },
-            "949 LILAC ST": {
-                "lat": 40.424206566556,
-                "lon": -79.9309896882019,
-                "distance_to_start": 380,
-                "distance_to_end": 485,
-                "side": true,
-                "distance_to_road": 421
-            },
-            "945 LILAC ST": {
-                "lat": 40.4242536125792,
-                "lon": -79.9311011521266,
-                "distance_to_start": 388,
-                "distance_to_end": 493,
-                "side": true,
-                "distance_to_road": 432
-            },
-            "958 LILAC ST": {
-                "lat": 40.4238143226957,
-                "lon": -79.9310115021573,
-                "distance_to_start": 388,
-                "distance_to_end": 493,
-                "side": true,
-                "distance_to_road": 412
-            },
-            "941 LILAC ST": {
-                "lat": 40.4243131539816,
-                "lon": -79.9312489492683,
-                "distance_to_start": 400,
-                "distance_to_end": 505,
-                "side": true,
-                "distance_to_road": 446
-            },
-            "978 LILAC ST": {
-                "lat": 40.4235868763564,
-                "lon": -79.9303908452461,
-                "distance_to_start": 340,
-                "distance_to_end": 445,
-                "side": true,
-                "distance_to_road": 356
-            },
-            "996 LILAC ST": {
-                "lat": 40.4233299946551,
-                "lon": -79.9298019370284,
-                "distance_to_start": 294,
-                "distance_to_end": 399,
-                "side": true,
-                "distance_to_road": 303
-            },
-            "984 LILAC ST": {
-                "lat": 40.4235090023824,
-                "lon": -79.9302104818426,
-                "distance_to_start": 326,
-                "distance_to_end": 431,
-                "side": true,
-                "distance_to_road": 340
-            },
-            "6502 LILAC ST": {
-                "lat": 40.4234185730106,
-                "lon": -79.9257170232447,
-                "distance_to_start": 50,
-                "distance_to_end": 55,
-                "side": false,
-                "distance_to_road": 31
-            },
-            "937 1/2 LILAC ST": {
-                "lat": 40.4243711205402,
-                "lon": -79.9313949782848,
-                "distance_to_start": 411,
-                "distance_to_end": 516,
-                "side": true,
-                "distance_to_road": 460
-            },
-            "935 1/2 LILAC ST": {
-                "lat": 40.4244419760114,
-                "lon": -79.9315400309413,
-                "distance_to_start": 422,
-                "distance_to_end": 527,
-                "side": true,
-                "distance_to_road": 474
-            },
-            "933 LILAC ST": {
-                "lat": 40.4245284731997,
-                "lon": -79.9317576332331,
-                "distance_to_start": 439,
-                "distance_to_end": 544,
-                "side": true,
-                "distance_to_road": 494
-            },
-            "1011 LILAC ST": {
-                "lat": 40.4233841688849,
-                "lon": -79.9290246935733,
-                "distance_to_start": 228,
-                "distance_to_end": 333,
-                "side": true,
-                "distance_to_road": 238
-            },
-            "1013 LILAC ST": {
-                "lat": 40.4233600815118,
-                "lon": -79.9289116388242,
-                "distance_to_start": 219,
-                "distance_to_end": 324,
-                "side": true,
-                "distance_to_road": 228
-            },
-            "1039 LILAC ST": {
-                "lat": 40.4232191191599,
-                "lon": -79.9280466058057,
-                "distance_to_start": 149,
-                "distance_to_end": 254,
-                "side": true,
-                "distance_to_road": 153
-            }
-        },
-        "nodes": [
-            {
-                "lat": 40.4230808,
-                "lon": -79.9262482
-            },
-            {
-                "lat": 40.4232188,
-                "lon": -79.9250243
             }
         ]
     },
@@ -51768,6 +50570,92 @@
             {
                 "lat": 40.4399238,
                 "lon": -79.9206036
+            }
+        ]
+    },
+    "104681145:105085045:0": {
+        "addresses": {
+            "1036 LILAC ST": {
+                "lat": 40.4230482598205,
+                "lon": -79.9282594067978,
+                "distance_to_start": 169,
+                "distance_to_end": 274,
+                "side": true,
+                "distance_to_road": 171
+            },
+            "1111 LILAC ST": {
+                "lat": 40.4231882061397,
+                "lon": -79.9269094173617,
+                "distance_to_start": 54,
+                "distance_to_end": 159,
+                "side": true,
+                "distance_to_road": 57
+            },
+            "1009 LILAC ST": {
+                "lat": 40.4233958887359,
+                "lon": -79.92909836385,
+                "distance_to_start": 234,
+                "distance_to_end": 339,
+                "side": true,
+                "distance_to_road": 244
+            },
+            "1115 LILAC ST": {
+                "lat": 40.4232030996674,
+                "lon": -79.9267748064206,
+                "distance_to_start": 42,
+                "distance_to_end": 147,
+                "side": true,
+                "distance_to_road": 47
+            },
+            "1114 LILAC ST": {
+                "lat": 40.4229104178756,
+                "lon": -79.9268900367049,
+                "distance_to_start": 57,
+                "distance_to_end": 162,
+                "side": true,
+                "distance_to_road": 58
+            },
+            "6502 LILAC ST": {
+                "lat": 40.4234185730106,
+                "lon": -79.9257170232447,
+                "distance_to_start": 50,
+                "distance_to_end": 55,
+                "side": false,
+                "distance_to_road": 31
+            },
+            "1011 LILAC ST": {
+                "lat": 40.4233841688849,
+                "lon": -79.9290246935733,
+                "distance_to_start": 228,
+                "distance_to_end": 333,
+                "side": true,
+                "distance_to_road": 238
+            },
+            "1013 LILAC ST": {
+                "lat": 40.4233600815118,
+                "lon": -79.9289116388242,
+                "distance_to_start": 219,
+                "distance_to_end": 324,
+                "side": true,
+                "distance_to_road": 228
+            },
+            "1039 LILAC ST": {
+                "lat": 40.4232191191599,
+                "lon": -79.9280466058057,
+                "distance_to_start": 149,
+                "distance_to_end": 254,
+                "side": true,
+                "distance_to_road": 153
+            }
+        },
+        "nodes": [
+            {
+                "lat": 40.4230808,
+                "lon": -79.9262482
+            },
+            {
+                "lat": 40.4232188,
+                "lon": -79.9250243
             }
         ]
     },
@@ -78116,14 +77004,6 @@
                 "distance_to_end": 177,
                 "side": false,
                 "distance_to_road": 46
-            },
-            "4420 BROWNS HILL RD": {
-                "lat": 40.4190783070536,
-                "lon": -79.9274428109233,
-                "distance_to_start": 463,
-                "distance_to_end": 719,
-                "side": true,
-                "distance_to_road": 463
             },
             "4664 BROWNS HILL RD": {
                 "lat": 40.4144998804443,
