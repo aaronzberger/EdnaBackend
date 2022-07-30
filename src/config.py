@@ -24,12 +24,13 @@ houses_file = os.path.join(BASE_DIR, 'houses.json')
 MAX_NODE_STORAGE_DISTANCE = 1600
 ARBITRARY_LARGE_DISTANCE = 10000
 MAX_TIMELINE_MINS = 180
-WALKING_M_PER_S = 1
-MINS_PER_HOUSE = 2
+WALKING_M_PER_S = 0.75
+MINS_PER_HOUSE = 1.5
 CLUSTERING_CONNECTED_THRESHOLD = 100  # Meters where blocks are connected
 KEEP_APARTMENTS = False
-DIFFERENT_SEGMENT_ADDITION = 30
-DIFFERENT_SIDE_ADDITION = 10
+DIFFERENT_SEGMENT_ADDITION = 20
+DIFFERENT_SIDE_ADDITION = 15
+MAX_HOUSES_PER_LIST = None
 
 '----------------------------------------------------------------------------------'
 '                                       Type Hints                                 '
@@ -161,14 +162,13 @@ class Place(TypedDict):
     duration: int
 
 
-class Pickup(TypedDict):
+class Service(TypedDict):
     places: list[Place]
-    demand: list[int]
 
 
 class Job(TypedDict):
     id: str
-    pickups: list[Pickup]
+    services: list[Service]
 
 
 class Plan(TypedDict):

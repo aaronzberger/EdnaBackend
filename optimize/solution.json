@@ -1,0 +1,5865 @@
+{
+  "statistic": {
+    "cost": 4507.0,
+    "distance": 361,
+    "duration": 1382,
+    "times": {
+      "driving": 482,
+      "serving": 900,
+      "waiting": 0,
+      "break": 0,
+      "commuting": 0,
+      "parking": 0
+    }
+  },
+  "tours": [
+    {
+      "vehicleId": "walker_3",
+      "typeId": "person",
+      "shiftIndex": 0,
+      "stops": [
+        {
+          "location": {
+            "index": 632
+          },
+          "time": {
+            "arrival": "2022-08-01T05:00:00Z",
+            "departure": "2022-08-01T05:00:00Z"
+          },
+          "distance": 0,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "departure",
+              "type": "departure"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 499
+          },
+          "time": {
+            "arrival": "2022-08-01T05:01:07Z",
+            "departure": "2022-08-01T05:02:37Z"
+          },
+          "distance": 50,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "1509 SHADY AVE",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 498
+          },
+          "time": {
+            "arrival": "2022-08-01T05:02:56Z",
+            "departure": "2022-08-01T05:04:26Z"
+          },
+          "distance": 64,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "1515 SHADY AVE",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 505
+          },
+          "time": {
+            "arrival": "2022-08-01T05:05:09Z",
+            "departure": "2022-08-01T05:06:39Z"
+          },
+          "distance": 96,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "1525 SHADY AVE",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 497
+          },
+          "time": {
+            "arrival": "2022-08-01T05:07:02Z",
+            "departure": "2022-08-01T05:08:32Z"
+          },
+          "distance": 113,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "1528 SHADY AVE",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 508
+          },
+          "time": {
+            "arrival": "2022-08-01T05:08:48Z",
+            "departure": "2022-08-01T05:10:18Z"
+          },
+          "distance": 125,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "1524 SHADY AVE",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 507
+          },
+          "time": {
+            "arrival": "2022-08-01T05:10:33Z",
+            "departure": "2022-08-01T05:12:03Z"
+          },
+          "distance": 136,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "1520 SHADY AVE",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 500
+          },
+          "time": {
+            "arrival": "2022-08-01T05:12:19Z",
+            "departure": "2022-08-01T05:13:49Z"
+          },
+          "distance": 148,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "1516 SHADY AVE",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 502
+          },
+          "time": {
+            "arrival": "2022-08-01T05:14:22Z",
+            "departure": "2022-08-01T05:15:52Z"
+          },
+          "distance": 173,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "1506 SHADY AVE",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 131
+          },
+          "time": {
+            "arrival": "2022-08-01T05:18:33Z",
+            "departure": "2022-08-01T05:20:03Z"
+          },
+          "distance": 294,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "1450 SHADY AVE",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 130
+          },
+          "time": {
+            "arrival": "2022-08-01T05:20:59Z",
+            "departure": "2022-08-01T05:22:29Z"
+          },
+          "distance": 336,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "1466 SHADY AVE",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 632
+          },
+          "time": {
+            "arrival": "2022-08-01T05:23:02Z",
+            "departure": "2022-08-01T05:23:02Z"
+          },
+          "distance": 361,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "arrival",
+              "type": "arrival"
+            }
+          ]
+        }
+      ],
+      "statistic": {
+        "cost": 4507.0,
+        "distance": 361,
+        "duration": 1382,
+        "times": {
+          "driving": 482,
+          "serving": 900,
+          "waiting": 0,
+          "break": 0,
+          "commuting": 0,
+          "parking": 0
+        }
+      }
+    }
+  ],
+  "unassigned": [
+    {
+      "jobId": "6524 DALZELL PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1348 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6615 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6716 BEACON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6540 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1421 WIGHTMAN ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1433 SEVERN ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1348 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6520 DALZELL PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5856 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1401 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6544 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1332 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1425 WIGHTMAN ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6626 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5833 FERREE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5837 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1453 WIGHTMAN ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5886 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6519 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6680 RIDGEVILLE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6688 KINSMAN RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6743 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1606 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6401 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5733 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5842 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5734 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1460 BARNSDALE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6666 WOODWELL ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6704 BEACON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5888 MARLBOROUGH AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5725 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1540 SHADY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1532 ASBURY PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6535 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1639 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1420 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6654 KINSMAN RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6526 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5708 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5874 SHADY FORBES TER",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1618 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1437 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6658 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1659 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1545 SHADY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "3 FORBES TER",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5848 SOLWAY ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6613 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1932 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1814 SHADY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5801 MARLBOROUGH AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6506 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6635 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6672 RIDGEVILLE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "606 WORTH ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1512 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5810 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5727 SOLWAY ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1504 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5821 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6603 DALZELL PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1950 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6522 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5821 FERREE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5890 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1954 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1309 SHADY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5881 SHADY FORBES TER",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1759 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1682 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6607 DALZELL PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5867 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6511 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6529 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1205 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6625 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6420 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5710 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5701 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6557 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6407 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1231 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1886 SHAW AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6516 BEACON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1265 MURRAY HILL AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5836 FERREE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5859 FERREE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1603 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6649 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6625 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1232 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5851 MARLBOROUGH AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6739 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1656 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6693 KINSMAN RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1916 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6670 RIDGEVILLE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1294 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1536 ASBURY PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1516 VALMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1335 SHADY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1228 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5841 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6615 KINSMAN RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1322 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1635 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6611 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1609 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5644 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5815 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6634 WOODWELL ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1300 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "114 AYLESBORO LN",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1213 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5733 SOLWAY ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1545 ASBURY PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5650 SOLWAY ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5714 SOLWAY ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6649 RIDGEVILLE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5722 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5633 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6641 RIDGEVILLE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1333 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1509 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6401 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6611 WOODWELL ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6636 KINSMAN RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5831 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1430 BARNSDALE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5822 SOLWAY ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6538 DALZELL PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6604 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5743 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5846 FERREE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5851 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1320 SHADY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5731 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1901 MULHATTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6510 BARTLETT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5808 FERREE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6334 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6622 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5815 FERREE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1331 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6605 DALZELL PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1444 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1337 SHADY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1200 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1531 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5648 SOLWAY ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6666 RIDGEVILLE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1627 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1300 MURRAY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6632 RIDGEVILLE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6620 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5868 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5825 MARLBOROUGH AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6316 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1612 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "7 FORBES TER",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5615 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1871 SHAW AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1504 MURRAY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1315 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6619 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6692 KINSMAN RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1534 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5878 MARLBOROUGH AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5812 SOLWAY ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6671 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1421 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6611 RIDGEVILLE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1523 ASBURY PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1356 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6610 WOODWELL ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6649 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6664 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6520 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6621 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6640 DALZELL PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6633 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6711 BEACON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6730 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1443 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1740 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6653 DALZELL PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6731 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6535 DALZELL PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1418 SHADY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5801 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6675 WOODWELL ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5846 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1229 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1400 SEVERN ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6696 KINSMAN RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5711 SOLWAY ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5881 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1649 SHADY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6652 RIDGEVILLE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1221 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6543 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1442 MURRAY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1435 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6663 RIDGEVILLE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6521 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1518 MURRAY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1633 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1263 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6644 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5730 SOLWAY ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1440 SEVERN ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1419 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1457 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1247 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1600 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6514 DALZELL PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1257 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1800 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6628 KINSMAN RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5715 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1602 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6600 DALZELL PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1517 BARNSDALE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6525 BEACON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "612 WORTH ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1631 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6630 RIDGEVILLE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6517 BARTLETT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6620 RIDGEVILLE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6427 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1245 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6652 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1465 BARNSDALE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5847 FERREE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5634 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1417 WIGHTMAN ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1530 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1888 SHAW AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5621 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5533 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6663 WOODWELL ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6649 KINSMAN RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1726 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6535 BEACON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5750 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1330 SHADY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5649 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5610 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5738 SOLWAY ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1425 SEVERN ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6514 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1226 MURRAY HILL AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6501 BEACON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1422 WIGHTMAN ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5884 MARLBOROUGH AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5818 MARLBOROUGH AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1605 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6620 KINSMAN RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1450 BARNSDALE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1512 VALMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1715 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1448 BARNSDALE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5745 SOLWAY ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1876 SHAW AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6400 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5683 FORBES AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1449 WIGHTMAN ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1608 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6677 WOODWELL ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5864 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5512 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6727 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6630 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5547 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6649 WOODWELL ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5623 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5840 FERREE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5747 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1501 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1544 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6635 1/2 DALZELL PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5557 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1411 WIGHTMAN ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1467 BARNSDALE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6665 KINSMAN RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1631 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1818 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6524 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6651 DALZELL PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1525 MURRAY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1527 VALMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5861 SOLWAY ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6681 KINSMAN RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1934 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1515 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1641 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6563 BARTLETT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6682 WOODWELL ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6518 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5537 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5870 MARLBOROUGH AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5885 MARLBOROUGH AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5841 FERREE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6609 KINSMAN RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1544 SHADY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "16 FORBES TER",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1439 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5723 SOLWAY ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1424 SEVERN ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1651 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5734 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5860 MARLBOROUGH AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5870 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6533 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1640 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5840 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1463 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1849 SHAW AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "110 AYLESBORO LN",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6640 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6611 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1772 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1402 MURRAY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1428 WIGHTMAN ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5637 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6662 WOODWELL ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6669 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6636 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6615 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1251 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6323 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1645 SHADY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5705 SOLWAY ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6404 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1436 BARNSDALE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1324 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1526 VALMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5814 FERREE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6648 BEACON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6634 BEACON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6400 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1516 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1824 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1433 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5546 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6521 BARTLETT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1246 MURRAY HILL AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "9 FORBES TER",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6515 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1633 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1298 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1448 SEVERN ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1426 WIGHTMAN ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1520 MURRAY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "604 WORTH ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6636 DALZELL PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5634 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5830 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1457 BARNSDALE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6623 KINSMAN RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6553 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1656 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1449 SEVERN ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6625 WOODWELL ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1471 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5880 SHADY FORBES TER",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "17 FORBES TER",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5709 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1208 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6645 DALZELL PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1421 SEVERN ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5822 MARLBOROUGH AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6611 DALZELL PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6668 WOODWELL ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6500 BEACON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5742 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1303 SHADY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1534 MURRAY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6735 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5743 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6650 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1521 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6408 FORBES AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5706 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6720 BEACON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6628 DALZELL PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6660 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1500 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6506 DALZELL PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5641 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1444 SEVERN ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6671 RIDGEVILLE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5734 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "2006 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1529 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5612 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1511 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5509 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6659 WOODWELL ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6667 WOODWELL ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5802 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5520 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1428 BARNSDALE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "621 WORTH ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5845 MARLBOROUGH AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1212 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1418 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6525 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6567 BARTLETT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1763 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6580 BEACON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5830 SOLWAY ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1337 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5714 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5719 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1863 SHAW AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5854 SOLWAY ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1234 MURRAY HILL AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6715 BEACON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6542 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5727 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5820 FERREE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1667 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5818 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6624 RIDGEVILLE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6615 WOODWELL ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5720 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5808 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6617 BEACON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1201 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1352 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1335 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1317 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1463 BARNSDALE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6634 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1642 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1536 SHADY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5650 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1956 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5849 FERREE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1839 SHAW AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6641 WOODWELL ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6667 RIDGEVILLE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6614 WOODWELL ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1314 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6621 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "128 AYLESBORO LN",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5803 FERREE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6534 DALZELL PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5718 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5617 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5852 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1829 SHAW AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1292 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6315 FORBES AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5703 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5735 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6641 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5867 SOLWAY ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6674 WOODWELL ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6531 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6532 DALZELL PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "619 WORTH ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6659 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1239 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5892 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1437 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5848 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1296 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1411 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1429 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6646 DALZELL PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1325 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6655 WOODWELL ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5864 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5822 FERREE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1432 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1329 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "620 WORTH ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1637 SHADY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1317 MURRAY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6515 FORBES AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1720 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6603 RIDGEVILLE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6626 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5615 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5738 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5627 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1419 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1974 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5853 MARLBOROUGH AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "622 WORTH ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6684 KINSMAN RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6549 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5838 MARLBOROUGH AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5863 MARLBOROUGH AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6708 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1960 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1540 ASBURY PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5735 FORBES AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1252 MURRAY HILL AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1360 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6609 DALZELL PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6645 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1310 MURRAY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1415 SEVERN ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5650 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1436 SEVERN ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6338 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1634 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5606 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5843 FERREE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6600 WOODWELL ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5847 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5627 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6411 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "13 FORBES TER",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1225 MURRAY HILL AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6425 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5884 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5841 SOLWAY ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6545 DALZELL PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5723 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1341 SHADY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1440 BARNSDALE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6526 DALZELL PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5643 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6609 WOODWELL ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1224 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "124 AYLESBORO LN",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6640 RIDGEVILLE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5622 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1351 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1853 SHAW AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1501 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6552 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6425 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1643 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5730 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1416 SEVERN ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6623 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6537 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5553 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6657 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "623 WORTH ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5833 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1878 SHAW AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5664 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1423 SEVERN ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1353 SHADY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5727 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6702 BEACON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6625 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1747 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5849 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5606 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1944 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6643 BEACON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1243 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1856 SHAW AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1526 MURRAY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6630 WOODWELL ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1533 VALMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1412 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6636 BEACON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6606 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6617 WILKINS AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5860 SOLWAY ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6557 BARTLETT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1301 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6527 BARTLETT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6655 DALZELL PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6650 BEACON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5702 SOLWAY ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5738 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6612 KINSMAN RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1608 1/2 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6428 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5877 SOLWAY ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1505 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1540 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6659 RIDGEVILLE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5719 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1443 WIGHTMAN ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1320 MURRAY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1261 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1364 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "23 FORBES TER",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6631 DALZELL PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1881 SHAW AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1617 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5632 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5800 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1500 MURRAY AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1620 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5709 SOLWAY ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1437 SEVERN ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1202 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5819 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6660 WOODWELL ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1288 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6673 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6641 DALZELL PL",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "600 WORTH ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6648 KINSMAN RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6561 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5649 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5825 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1622 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6617 WOODWELL ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5614 WOODMONT ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "5850 FERREE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6615 AYLESBORO AVE",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1814 BEECHWOOD BLVD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6611 NORTHUMBERLAND ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1404 WIGHTMAN ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6619 KINSMAN RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6650 RIDGEVILLE ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "1610 DENNISTON ST",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    },
+    {
+      "jobId": "6541 DARLINGTON RD",
+      "reasons": [
+        {
+          "code": "NO_REASON_FOUND",
+          "description": "unknown"
+        }
+      ]
+    }
+  ]
+}

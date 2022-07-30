@@ -7,11 +7,11 @@ from copy import deepcopy
 from termcolor import colored
 
 from src.config import (BASE_DIR, MINS_PER_HOUSE, WALKING_M_PER_S, Costs,
-                        DistanceMatrix, Fleet, Job, Location, Pickup, Place, Plan,
-                        Problem, Profile, Shift, ShiftEnd, ShiftStart, Vehicle,
-                        VehicleLimits, VehicleProfile)
-from src.gps_utils import Point
+                        DistanceMatrix, Fleet, Job, Location, Place, Plan,
+                        Problem, Profile, Service, Shift, ShiftEnd, ShiftStart,
+                        Vehicle, VehicleLimits, VehicleProfile)
 from src.distances.houses import HouseDistances
+from src.gps_utils import Point
 from src.viz_utils import display_house_orders
 
 
@@ -41,7 +41,7 @@ class Optimizer():
                 try:
                     distance = HouseDistances.get_distance(pt, other_pt)
                 except KeyError:
-                    distance = 1600
+                    distance = 10000
                 distance_matrix['distances'].append(round(distance))
                 distance_matrix['travelTimes'].append(round(distance / WALKING_M_PER_S))
 
@@ -49,24 +49,24 @@ class Optimizer():
 
         print('Saved distance matrix to {}'.format(self.distance_matrix_save))
 
-        problem = {}
-
         # Create the plan
         jobs: list[Job] = []
         for i, house in enumerate(self.points):
-            pickup = Pickup(places=[Place(location=Location(index=i), duration=MINS_PER_HOUSE * 60)],
-                            demand=[1])
-            jobs.append(Job(id=house.id, pickups=[pickup]))
+            if i == self.start_idx:
+                # The starting location is not a real service
+                continue
+            service = Service(places=[Place(location=Location(index=i), duration=round(MINS_PER_HOUSE * 60))])
+            jobs.append(Job(id=house.id, services=[service]))
 
         # Create the fleet
         walker = Vehicle(
             typeId='person',
             vehicleIds=['walker_{}'.format(i) for i in range(num_lists)],
             profile=Profile(matrix='person'),
-            costs=Costs(fixed=0, distance=0, time=1),
+            costs=Costs(fixed=0, distance=1, time=3),
             shifts=[Shift(start=ShiftStart(earliest='2022-08-01T05:00:00Z', location=Location(index=self.start_idx)),
                           end=ShiftEnd(latest='2022-08-01T08:00:00Z', location=Location(index=self.start_idx)))],
-            capacity=[100],
+            capacity=[200],
             limits=VehicleLimits(shiftTime=self.MAX_TIME_PER_LIST, maxDistance=3200))
 
         fleet = Fleet(vehicles=[walker], profiles=[VehicleProfile(name='person')])
@@ -81,17 +81,22 @@ class Optimizer():
 
         start_time = time.time()
 
-        # NOTE: modify example to pass matrix, config, initial solution, etc.
+        search_deep = False
+
         p = subprocess.run(
             [cli_path, 'solve', 'pragmatic', problem_path, '-m', self.distance_matrix_save,
-             '-o', solution_path, '-t', '20', '--log'])
+             '-o', solution_path, '-t', '60', '--min-cv', 'period,5,0.01,true',
+             '--search-mode', 'deep' if search_deep else 'broad', '--log'])
 
-        if p.returncode == 0:
-            with open(solution_path, 'r') as f:
-                solution_str = f.read()
-                return json.loads(solution_str, object_hook=Deserializer.from_dict)
+        if p.returncode != 0:
+            print(colored('Failed to generate lists', color='red'))
+            return
 
         print(colored('Finished in {:.2f} seconds'.format(time.time() - start_time), color='green'))
+
+        with open(solution_path) as f:
+            solution_str = f.read()
+            return json.loads(solution_str, object_hook=Deserializer.from_dict)
 
     def visualize(self):
         solution_path = os.path.join(BASE_DIR, 'optimize', 'solution.json')

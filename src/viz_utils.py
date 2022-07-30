@@ -107,7 +107,7 @@ def display_house_orders(walk_lists: list[list[Point]]) -> folium.Map:
 
     for i, walk_list in enumerate(walk_lists):
         text_color = cmap.get(i)
-        for j, house in enumerate(walk_list):
+        for j, house in enumerate(walk_list[:-1]):
             folium.Marker(
                 location=[house.lat, house.lon],
                 icon=DivIcon(

@@ -4,15 +4,14 @@ import json
 import os
 import random
 
-from tqdm import tqdm
-
 from src.config import (BASE_DIR, DIFFERENT_SEGMENT_ADDITION,
                         DIFFERENT_SIDE_ADDITION, KEEP_APARTMENTS, blocks_file,
                         blocks_file_t)
-from src.gps_utils import Point
 from src.distances.nodes import NodeDistances
+from src.gps_utils import Point
 from src.route import get_distance
 from src.timeline_utils import Segment
+from tqdm import tqdm
 
 
 class HouseDistances():
@@ -85,9 +84,10 @@ class HouseDistances():
         # Calculate the distances between the segment endpoints
         end_distances = [NodeDistances.get_distance(i, j) for i, j in
                          [(s1.start, s2.start), (s1.start, s2.end), (s1.end, s2.start), (s1.end, s2.end)]]
+        end_distances = [d for d in end_distances if d is not None]
 
         # If this pair is too far away, don't add to the table.
-        if None in end_distances or min(end_distances) > 1600:
+        if len(end_distances) != 4 or min(end_distances) > 1600:
             return
 
         # Iterate over every possible pair of houses
@@ -112,6 +112,8 @@ class HouseDistances():
             print('House distance table file found. Loading may take a while...')
             cls._house_distances = json.load(open(cls._save_file))
             num_samples = min(len(cluster), 100)
+
+            # Sample random segments from the input to check if they are already stored
             for segment in random.sample(cluster, num_samples):
                 houses = cls._blocks[segment.id]['addresses']
                 try:
@@ -120,7 +122,7 @@ class HouseDistances():
                     # There are no houses in this segment
                     continue
                 except KeyError:
-                    # This house was not in the saved table
+                    # This house was not already stored
                     need_regeneration = True
                     break
             if center.id not in cls._house_distances:
