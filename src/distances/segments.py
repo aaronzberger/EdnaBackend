@@ -2,17 +2,16 @@ from __future__ import annotations
 
 import json
 import os
-from copy import deepcopy
 import random
+from copy import deepcopy
 from typing import Optional
 
 import numpy as np
 from nptyping import Float32, NDArray, Shape
-from tqdm import tqdm
-
 from src.config import ARBITRARY_LARGE_DISTANCE, segment_distance_matrix_file
 from src.distances.nodes import NodeDistances
 from src.timeline_utils import Segment
+from tqdm import tqdm
 
 
 class SegmentDistances():

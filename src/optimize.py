@@ -3,13 +3,16 @@ import os
 import subprocess
 import time
 from copy import deepcopy
+from typing import Optional
 
 from termcolor import colored
 
-from src.config import (BASE_DIR, MINS_PER_HOUSE, WALKING_M_PER_S, Costs,
-                        DistanceMatrix, Fleet, Job, Location, Place, Plan,
-                        Problem, Profile, Service, Shift, ShiftEnd, ShiftStart,
-                        Vehicle, VehicleLimits, VehicleProfile)
+from src.config import (BASE_DIR, MINS_PER_HOUSE, VRP_CLI_PATH,
+                        WALKING_M_PER_S, Costs, DistanceMatrix, Fleet, Job,
+                        Location, Place, Plan, Problem, Profile, Service,
+                        Shift, ShiftEnd, ShiftStart, Solution, Statistic, Stop,
+                        Time, Tour, Vehicle, VehicleLimits, VehicleProfile,
+                        problem_path, solution_path)
 from src.distances.houses import HouseDistances
 from src.gps_utils import Point
 from src.viz_utils import display_house_orders
@@ -74,38 +77,37 @@ class Optimizer():
 
         json.dump(problem, open(os.path.join(BASE_DIR, 'optimize', 'problem.json'), 'w'), indent=2)
 
-    def optimize(self):
-        cli_path = "/Users/aaron/.cargo/bin/vrp-cli"
-        problem_path = os.path.join(BASE_DIR, 'optimize', 'problem.json')
-        solution_path = os.path.join(BASE_DIR, 'optimize', 'solution.json')
-
+    def optimize(self) -> Optional[Solution]:
         start_time = time.time()
 
         search_deep = False
 
         p = subprocess.run(
-            [cli_path, 'solve', 'pragmatic', problem_path, '-m', self.distance_matrix_save,
+            [VRP_CLI_PATH, 'solve', 'pragmatic', problem_path, '-m', self.distance_matrix_save,
              '-o', solution_path, '-t', '60', '--min-cv', 'period,5,0.01,true',
              '--search-mode', 'deep' if search_deep else 'broad', '--log'])
 
         if p.returncode != 0:
-            print(colored('Failed to generate lists', color='red'))
             return
 
         print(colored('Finished in {:.2f} seconds'.format(time.time() - start_time), color='green'))
 
-        with open(solution_path) as f:
-            solution_str = f.read()
-            return json.loads(solution_str, object_hook=Deserializer.from_dict)
+        solution_dict = json.load(open(solution_path))
+        tours: list[Tour] = []
+        for tour in solution_dict['tours']:
+            stops: list[Stop] = []
+            for stop in tour['stops']:
+                stops.append(Stop(**stop, location=Location(**stop['location']), time=Time(**stop['time'])))
+            tours.append(Tour(**tour, stops=stops))
+        self.solution = Solution(
+            statistic=Statistic(**solution_dict['statistic']), tours=tours, unassigned=solution_dict['unassigned'])
+
+        return self.solution
 
     def visualize(self):
-        solution_path = os.path.join(BASE_DIR, 'optimize', 'solution.json')
-
-        solutions = json.load(open(solution_path))
-
         walk_lists: list[list[Point]] = []
 
-        for i, route in enumerate(solutions['tours']):
+        for i, route in enumerate(self.solution['tours']):
             walk_lists.append([])
             for stop in route['stops']:
                 walk_lists[i].append(self.points[stop['location']['index']])

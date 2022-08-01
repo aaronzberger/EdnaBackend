@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 '''
-Associate houses with their block segments and save to associated.csv
+Generate blocks.json and houses.json
 '''
 
 import csv

@@ -54,7 +54,7 @@ def display_segments(segments: list[Segment]) -> folium.Map:
     for segment in segments:
         weight = 4 + ((segment.num_houses - min_houses) / (max_houses - min_houses)) * 8
         folium.PolyLine(
-            [[p.lat, p.lon] for p in segment.all_points],
+            [[p.lat, p.lon] for p in segment.navigation_points],
             weight=weight,
             color='blue',
             opacity=0.6
@@ -70,7 +70,7 @@ def display_clustered_segments(segments: list[Segment],
 
     for segment, label in zip(segments, labels):
         folium.PolyLine(
-            [[p.lat, p.lon] for p in segment.all_points],
+            [[p.lat, p.lon] for p in segment.navigation_points],
             weight=8,
             color=cmap.get(label),
             opacity=0.6

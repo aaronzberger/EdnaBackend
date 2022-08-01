@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import csv
-import itertools
 import json
 import os
+import sys
 from copy import deepcopy
 from sys import argv
 
 import kmedoids
+from termcolor import colored
 
 from gps_utils import Point
 from src.config import (BASE_DIR, CLUSTERING_CONNECTED_THRESHOLD,
@@ -19,10 +20,6 @@ from src.distances.segments import SegmentDistances
 from src.optimize import Optimizer
 from src.timeline_utils import Segment
 from src.viz_utils import display_clustered_segments, display_segments
-
-DISPLAY_VERBOSE = True
-LOAD_CENTERS = False  # Set to true if you are providing custom starting point locations
-
 
 blocks: blocks_file_t = json.load(open(blocks_file))
 
@@ -62,11 +59,10 @@ del blocks
 segments = [Segment(
     id=i, start=Point(d['nodes'][0]['lat'], d['nodes'][0]['lon']),
     end=Point(d['nodes'][-1]['lat'], d['nodes'][-1]['lon']), num_houses=len(d['addresses']),
-    all_points=[Point(k['lat'], k['lon']) for k in d['nodes']])
+    navigation_points=[Point(k['lat'], k['lon']) for k in d['nodes']])
         for i, d in requested_blocks.items()]
 
-if DISPLAY_VERBOSE:
-    display_segments(segments).save(os.path.join(BASE_DIR, 'viz', 'segments.html'))
+display_segments(segments).save(os.path.join(BASE_DIR, 'viz', 'segments.html'))
 
 # Generate node distance matrix
 NodeDistances(segments)
@@ -111,7 +107,12 @@ HouseDistances(area_segments, center)
 
 # Run the optimizer
 optimizer = Optimizer(area, num_lists=12, starting_location=center)
-optimizer.optimize()
+solution = optimizer.optimize()
+
+if solution is None:
+    print(colored('Failed to generate lists', color='red'))
+    sys.exit()
+
 optimizer.visualize()
 
 
@@ -129,8 +130,8 @@ def modify_labels(segments: list[Segment], labels: list[int]) -> list[int]:
 
         # Continuously update the visited set until it includes all segments connected to the original segment
         distances = [SegmentDistances.get_distance(s, segment) for s in cluster]
-        neighbors = [cluster[i] for i in range(len(cluster)) if distances[i] is not None
-                     and distances[i] < CLUSTERING_CONNECTED_THRESHOLD]
+        distances = [d for d in distances if d is not None]
+        neighbors = [cluster[i] for i in range(len(cluster)) if distances[i] < CLUSTERING_CONNECTED_THRESHOLD]
         for neighbor in neighbors:
             dfs(neighbor, cluster, visited)
 

@@ -6,6 +6,7 @@ from typing import Any, TypedDict
 '----------------------------------------------------------------------------------'
 
 BASE_DIR = '/Users/aaron/Documents/GitHub/WLC'
+VRP_CLI_PATH = "/Users/aaron/.cargo/bin/vrp-cli"
 
 node_distance_table_file = os.path.join(BASE_DIR, 'store', 'node_distances.json')
 segment_distance_matrix_file = os.path.join(BASE_DIR, 'store', 'segment_distance_matrix.json')
@@ -15,6 +16,8 @@ block_output_file = os.path.join(BASE_DIR, 'input', 'block_output.json')
 blocks_file = os.path.join(BASE_DIR, 'blocks.json')
 associated_file = os.path.join(BASE_DIR, 'associated.csv')
 houses_file = os.path.join(BASE_DIR, 'houses.json')
+problem_path = os.path.join(BASE_DIR, 'optimize', 'problem.json')
+solution_path = os.path.join(BASE_DIR, 'optimize', 'solution.json')
 
 '----------------------------------------------------------------------------------'
 '                                     Constants                                    '
@@ -36,7 +39,6 @@ MAX_HOUSES_PER_LIST = None
 '                                       Type Hints                                 '
 '----------------------------------------------------------------------------------'
 
-# JSON type hints
 node_t = dict[str, float]
 house_t = dict[str, node_t]
 node_list_t = list[node_t]
@@ -56,7 +58,6 @@ class SegmentDict(TypedDict):
     nodes: node_list_t
 
 
-# JSON store file type hints
 blocks_file_t = dict[str, SegmentDict]
 houses_file_t = dict[str, str]
 

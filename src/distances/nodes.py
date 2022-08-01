@@ -5,12 +5,11 @@ import os
 import random
 from typing import Optional
 
-from tqdm import tqdm
-
 from src.config import MAX_NODE_STORAGE_DISTANCE, node_distance_table_file
-from src.gps_utils import great_circle_distance, Point
+from src.gps_utils import Point, great_circle_distance
 from src.route import get_distance
 from src.timeline_utils import Segment
+from tqdm import tqdm
 
 
 class NodeDistances():

@@ -26629,7 +26629,7 @@
                 "lat": 40.4200467711789,
                 "lon": -79.9231424565303,
                 "distance_to_start": 266,
-                "distance_to_end": 37,
+                "distance_to_end": 38,
                 "side": true,
                 "distance_to_road": 32
             },
@@ -49494,7 +49494,7 @@
             "1014 MURRAY HILL AVE": {
                 "lat": 40.4495352777451,
                 "lon": -79.9284113724939,
-                "distance_to_start": 66,
+                "distance_to_start": 65,
                 "distance_to_end": 428,
                 "side": true,
                 "distance_to_road": 28
@@ -55334,7 +55334,7 @@
             "1234 FAIRSTEAD LN": {
                 "lat": 40.4213574558908,
                 "lon": -79.9136599953313,
-                "distance_to_start": 112,
+                "distance_to_start": 113,
                 "distance_to_end": 101,
                 "side": true,
                 "distance_to_road": 18
