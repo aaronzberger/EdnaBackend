@@ -1,3 +1,5 @@
+from typing import Any
+
 import polyline
 import requests
 
@@ -6,9 +8,18 @@ from src.gps_utils import Point
 SERVER = 'http://0.0.0.0:5000'
 
 
-def get_distance(p1: Point, p2: Point) -> float:
-    '''Get the distance on foot (in meters) between two points'''
-    loc = '{},{};{},{}'.format(p1.lon, p1.lat, p2.lon, p2.lat)
+def get_distance(start: Point, end: Point) -> float:
+    '''
+    Get the distance on foot (in meters) between two points
+
+    Parameters:
+        start (Point): the starting point
+        end (Point): the ending point
+
+    Returns:
+        float: the distance (in meters), on foot, to walk from start to end
+    '''
+    loc = '{},{};{},{}'.format(start.lon, start.lat, end.lon, end.lat)
     url = SERVER + '/route/v1/walking/' + loc
     r = requests.get(url)
     if r.status_code == 200:
@@ -16,7 +27,21 @@ def get_distance(p1: Point, p2: Point) -> float:
     raise RuntimeError('Could not contact OSRM server')
 
 
-def get_route(start: Point, end: Point) -> dict:
+def get_route(start: Point, end: Point) -> dict[str, Any]:
+    '''
+    Get the full route on foot between two points
+
+    Parameters:
+        start (Point): the starting point
+        end (Point): the ending point
+
+    Returns:
+        dict:
+            'route' (list): the route, as given by polyline
+            'start_point' (list): the starting point in the format [lat, lon]
+            'end_point' (list): the ending point in the format [lat, lon]
+            'distance' (float): the distance from start to end
+    '''
     loc = '{},{};{},{}'.format(start.lon, start.lat, end.lon, end.lat)
     url = SERVER + '/route/v1/walking/' + loc
     r = requests.get(url)
@@ -29,10 +54,9 @@ def get_route(start: Point, end: Point) -> dict:
     end_point = [res['waypoints'][1]['location'][1], res['waypoints'][1]['location'][0]]
     distance = res['routes'][0]['distance']
 
-    out = {'route': routes,
-           'start_point': start_point,
-           'end_point': end_point,
-           'distance': distance
-           }
-
-    return out
+    return {
+        'route': routes,
+        'start_point': start_point,
+        'end_point': end_point,
+        'distance': distance
+    }

@@ -18,14 +18,6 @@ from src.gps_utils import Point
 from src.viz_utils import display_house_orders
 
 
-class Deserializer:
-    @classmethod
-    def from_dict(cls, dict):
-        obj = cls()
-        obj.__dict__.update(dict)
-        return obj
-
-
 class Optimizer():
     MAX_HOUSES_PER_LIST = 90
     TIME_LIMIT = 10
@@ -97,8 +89,10 @@ class Optimizer():
         for tour in solution_dict['tours']:
             stops: list[Stop] = []
             for stop in tour['stops']:
-                stops.append(Stop(**stop, location=Location(**stop['location']), time=Time(**stop['time'])))
-            tours.append(Tour(**tour, stops=stops))
+                stops.append(Stop(distance=stop['distance'], load=stop['load'], activities=stop['activities'],
+                                  location=Location(**stop['location']), time=Time(**stop['time'])))
+            tours.append(Tour(vehicleId=tour['vehicleId'], typeId=tour['typeId'],
+                              shiftIndex=tour['shiftIndex'], stops=stops))
         self.solution = Solution(
             statistic=Statistic(**solution_dict['statistic']), tours=tours, unassigned=solution_dict['unassigned'])
 

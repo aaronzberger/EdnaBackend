@@ -7,7 +7,6 @@ import utm
 from geographiclib.geodesic import Geodesic
 from haversine import Unit, haversine
 
-
 converter: Geodesic = Geodesic.WGS84  # type: ignore
 
 
@@ -62,7 +61,7 @@ def along_track_distance(p1: Point, p2: Point, p3: Point) -> tuple[float, float]
     return ald_p2, ald_p3
 
 
-def cross_track_distance(p1: Point, p2: Point, p3: Point, debug=False) -> float:
+def cross_track_distance(p1: Point, p2: Point, p3: Point, debug: bool = False) -> float:
     '''
     Calculate the cross-track distance from a point to a line in GPS coordinates
 

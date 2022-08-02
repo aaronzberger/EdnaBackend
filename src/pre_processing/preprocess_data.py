@@ -1,3 +1,8 @@
+'''
+Process the data from OSM. Take in area.json and write block_output.json
+'''
+# TODO: Clean up and add type hinting
+
 import json
 import os
 import pprint

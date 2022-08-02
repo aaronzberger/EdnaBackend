@@ -3,7 +3,6 @@ from __future__ import annotations
 import itertools
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Literal
 
 from src.config import MINS_PER_HOUSE, WALKING_M_PER_S
 from src.gps_utils import Point, great_circle_distance
@@ -42,10 +41,15 @@ class Segment():
 @dataclass
 class SubSegment():
     segment: Segment
+
+    # Note that start and end can be the same point.
     start: Point
     end: Point
+
+    # Furthest points in each direction the houses span
+    extremum: tuple[Point, Point]
+
     houses: list[Point]
-    walk_method: Literal['bounce', 'backtrack']
     navigation_points: list[Point]
 
     def __post_init__(self):

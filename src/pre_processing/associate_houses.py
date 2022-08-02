@@ -1,7 +1,5 @@
-# -*- encoding: utf-8 -*-
-
 '''
-Generate blocks.json and houses.json
+Associate houses with blocks. Generate blocks.json and houses.json
 '''
 
 import csv
@@ -11,12 +9,13 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import Optional
 
+from src.config import (HouseAssociationDict, Node, SegmentDict,
+                        address_pts_file, block_output_file, blocks_file,
+                        blocks_file_t, house_t, houses_file, houses_file_t,
+                        node_coords_file, node_list_t)
+from src.gps_utils import (Point, along_track_distance, cross_track_distance,
+                           great_circle_distance)
 from tqdm import tqdm
-
-from src.config import (HouseAssociationDict, SegmentDict, address_pts_file, block_output_file,
-                        blocks_file, blocks_file_t, house_t, node_coords_file,
-                        node_list_t, node_t, houses_file_t, houses_file)
-from src.gps_utils import Point, along_track_distance, cross_track_distance, great_circle_distance
 
 SEPARATE_SIDES = False
 MAX_DISTANCE = 300  # meters from house to segment
@@ -24,7 +23,7 @@ DEBUG = False
 
 # Load the hash table containing node coordinates hashed by ID
 print('Loading node coordinates table...')
-node_coords: dict[str, node_t] = json.load(open(node_coords_file))
+node_coords: dict[str, Node] = json.load(open(node_coords_file))
 
 # This file contains the coordinates of every building in the county
 print('Loading coordinates of houses...')
@@ -48,8 +47,8 @@ houses_to_id: houses_file_t = {}
 class Segment():
     '''Define a segment between two nodes on a block relative to a house'''
     start_node_id: str
-    sub_node_1: node_t
-    sub_node_2: node_t
+    sub_node_1: Node
+    sub_node_2: Node
     end_node_id: str
     distance: float
     id: int
@@ -121,7 +120,7 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
             # If this segment has not been inserted yet, generate an entry
             if segment_id not in segments_by_id:
                 # Create the list of sub points in this segment
-                all_nodes_coords: list[node_t] = []
+                all_nodes_coords: list[Node] = []
                 for id in best_segment.all_nodes:
                     try:
                         coords = node_coords[id]
@@ -171,7 +170,8 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
                 distance_to_start=round(distance_to_start),
                 distance_to_end=round(distance_to_end),
                 side=best_segment.side,
-                distance_to_road=round(best_segment.distance)
+                distance_to_road=round(best_segment.distance),
+                subsegment=(min(sub_nodes), max(sub_nodes))
             )
 
             # Add the house to the list of addresses in the output

@@ -5,3 +5,4 @@ src/__pycache__/
 venv/
 build/
 WLC.egg-info/
+viz/.DS_Store

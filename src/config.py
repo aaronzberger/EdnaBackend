@@ -39,9 +39,14 @@ MAX_HOUSES_PER_LIST = None
 '                                       Type Hints                                 '
 '----------------------------------------------------------------------------------'
 
-node_t = dict[str, float]
-house_t = dict[str, node_t]
-node_list_t = list[node_t]
+
+class Node(TypedDict):
+    lat: float
+    lon: float
+
+
+house_t = dict[str, Node]
+node_list_t = list[Node]
 
 
 class HouseAssociationDict(TypedDict):
@@ -51,6 +56,7 @@ class HouseAssociationDict(TypedDict):
     distance_to_end: int
     side: bool
     distance_to_road: int
+    subsegment: tuple[int, int]
 
 
 class SegmentDict(TypedDict):
@@ -93,7 +99,7 @@ class Stop(TypedDict):
 
 class Tour(TypedDict):
     vehicleId: str
-    typeID: str
+    typeId: str
     shiftIndex: int
     stops: list[Stop]
 

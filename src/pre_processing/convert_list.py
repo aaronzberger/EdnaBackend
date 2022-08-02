@@ -1,19 +1,18 @@
-# TODO: Fix with updated type hints
+# TODO: Fix with updated type hints and modify to new format
 
 import csv
 import json
 import os
 import sys
 
+from src.config import (BASE_DIR, Node, block_output_file, blocks_file,
+                        node_coords_file)
+from src.gps_utils import Point, along_track_distance
 from termcolor import colored
 from tqdm import tqdm
 
-from src.config import (BASE_DIR, block_output_file, blocks_file, node_coords_file,
-                        node_t)
-from src.gps_utils import Point, along_track_distance
-
 print('Loading associations')
-house_associations: dict[str, dict[str, list[str | node_t]]] = json.load(open(blocks_file))
+house_associations: dict[str, dict[str, list[str | Node]]] = json.load(open(blocks_file))
 
 # This file contains the addresses of the requested Squirrel Hill houses
 print('Loading requested houses...')
@@ -30,7 +29,7 @@ all_way_nodes = json.load(open(block_output_file))
 
 # Load the hash table containing node coordinates hashed by ID
 print('Loading hash table of nodes...')
-node_coords: dict[str, node_t] = json.load(open(node_coords_file, 'r'))
+node_coords: dict[str, Node] = json.load(open(node_coords_file, 'r'))
 
 walk_list = {
     'addresses': [],
@@ -60,7 +59,7 @@ with tqdm(total=num_requested_houses, desc='Matching', unit='houses', colour='gr
                 found = True
                 walk_list['addresses'].append([formatted_address, ])
 
-        for item in association_reader:
+        for item in house_associations:
             if formatted_address == item['Address']:
                 found = True
                 walk_list["addresses"].append([formatted_address, item['Lat'], item['Lon']])
