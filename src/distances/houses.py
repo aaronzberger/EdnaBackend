@@ -15,6 +15,7 @@ from tqdm import tqdm
 
 
 class HouseDistances():
+    MAX_STORAGE_DISTANCE = 1600
     _house_distances: dict[str, dict[str, float]] = {}
     _save_file = os.path.join(BASE_DIR, 'store', 'house_distances.json')
     _blocks: blocks_file_t = json.load(open(blocks_file))
@@ -87,7 +88,7 @@ class HouseDistances():
         end_distances = [d for d in end_distances if d is not None]
 
         # If this pair is too far away, don't add to the table.
-        if len(end_distances) != 4 or min(end_distances) > 1600:
+        if len(end_distances) != 4 or min(end_distances) > cls.MAX_STORAGE_DISTANCE:
             return
 
         # Iterate over every possible pair of houses

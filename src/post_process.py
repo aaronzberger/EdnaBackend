@@ -1,10 +1,11 @@
 import itertools
 import json
+import random
 
 from src.config import (Tour, blocks_file, blocks_file_t, houses_file,
                         houses_file_t)
 from src.distances.nodes import NodeDistances
-from src.gps_utils import Point, project_to_line
+from src.gps_utils import EmptyPoint, Point, project_to_line, tsp
 from src.timeline_utils import Segment, SubSegment
 
 
@@ -100,7 +101,22 @@ class PostProcess():
         middle_points = self.blocks[segment.id]['nodes'][first_subsegment[1]:last_subsegment[0]]
         navigation_points = [closest_to_start] + [Point(**p) for p in middle_points] + [closest_to_end]
 
-        # TODO: Order the houses according to the entrance, exit, and walk method
+        # If the start and end are different, this is a forward or backward bouncing block
+        if entrance != exit:
+            houses = sorted(
+                houses, key=lambda h: block_info[h.id]['distance_to_start'], reverse=entrance != segment.start)
+        else:
+            # First, order all houses on the same side of the street as the first
+            first_half = [h for h in houses if block_info[h.id]['side'] == block_info[houses[0].id]['side']]
+            first_half = sorted(first_half, key=lambda h: block_info[h.id]['distance_to_start']
+                                if entrance == segment.start else block_info[h.id]['distance_to_end'])
+
+            # Next, backtrack: order all houses on the other side going back towards the entrance/exit
+            second_half = [h for h in houses if block_info[h.id]['side'] != block_info[houses[0].id]['side']]
+            second_half = sorted(second_half, key=lambda h: block_info[h.id]['distance_to_start']
+                                 if entrance == segment.start else block_info[h.id]['distance_to_end'], reverse=True)
+
+            houses = first_half + second_half
 
         return SubSegment(
             segment=segment, start=entrance, end=exit, extremum=extremum,
@@ -112,8 +128,8 @@ class PostProcess():
 
         current_subsegment_points: list[Point] = []
 
-        # TODO: Calculate entrance point
-        running_intersection: Point = Point(0, 0)
+        # To determine starting location, simply run TSP to see the fastest order to arrive at the last house
+        running_intersection: Point = EmptyPoint
 
         houses = [points[h['location']['index']] for h in tour['stops']]
         for house, next_house in itertools.pairwise(houses):
@@ -121,15 +137,35 @@ class PostProcess():
             next_segment_id = self.house_to_id[next_house.id]
 
             if next_segment_id != segment_id:
+                if running_intersection == EmptyPoint:
+                    # We cannot run tsp on all the houses if there are too many
+                    subsegment_sample = random.sample(current_subsegment_points, min(len(current_subsegment_points), 6))
+                    ordered_sample = tsp(subsegment_sample, lock_last=True)
+
+                    # Now, whichever side the first house is closest to is the most efficient entrance
+                    running_intersection = self.id_to_segment[segment_id].start if \
+                        self.blocks[segment_id]['addresses'][ordered_sample[0].id]['distance_to_start'] < \
+                        self.blocks[segment_id]['addresses'][ordered_sample[0].id]['distance_to_end'] else \
+                        self.id_to_segment[segment_id].end
+
                 walk_list.append(self.process_subsegment(
                     current_subsegment_points, self.id_to_segment[segment_id],
                     entrance=running_intersection, exit=self.calculate_exit(house, next_house)))
             else:
                 current_subsegment_points.append(house)
 
-        # Process the final block
-        # TODO: Calculate exit point
-        exit_point = Point(0, 0)
+        # To determine the exiting location, run TSP
+        subsegment_sample = random.sample(current_subsegment_points, min(len(current_subsegment_points), 6))
+        ordered_sample = tsp(subsegment_sample, lock_first=True)
+
+        segment_id = subsegment_sample[0].id
+
+        # Now, whichever side the first house is closest to is the most efficient exit
+        exit_point = self.id_to_segment[segment_id].start if \
+            self.blocks[segment_id]['addresses'][ordered_sample[-1].id]['distance_to_start'] < \
+            self.blocks[segment_id]['addresses'][ordered_sample[-1].id]['distance_to_end'] else \
+            self.id_to_segment[segment_id].end
+
         walk_list.append(self.process_subsegment(
             current_subsegment_points, self.id_to_segment[self.house_to_id[houses[-1].id]],
             entrance=running_intersection, exit=exit_point))

@@ -5,7 +5,7 @@ import os
 import random
 from typing import Optional
 
-from src.config import MAX_NODE_STORAGE_DISTANCE, node_distance_table_file
+from src.config import node_distance_table_file
 from src.gps_utils import Point, great_circle_distance
 from src.route import get_distance
 from src.timeline_utils import Segment
@@ -13,6 +13,7 @@ from tqdm import tqdm
 
 
 class NodeDistances():
+    MAX_STORAGE_DISTANCE = 1600
     _node_distances: dict[str, dict[str, Optional[float]]] = {}
 
     @classmethod
@@ -25,7 +26,7 @@ class NodeDistances():
             distance = great_circle_distance(node_1, node_2)
 
             # Only calculate and insert the routed distance if needed
-            cls._node_distances[node_1.id][node_2.id] = None if distance > MAX_NODE_STORAGE_DISTANCE \
+            cls._node_distances[node_1.id][node_2.id] = None if distance > cls.MAX_STORAGE_DISTANCE \
                 else get_distance(node_1, node_2)
 
     @classmethod

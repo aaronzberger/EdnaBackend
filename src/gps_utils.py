@@ -1,11 +1,17 @@
 from __future__ import annotations
 
+import itertools
 from dataclasses import dataclass, field
 from math import acos, asin, cos, radians, sin
+import math
+import sys
 
 import utm
 from geographiclib.geodesic import Geodesic
 from haversine import Unit, haversine
+from termcolor import colored
+
+from src.distances.houses import HouseDistances
 
 converter: Geodesic = Geodesic.WGS84  # type: ignore
 
@@ -18,6 +24,9 @@ class Point():
 
     def __post_init__(self):
         self.id = self.id if self.id != '' else str(self.lat) + ':' + str(self.lon)
+
+
+EmptyPoint = Point(-1, -1)
 
 
 def along_track_distance(p1: Point, p2: Point, p3: Point) -> tuple[float, float]:
@@ -206,3 +215,41 @@ def project_to_line(p1: Point, p2: Point, p3: Point) -> Point:
     ald_p1 = along_track_distance(p1, p2, p3)[0]
     projected = path_between.Position(ald_p1)
     return Point(lat=projected['lat2'], lon=projected['lon2'])
+
+
+def tsp(houses: list[Point], lock_first: bool = False, lock_last: bool = False) -> list[Point]:
+    '''
+    Solve the traveling salesman problem for a group of houses, where one is locked in position.
+    Note: Runs in n! time, where n is the length of houses (-1 if lock_first and -1 if lock_last)
+
+    Parameters:
+        houses (list[Point]): the list of houses to order
+        lock_first (bool): whether to lock the first house in place
+        lock_last (bool): whether to lock the last house in place
+
+    Returns:
+        list[Point]: the full ordered list of houses in the most efficient route possible
+    '''
+    num_permutations = len(houses) - (1 if lock_first else 0) - (1 if lock_last else 0)
+    if num_permutations >= 8:
+        print(colored('Trying to run TSP on {} houses, which is likely too many ({} iterations)'.format(
+            num_permutations, math.factorial(num_permutations)), color='red'))
+
+    min_list: list[Point] = []
+    min_distance = sys.float_info.max
+
+    # Iterate through every permutation of the non-locked houses
+    for possible_list in itertools.permutations(houses[1 if lock_first else None:-1 if lock_last else None]):
+        distance = 0
+        for house, next_house in itertools.pairwise(possible_list):
+            try:
+                distance += HouseDistances.get_distance(house, next_house)
+            except KeyError:
+                print(colored('Warning: found two houses on the same segment that are very far away.', color='yellow'))
+                distance += HouseDistances.MAX_STORAGE_DISTANCE
+        if distance < min_distance:
+            min_distance = distance
+            min_list = list(possible_list)
+    
+    # Add back in the locked houses and return
+    return ([houses[0]] if lock_first else []) + min_list + ([houses[-1]] if lock_last else [])

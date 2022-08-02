@@ -8,7 +8,6 @@ from copy import deepcopy
 from sys import argv
 
 import kmedoids
-from nptyping import Int, NDArray, Shape
 from termcolor import colored
 
 from gps_utils import Point
@@ -74,7 +73,7 @@ SegmentDistances(segments)
 # Cluster segments using kmedoids
 distance_matrix = SegmentDistances.get_distance_matrix()
 km: kmedoids.KMedoidsResult = kmedoids.fasterpam(diss=distance_matrix, medoids=10, max_iter=100, random_state=0)
-labels: NDArray[Shape[len(segments)], Int] = km.labels
+labels: list[int] = km.labels
 
 clustered_segments: list[list[Segment]] = [[segments[i] for i in range(len(segments)) if labels[i] == k]
                                            for k in range(max(labels))]
