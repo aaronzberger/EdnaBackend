@@ -76,7 +76,7 @@ class Optimizer():
 
         p = subprocess.run(
             [VRP_CLI_PATH, 'solve', 'pragmatic', problem_path, '-m', self.distance_matrix_save,
-             '-o', solution_path, '-t', '60', '--min-cv', 'period,5,0.01,true',
+             '-o', solution_path, '-t', '3', '--min-cv', 'period,5,0.01,true',
              '--search-mode', 'deep' if search_deep else 'broad', '--log'])
 
         if p.returncode != 0:

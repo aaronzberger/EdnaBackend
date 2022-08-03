@@ -1,24 +1,55 @@
 import itertools
 import json
-import random
+from copy import deepcopy
+from typing import Optional
 
 from src.config import (Tour, blocks_file, blocks_file_t, houses_file,
                         houses_file_t)
 from src.distances.nodes import NodeDistances
-from src.gps_utils import EmptyPoint, Point, project_to_line, tsp
+from src.gps_utils import Point, project_to_line
 from src.timeline_utils import Segment, SubSegment
 
 
 class PostProcess():
-    def __init__(self, segments: list[Segment]):
+    def __init__(self, segments: list[Segment], points: list[Point], canvas_start: Optional[Point] = None):
         self.blocks: blocks_file_t = json.load(open(blocks_file))
-        self.house_to_id: houses_file_t = json.load(open(houses_file))
+        self.address_to_segment_id: houses_file_t = json.load(open(houses_file))
 
         self.id_to_segment = {s.id: s for s in segments}
 
-    def calculate_exit(self, final_house: Point, next_house: Point) -> Point:
+        self.points = points
+        self.canvas_start = canvas_start
+
+    def distance_through_ends(self, start: Point, house: Point, segment: Segment) -> tuple[float, float]:
         '''
-        Calculate the exit optimal exit point for a subsegment given the final house and the next house
+        Determine the distances from an intersection point to a house through the two ends of the house's segments
+
+        Parameters:
+            start (Point): the start point, which should be an intersection
+            house (Point): the house, which should lie on the segment (the next parameter)
+            segment (Segment): the segment on which the house lies
+
+        Returns:
+            float: the distance from the intersection to the house through the start of the segment
+            float: the distance from the intersection to the house through the end of the segment
+        '''
+        try:
+            through_start = NodeDistances.get_distance(start, segment.start)
+            through_start = through_start if through_start is not None else 1600
+        except KeyError:
+            through_start = 1600
+        through_start += self.blocks[segment.id]['addresses'][house.id]['distance_to_start']
+        try:
+            through_end = NodeDistances.get_distance(start, segment.end)
+            through_end = through_end if through_end is not None else 1600
+        except KeyError:
+            through_end = 1600
+        through_end += self.blocks[segment.id]['addresses'][house.id]['distance_to_end']
+        return through_start, through_end
+
+    def _calculate_exit(self, final_house: Point, next_house: Point) -> Point:
+        '''
+        Calculate the optimal exit point for a subsegment given the final house and the next house
 
         Parameters:
             final_house (Point): the final house on the segment
@@ -27,48 +58,49 @@ class PostProcess():
         Returns:
             Point: the exit point of this segment, which is either the start or endpoint of final_house's segment
         '''
-        def distance_through_ends(start: Point, house: Point, segment: Segment) -> tuple[float, float]:
-            '''
-            Determine the distances from an intersection point to a house through the two ends of the house's segments
-
-            Parameters:
-                start (Point): the start point, which should be an intersection
-                house (Point): the final house, which should lie on the segment (the next parameter)
-                segment (Segment): the segment on which the final house lies
-
-            Returns:
-                float: the distance from the intersection to the house through the start of the segment
-                float: the distance from the intersection to the house through the end of the segment
-            '''
-            try:
-                through_start = NodeDistances.get_distance(start, segment.start)
-                through_start = through_start if through_start is not None else 1600
-            except KeyError:
-                through_start = 1600
-            through_start += self.blocks[segment.id]['addresses'][house.id]['distance_to_start']
-            try:
-                through_end = NodeDistances.get_distance(start, segment.end)
-                through_end = through_end if through_end is not None else 1600
-            except KeyError:
-                through_end = 1600
-            through_end += self.blocks[segment.id]['addresses'][house.id]['distance_to_end']
-            return through_start, through_end
-
         # Determine the exit direction, which will either be the start or end of the segment
-        origin_segment = self.id_to_segment[self.house_to_id[final_house.id]]
-        destination_segment = self.id_to_segment[self.house_to_id[next_house.id]]
+        origin_segment = self.id_to_segment[self.address_to_segment_id[final_house.id]]
+        destination_segment = self.id_to_segment[self.address_to_segment_id[next_house.id]]
 
         through_end = self.blocks[origin_segment.id]['addresses'][final_house.id]['distance_to_end']
-        through_end += min(distance_through_ends(
-            start=origin_segment.end, house=final_house, segment=destination_segment))
+        through_end += min(self.distance_through_ends(
+            start=origin_segment.end, house=next_house, segment=destination_segment))
 
         through_start = self.blocks[origin_segment.id]['addresses'][final_house.id]['distance_to_start']
-        through_start += min(distance_through_ends(
-            start=origin_segment.start, house=final_house, segment=destination_segment))
+        through_start += min(self.distance_through_ends(
+            start=origin_segment.start, house=next_house, segment=destination_segment))
 
         return origin_segment.end if through_end < through_start else origin_segment.start
 
-    def process_subsegment(self, houses: list[Point], segment: Segment, entrance: Point, exit: Point) -> SubSegment:
+    def _calculate_entrance(self, intersection: Point, next_house: Point) -> Point:
+        '''
+        Calculate the optimal entrance point for a subsegment given the running intersection and the next house
+
+        Parameters:
+            intersection (Point): the current location of the walker
+            next_house (Point): the first house to visit on the next segment
+
+        Returns:
+            Point: the entrance point of the next segment, which is either the start or endpoint of next_house's segment
+        '''
+        # Determine the exit direction, which will either be the start or end of the segment
+        destination_segment = self.id_to_segment[self.address_to_segment_id[next_house.id]]
+
+        through_end = self.blocks[destination_segment.id]['addresses'][next_house.id]['distance_to_end']
+        try:
+            through_end += NodeDistances.get_distance(intersection, destination_segment.end)  # type: ignore
+        except (KeyError, TypeError):
+            through_end += 1600
+
+        through_start = self.blocks[destination_segment.id]['addresses'][next_house.id]['distance_to_start']
+        try:
+            through_start += NodeDistances.get_distance(intersection, destination_segment.start)  # type: ignore
+        except (KeyError, TypeError):
+            through_start += 1600
+
+        return destination_segment.end if through_end < through_start else destination_segment.start
+
+    def _process_subsegment(self, houses: list[Point], segment: Segment, entrance: Point, exit: Point) -> SubSegment:
         block_info = self.blocks[segment.id]['addresses']
 
         # Find the first subsegment containing houses
@@ -122,52 +154,55 @@ class PostProcess():
             segment=segment, start=entrance, end=exit, extremum=extremum,
             houses=houses, navigation_points=navigation_points)
 
-    def post_process(self, tour: Tour, points: list[Point]) -> list[SubSegment]:
+    def post_process(self, tour: Tour) -> list[SubSegment]:
         # Iterate through the solution and add subsegments
         walk_list: list[SubSegment] = []
 
         current_subsegment_points: list[Point] = []
 
-        # To determine starting location, simply run TSP to see the fastest order to arrive at the last house
-        running_intersection: Point = EmptyPoint
+        houses = [self.points[h['location']['index']] for h in tour['stops']]
 
-        houses = [points[h['location']['index']] for h in tour['stops']]
+        # Determine the starting intersection for the walk list
+        if self.canvas_start is None:
+            # Take the side closest to the first house (likely where a canvasser would park)
+            first_segment_id = self.address_to_segment_id[houses[0].id]
+            running_intersection = self.id_to_segment[first_segment_id].start if \
+                self.blocks[first_segment_id]['addresses'][houses[0].id]['distance_to_start'] < \
+                self.blocks[first_segment_id]['addresses'][houses[0].id]['distance_to_end'] else \
+                self.id_to_segment[first_segment_id].end
+            parking_location = deepcopy(running_intersection)
+        else:
+            running_intersection: Point = self.canvas_start
+
+        # Process the list
         for house, next_house in itertools.pairwise(houses):
-            segment_id = self.house_to_id[house.id]
-            next_segment_id = self.house_to_id[next_house.id]
+            segment_id = self.address_to_segment_id[house.id]
+            next_segment_id = self.address_to_segment_id[next_house.id]
+            current_subsegment_points.append(house)
 
             if next_segment_id != segment_id:
-                if running_intersection == EmptyPoint:
-                    # We cannot run tsp on all the houses if there are too many
-                    subsegment_sample = random.sample(current_subsegment_points, min(len(current_subsegment_points), 6))
-                    ordered_sample = tsp(subsegment_sample, lock_last=True)
-
-                    # Now, whichever side the first house is closest to is the most efficient entrance
-                    running_intersection = self.id_to_segment[segment_id].start if \
-                        self.blocks[segment_id]['addresses'][ordered_sample[0].id]['distance_to_start'] < \
-                        self.blocks[segment_id]['addresses'][ordered_sample[0].id]['distance_to_end'] else \
-                        self.id_to_segment[segment_id].end
-
-                walk_list.append(self.process_subsegment(
+                exit_point = self._calculate_exit(house, next_house)
+                walk_list.append(self._process_subsegment(
                     current_subsegment_points, self.id_to_segment[segment_id],
-                    entrance=running_intersection, exit=self.calculate_exit(house, next_house)))
-            else:
-                current_subsegment_points.append(house)
+                    entrance=self._calculate_entrance(running_intersection, current_subsegment_points[0]),
+                    exit=exit_point))
 
-        # To determine the exiting location, run TSP
-        subsegment_sample = random.sample(current_subsegment_points, min(len(current_subsegment_points), 6))
-        ordered_sample = tsp(subsegment_sample, lock_first=True)
+                current_subsegment_points = []
 
-        segment_id = subsegment_sample[0].id
+                # After completing this segment, the canvasser is at the end of the subsegment
+                running_intersection = exit_point
 
-        # Now, whichever side the first house is closest to is the most efficient exit
-        exit_point = self.id_to_segment[segment_id].start if \
-            self.blocks[segment_id]['addresses'][ordered_sample[-1].id]['distance_to_start'] < \
-            self.blocks[segment_id]['addresses'][ordered_sample[-1].id]['distance_to_end'] else \
-            self.id_to_segment[segment_id].end
+        # Since we used pairwise, the last house is never evaluated
+        current_subsegment_points.append(houses[-1])
 
-        walk_list.append(self.process_subsegment(
-            current_subsegment_points, self.id_to_segment[self.house_to_id[houses[-1].id]],
+        # Determine the final intersection the canvasser will end up at to process the final subsegment
+        if self.canvas_start is None:
+            exit_point = self._calculate_entrance(parking_location, current_subsegment_points[-1])
+        else:
+            exit_point = self._calculate_entrance(self.canvas_start, current_subsegment_points[-1])
+
+        walk_list.append(self._process_subsegment(
+            current_subsegment_points, self.id_to_segment[self.address_to_segment_id[houses[-1].id]],
             entrance=running_intersection, exit=exit_point))
 
         return walk_list

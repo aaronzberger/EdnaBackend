@@ -18,7 +18,8 @@ from src.distances.houses import HouseDistances
 from src.distances.nodes import NodeDistances
 from src.distances.segments import SegmentDistances
 from src.optimize import Optimizer
-from src.timeline_utils import Segment
+from src.post_process import PostProcess
+from src.timeline_utils import Segment, SubSegment
 from src.viz_utils import display_clustered_segments, display_segments
 
 blocks: blocks_file_t = json.load(open(blocks_file))
@@ -99,14 +100,14 @@ clustered_points: list[list[Point]] = [cluster_to_houses(c) for c in clustered_s
 centers = [c[0] for c in clustered_points]
 display_clustered_segments(segments, labels, centers).save(os.path.join(BASE_DIR, 'viz', 'clusters.html'))
 
-center = Point(40.4418183, -79.9198965)
+start = Point(40.4418183, -79.9198965)
 area = clustered_points[5] + clustered_points[6]
 area_segments = clustered_segments[5] + clustered_segments[6]
 # Generate house distance matrix
-HouseDistances(area_segments, center)
+HouseDistances(area_segments, start)
 
 # Run the optimizer
-optimizer = Optimizer(area, num_lists=12, starting_location=center)
+optimizer = Optimizer(area, num_lists=12, starting_location=start)
 solution = optimizer.optimize()
 
 if solution is None:
@@ -114,6 +115,23 @@ if solution is None:
     sys.exit()
 
 optimizer.visualize()
+
+# Post-process
+post_processor = PostProcess(segments, points=area, canvas_start=start)
+walk_lists: list[list[SubSegment]] = []
+for tour in solution['tours']:
+    # Do not count the starting location service at the start or end
+    tour['stops'] = tour['stops'][1:-1]
+
+    walk_lists.append(post_processor.post_process(tour))
+
+for s in walk_lists[0]:
+    print('segment:', s.segment.id)
+    print('start:', s.start)
+    print('end:', s.end)
+    print('extremum:', s.extremum)
+    print('houses:', [h.id for h in s.houses])
+    print('nav pts:', s.navigation_points)
 
 
 def modify_labels(segments: list[Segment], labels: list[int]) -> list[int]:
