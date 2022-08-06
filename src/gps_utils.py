@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from math import acos, asin, cos, radians, sin
+from typing import Literal
 
 import utm
 from geographiclib.geodesic import Geodesic
@@ -15,6 +16,7 @@ class Point():
     lat: float
     lon: float
     id: str = field(default='', init=True)
+    type: Literal['house', 'node', 'other', ''] = field(default='', init=True)
 
     def __post_init__(self):
         self.id = self.id if self.id != '' else str(self.lat) + ':' + str(self.lon)

@@ -14,7 +14,7 @@ from tqdm import tqdm
 
 class NodeDistances():
     MAX_STORAGE_DISTANCE = 1600
-    _node_distances: dict[str, dict[str, Optional[float]]] = {}
+    _node_distances: dict[str, dict[str, float]] = {}
 
     @classmethod
     def _insert_pair(cls, node_1: Point, node_2: Point):
@@ -26,8 +26,8 @@ class NodeDistances():
             distance = great_circle_distance(node_1, node_2)
 
             # Only calculate and insert the routed distance if needed
-            cls._node_distances[node_1.id][node_2.id] = None if distance > cls.MAX_STORAGE_DISTANCE \
-                else get_distance(node_1, node_2)
+            if distance <= cls.MAX_STORAGE_DISTANCE:
+                cls._node_distances[node_1.id][node_2.id] = get_distance(node_1, node_2)
 
     @classmethod
     def __init__(cls, segments: list[Segment]):
@@ -84,12 +84,12 @@ class NodeDistances():
             p2 (Point): the second point
 
         Returns:
-            float: distance between the two nodes
-
-        Raises:
-            KeyError: if the pair does not exist in the table
+            float | None: distance between the two points if it exists, None otherwise
         '''
         try:
             return cls._node_distances[p1.id][p2.id]
         except KeyError:
-            return cls._node_distances[p2.id][p1.id]
+            try:
+                return cls._node_distances[p2.id][p1.id]
+            except KeyError:
+                return None

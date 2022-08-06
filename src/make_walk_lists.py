@@ -1,3 +1,5 @@
+# TODO: Fix arbitrary large distances throughout package
+
 from __future__ import annotations
 
 import csv
@@ -15,12 +17,13 @@ from src.config import (BASE_DIR, CLUSTERING_CONNECTED_THRESHOLD,
                         KEEP_APARTMENTS, blocks_file, blocks_file_t,
                         houses_file, houses_file_t)
 from src.distances.houses import HouseDistances
+from src.distances.mix import MixDistances
 from src.distances.nodes import NodeDistances
 from src.distances.segments import SegmentDistances
 from src.optimize import Optimizer
 from src.post_process import PostProcess
 from src.timeline_utils import Segment, SubSegment
-from src.viz_utils import display_clustered_segments, display_segments
+from src.viz_utils import display_clustered_segments, display_segments, display_walk_lists
 
 blocks: blocks_file_t = json.load(open(blocks_file))
 
@@ -58,9 +61,9 @@ del blocks
 
 # Convert the blocks to segments
 segments = [Segment(
-    id=i, start=Point(d['nodes'][0]['lat'], d['nodes'][0]['lon']),
-    end=Point(d['nodes'][-1]['lat'], d['nodes'][-1]['lon']), num_houses=len(d['addresses']),
-    navigation_points=[Point(k['lat'], k['lon']) for k in d['nodes']])
+    id=i, start=Point(d['nodes'][0]['lat'], d['nodes'][0]['lon'], type='node'),
+    end=Point(d['nodes'][-1]['lat'], d['nodes'][-1]['lon'], type='node'), num_houses=len(d['addresses']),
+    navigation_points=[Point(k['lat'], k['lon'], type='other') for k in d['nodes']])
         for i, d in requested_blocks.items()]
 
 display_segments(segments).save(os.path.join(BASE_DIR, 'viz', 'segments.html'))
@@ -70,6 +73,9 @@ NodeDistances(segments)
 
 # Generate segment distance matrix
 SegmentDistances(segments)
+
+# Initialize calculator for mixed distances
+MixDistances()
 
 # Cluster segments using kmedoids
 distance_matrix = SegmentDistances.get_distance_matrix()
@@ -90,7 +96,7 @@ def cluster_to_houses(cluster: list[Segment]) -> list[Point]:
                 continue
             points.append(Point(requested_blocks[segment.id]['addresses'][address]['lat'],
                                 requested_blocks[segment.id]['addresses'][address]['lon'],
-                                id=address))
+                                id=address, type='house'))
 
     return points
 
@@ -100,14 +106,25 @@ clustered_points: list[list[Point]] = [cluster_to_houses(c) for c in clustered_s
 centers = [c[0] for c in clustered_points]
 display_clustered_segments(segments, labels, centers).save(os.path.join(BASE_DIR, 'viz', 'clusters.html'))
 
-start = Point(40.4418183, -79.9198965)
+start = Point(40.4418183, -79.9198965, type='node')
 area = clustered_points[5] + clustered_points[6]
 area_segments = clustered_segments[5] + clustered_segments[6]
 # Generate house distance matrix
 HouseDistances(area_segments, start)
 
+unique_intersections: list[Point] = []
+unique_intersection_ids: set[str] = set()
+for segment in area_segments:
+    if segment.start.id not in unique_intersection_ids:
+        unique_intersections.append(segment.start)
+        unique_intersection_ids.add(segment.start.id)
+    if segment.end.id not in unique_intersection_ids:
+        unique_intersections.append(segment.end)
+        unique_intersection_ids.add(segment.end.id)
+
 # Run the optimizer
-optimizer = Optimizer(area, num_lists=12, starting_location=start)
+# optimizer = Optimizer(area, num_lists=12, starting_location=start)
+optimizer = Optimizer(area, num_lists=1, intersections=unique_intersections)
 solution = optimizer.optimize()
 
 if solution is None:
@@ -116,6 +133,7 @@ if solution is None:
 
 optimizer.visualize()
 
+sys.exit()
 # Post-process
 post_processor = PostProcess(segments, points=area, canvas_start=start)
 walk_lists: list[list[SubSegment]] = []
@@ -125,13 +143,17 @@ for tour in solution['tours']:
 
     walk_lists.append(post_processor.post_process(tour))
 
-for s in walk_lists[0]:
-    print('segment:', s.segment.id)
-    print('start:', s.start)
-    print('end:', s.end)
-    print('extremum:', s.extremum)
-    print('houses:', [h.id for h in s.houses])
-    print('nav pts:', s.navigation_points)
+list_visualizations = display_walk_lists(walk_lists)
+for i, walk_list in enumerate(list_visualizations):
+    walk_list.save(os.path.join(BASE_DIR, 'viz', 'walk_lists', '{}.html'.format(i)))
+
+# for s in walk_lists[0]:
+#     print('segment:', s.segment.id)
+#     print('start:', s.start)
+#     print('end:', s.end)
+#     print('extremum:', s.extremum)
+#     print('houses:', [h.id for h in s.houses])
+#     print('nav pts:', s.navigation_points)
 
 
 def modify_labels(segments: list[Segment], labels: list[int]) -> list[int]:

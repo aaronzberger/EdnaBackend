@@ -9,7 +9,7 @@ import matplotlib.cm as cm
 from folium.features import DivIcon
 
 from src.gps_utils import Point
-from src.timeline_utils import Segment
+from src.timeline_utils import Segment, SubSegment
 
 
 def generate_starter_map(segments: Optional[list[Segment]] = None,
@@ -98,12 +98,13 @@ def display_clustered_segments(segments: list[Segment],
     return m
 
 
-def display_house_orders(walk_lists: list[list[Point]]) -> folium.Map:
+def display_house_orders(walk_lists: list[list[Point]], cmap: Optional[ColorMap] = None) -> folium.Map:
     lats = [i.lat for walk_list in walk_lists for i in walk_list]
     lons = [i.lon for walk_list in walk_lists for i in walk_list]
     m = generate_starter_map(lats=lats, lons=lons)
 
-    cmap = ColorMap(0, len(walk_lists) - 1, cmap='RdYlGn')
+    if cmap is None:
+        cmap = ColorMap(0, len(walk_lists) - 1, cmap='RdYlGn')
 
     for i, walk_list in enumerate(walk_lists):
         text_color = cmap.get(i)
@@ -118,3 +119,25 @@ def display_house_orders(walk_lists: list[list[Point]]) -> folium.Map:
             ).add_to(m)
 
     return m
+
+
+def display_walk_lists(walk_lists: list[list[SubSegment]]) -> list[folium.Map]:
+    points = [list(itertools.chain.from_iterable([s.houses for s in walk_list])) for walk_list in walk_lists]
+    cmap = ColorMap(0, len(walk_lists) - 1, cmap='RdYlGn')
+
+    list_visualizations: list[folium.Map] = []
+
+    for i, walk_list in enumerate(walk_lists):
+        m = display_house_orders([points[i]], cmap=cmap)
+
+        for subsegment in walk_list:
+            folium.PolyLine(
+                [[p.lat, p.lon] for p in subsegment.navigation_points],
+                weight=8,
+                color='#212121',
+                opacity=0.7
+            ).add_to(m)
+
+        list_visualizations.append(m)
+
+    return list_visualizations

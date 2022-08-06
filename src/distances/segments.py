@@ -15,7 +15,7 @@ from tqdm import tqdm
 
 
 class SegmentDistances():
-    _segment_distances: dict[str, dict[str, Optional[float]]] = {}
+    _segment_distances: dict[str, dict[str, float]] = {}
     _segments: list[Segment] = []
 
     @classmethod
@@ -28,7 +28,8 @@ class SegmentDistances():
                 [NodeDistances.get_distance(i, j) for i, j in
                     [(s1.start, s2.start), (s1.start, s2.end), (s1.end, s2.start), (s1.end, s2.end)]]
             existing_distances = [i for i in routed_distances if i is not None]
-            cls._segment_distances[s1.id][s2.id] = None if len(existing_distances) == 0 else min(existing_distances)
+            if len(existing_distances) > 0:
+                cls._segment_distances[s1.id][s2.id] = min(existing_distances)
 
     @classmethod
     def __init__(cls, segments: list[Segment]):
@@ -62,24 +63,24 @@ class SegmentDistances():
             json.dump(cls._segment_distances, open(segment_distance_matrix_file, 'w', encoding='utf-8'), indent=4)
 
     @classmethod
-    def get_distance(cls, s1: Segment, s2: Segment) -> Optional[float]:
+    def get_distance(cls, p1: Segment, p2: Segment) -> Optional[float]:
         '''
-        Get the distance between two segments
+        Get the distance between two segments by their coordinates
 
         Parameters:
-            s1 (Segment): the first segment
-            s2 (Segment): the second segment
+            p1 (Segment): the first segment
+            p2 (Segment): the second segment
 
         Returns:
-            float: distance between the two segments
-
-        Raises:
-            KeyError: if the pair does not exist in the table
+            float | None: distance between the two segments if it exists, None otherwise
         '''
         try:
-            return cls._segment_distances[s1.id][s2.id]
+            return cls._segment_distances[p1.id][p2.id]
         except KeyError:
-            return cls._segment_distances[s2.id][s1.id]
+            try:
+                return cls._segment_distances[p2.id][p1.id]
+            except KeyError:
+                return None
 
     @classmethod
     def get_distance_matrix(cls) -> NDArray[Shape[len(_segments), len(_segments)], Float32]:

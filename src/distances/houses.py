@@ -3,6 +3,7 @@ import itertools
 import json
 import os
 import random
+from typing import Optional
 
 from src.config import (BASE_DIR, DIFFERENT_SEGMENT_ADDITION,
                         DIFFERENT_SIDE_ADDITION, KEEP_APARTMENTS, blocks_file,
@@ -148,7 +149,7 @@ class HouseDistances():
         json.dump(cls._house_distances, open(cls._save_file, 'w', encoding='utf-8'), indent=4)
 
     @classmethod
-    def get_distance(cls, p1: Point, p2: Point) -> float:
+    def get_distance(cls, p1: Point, p2: Point) -> Optional[float]:
         '''
         Get the distance between two houses by their coordinates
 
@@ -157,12 +158,12 @@ class HouseDistances():
             p2 (Point): the second point
 
         Returns:
-            float: distance between the two points
-
-        Raises:
-            KeyError: if the pair does not exist in the table
+            float | None: distance between the two points if it exists, None otherwise
         '''
         try:
             return cls._house_distances[p1.id][p2.id]
         except KeyError:
-            return cls._house_distances[p2.id][p1.id]
+            try:
+                return cls._house_distances[p2.id][p1.id]
+            except KeyError:
+                return None

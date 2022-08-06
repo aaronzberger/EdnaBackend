@@ -1,3 +1,5 @@
+# TODO: If a segment is traversed more than once, combine them into 1 (less confusing, same time)
+
 import itertools
 import json
 from copy import deepcopy
@@ -5,6 +7,7 @@ from typing import Optional
 
 from src.config import (Tour, blocks_file, blocks_file_t, houses_file,
                         houses_file_t)
+from src.distances.mix import MixDistances
 from src.distances.nodes import NodeDistances
 from src.gps_utils import Point, project_to_line
 from src.timeline_utils import Segment, SubSegment
@@ -20,33 +23,6 @@ class PostProcess():
         self.points = points
         self.canvas_start = canvas_start
 
-    def distance_through_ends(self, start: Point, house: Point, segment: Segment) -> tuple[float, float]:
-        '''
-        Determine the distances from an intersection point to a house through the two ends of the house's segments
-
-        Parameters:
-            start (Point): the start point, which should be an intersection
-            house (Point): the house, which should lie on the segment (the next parameter)
-            segment (Segment): the segment on which the house lies
-
-        Returns:
-            float: the distance from the intersection to the house through the start of the segment
-            float: the distance from the intersection to the house through the end of the segment
-        '''
-        try:
-            through_start = NodeDistances.get_distance(start, segment.start)
-            through_start = through_start if through_start is not None else 1600
-        except KeyError:
-            through_start = 1600
-        through_start += self.blocks[segment.id]['addresses'][house.id]['distance_to_start']
-        try:
-            through_end = NodeDistances.get_distance(start, segment.end)
-            through_end = through_end if through_end is not None else 1600
-        except KeyError:
-            through_end = 1600
-        through_end += self.blocks[segment.id]['addresses'][house.id]['distance_to_end']
-        return through_start, through_end
-
     def _calculate_exit(self, final_house: Point, next_house: Point) -> Point:
         '''
         Calculate the optimal exit point for a subsegment given the final house and the next house
@@ -60,15 +36,14 @@ class PostProcess():
         '''
         # Determine the exit direction, which will either be the start or end of the segment
         origin_segment = self.id_to_segment[self.address_to_segment_id[final_house.id]]
-        destination_segment = self.id_to_segment[self.address_to_segment_id[next_house.id]]
 
         through_end = self.blocks[origin_segment.id]['addresses'][final_house.id]['distance_to_end']
-        through_end += min(self.distance_through_ends(
-            start=origin_segment.end, house=next_house, segment=destination_segment))
+        through_end += min(MixDistances.get_distance_through_ends(
+            node=origin_segment.end, house=next_house))
 
         through_start = self.blocks[origin_segment.id]['addresses'][final_house.id]['distance_to_start']
-        through_start += min(self.distance_through_ends(
-            start=origin_segment.start, house=next_house, segment=destination_segment))
+        through_start += min(MixDistances.get_distance_through_ends(
+            node=origin_segment.start, house=next_house))
 
         return origin_segment.end if through_end < through_start else origin_segment.start
 
@@ -88,14 +63,16 @@ class PostProcess():
 
         through_end = self.blocks[destination_segment.id]['addresses'][next_house.id]['distance_to_end']
         try:
-            through_end += NodeDistances.get_distance(intersection, destination_segment.end)  # type: ignore
-        except (KeyError, TypeError):
+            to_end = NodeDistances.get_distance(intersection, destination_segment.end)
+            through_end += 1600 if to_end is None else to_end
+        except TypeError:
             through_end += 1600
 
         through_start = self.blocks[destination_segment.id]['addresses'][next_house.id]['distance_to_start']
         try:
-            through_start += NodeDistances.get_distance(intersection, destination_segment.start)  # type: ignore
-        except (KeyError, TypeError):
+            to_start = NodeDistances.get_distance(intersection, destination_segment.start)
+            through_start += 1600 if to_start is None else to_start
+        except TypeError:
             through_start += 1600
 
         return destination_segment.end if through_end < through_start else destination_segment.start
@@ -131,7 +108,7 @@ class PostProcess():
 
         # Calculate the navigation points
         middle_points = self.blocks[segment.id]['nodes'][first_subsegment[1]:last_subsegment[0]]
-        navigation_points = [closest_to_start] + [Point(**p) for p in middle_points] + [closest_to_end]
+        navigation_points = [extremum[0]] + [Point(**p, type='other') for p in middle_points] + [extremum[1]]
 
         # If the start and end are different, this is a forward or backward bouncing block
         if entrance != exit:

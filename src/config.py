@@ -1,3 +1,4 @@
+from datetime import timedelta
 import os
 from typing import Any, TypedDict
 
@@ -25,14 +26,14 @@ solution_path = os.path.join(BASE_DIR, 'optimize', 'solution.json')
 
 # Maximum distance between two nodes where they should be stored
 ARBITRARY_LARGE_DISTANCE = 10000
-MAX_TIMELINE_MINS = 180
+MAX_ROUTE_TIME = timedelta(minutes=180)
+MAX_ROUTE_DISTANCE = 2400
 WALKING_M_PER_S = 0.75
 MINS_PER_HOUSE = 1.5
 CLUSTERING_CONNECTED_THRESHOLD = 100  # Meters where blocks are connected
 KEEP_APARTMENTS = False
 DIFFERENT_SEGMENT_ADDITION = 20
 DIFFERENT_SIDE_ADDITION = 15
-MAX_HOUSES_PER_LIST = None
 
 '----------------------------------------------------------------------------------'
 '                                       Type Hints                                 '
@@ -166,6 +167,7 @@ class Fleet(TypedDict):
 class Place(TypedDict):
     location: Location
     duration: int
+    times: list[list[str]]
 
 
 class Service(TypedDict):
@@ -175,15 +177,21 @@ class Service(TypedDict):
 class Job(TypedDict):
     id: str
     services: list[Service]
+    value: int
 
 
 class Plan(TypedDict):
     jobs: list[Job]
 
 
+class Objective(TypedDict):
+    type: str
+
+
 class Problem(TypedDict):
     plan: Plan
     fleet: Fleet
+    objectives: list[list[Objective]]
 
 
 class DistanceMatrix(TypedDict):
