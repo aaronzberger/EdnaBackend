@@ -43,7 +43,10 @@ class MixDistances():
     @classmethod
     def get_distance(cls, p1: Point, p2: Point) -> Optional[float]:
         if p1.type == p2.type == 'house':
-            return HouseDistances.get_distance(p1, p2)
+            try:
+                return HouseDistances.get_distance(p1, p2)[0]
+            except Exception:
+                return None
         elif p1.type == p2.type == 'node':
             return NodeDistances.get_distance(p1, p2)
         elif p1.type == 'node' and p2.type == 'house':

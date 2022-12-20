@@ -27,14 +27,22 @@ solution_path = os.path.join(BASE_DIR, 'optimize', 'solution.json')
 # Maximum distance between two nodes where they should be stored
 ARBITRARY_LARGE_DISTANCE = 10000
 MAX_ROUTE_TIME = timedelta(minutes=180)
-MAX_ROUTE_DISTANCE = 2400
+MAX_ROUTE_DISTANCE = 10000
 WALKING_M_PER_S = 0.75
 MINS_PER_HOUSE = 1.5
 CLUSTERING_CONNECTED_THRESHOLD = 100  # Meters where blocks are connected
 KEEP_APARTMENTS = False
-DIFFERENT_SEGMENT_ADDITION = 20
-DIFFERENT_SIDE_ADDITION = 15
-
+DIFFERENT_SIDE_TIME_DIVISION = 3
+DIFFERENT_SIDE_COST = {
+    'motorway': 400,
+    'trunk': 400,
+    'primary': 100,
+    'secondary': 60,
+    'tertiary': 25,
+    'unclassified': 15,
+    'residential': 15,
+    'service': 5
+}
 '----------------------------------------------------------------------------------'
 '                                       Type Hints                                 '
 '----------------------------------------------------------------------------------'
@@ -62,6 +70,7 @@ class HouseAssociationDict(TypedDict):
 class SegmentDict(TypedDict):
     addresses: dict[str, HouseAssociationDict]
     nodes: node_list_t
+    type: str
 
 
 blocks_file_t = dict[str, SegmentDict]
@@ -164,14 +173,19 @@ class Fleet(TypedDict):
     profiles: list[VehicleProfile]
 
 
-class Place(TypedDict):
+class PlaceTW(TypedDict):
     location: Location
     duration: int
     times: list[list[str]]
 
 
+class Place(TypedDict):
+    location: Location
+    duration: int
+
+
 class Service(TypedDict):
-    places: list[Place]
+    places: list[PlaceTW | Place]
 
 
 class Job(TypedDict):

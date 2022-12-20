@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import itertools
 import json
 import os
 import sys
@@ -23,7 +24,9 @@ from src.distances.segments import SegmentDistances
 from src.optimize import Optimizer
 from src.post_process import PostProcess
 from src.timeline_utils import Segment, SubSegment
-from src.viz_utils import display_clustered_segments, display_segments, display_walk_lists
+from src.viz_utils import (display_clustered_segments, display_segments,
+                           display_walk_lists)
+from src.walkability_scorer import score
 
 blocks: blocks_file_t = json.load(open(blocks_file))
 
@@ -63,7 +66,7 @@ del blocks
 segments = [Segment(
     id=i, start=Point(d['nodes'][0]['lat'], d['nodes'][0]['lon'], type='node'),
     end=Point(d['nodes'][-1]['lat'], d['nodes'][-1]['lon'], type='node'), num_houses=len(d['addresses']),
-    navigation_points=[Point(k['lat'], k['lon'], type='other') for k in d['nodes']])
+    navigation_points=[Point(k['lat'], k['lon'], type='other') for k in d['nodes']], type=d['type'])
         for i, d in requested_blocks.items()]
 
 display_segments(segments).save(os.path.join(BASE_DIR, 'viz', 'segments.html'))
@@ -107,10 +110,17 @@ centers = [c[0] for c in clustered_points]
 display_clustered_segments(segments, labels, centers).save(os.path.join(BASE_DIR, 'viz', 'clusters.html'))
 
 start = Point(40.4418183, -79.9198965, type='node')
-area = clustered_points[5] + clustered_points[6]
-area_segments = clustered_segments[5] + clustered_segments[6]
+area = clustered_points[4] + clustered_points[5] + clustered_points[6]
+area_segments = clustered_segments[4] + clustered_segments[5] + clustered_segments[6]
+
+# start = Point(40.4409128, -79.9277741, type='node')
+# area = clustered_points[8] + clustered_points[3] + clustered_points[5]
+# area_segments = clustered_segments[8] + clustered_segments[3] + clustered_segments[5]
 # Generate house distance matrix
 HouseDistances(area_segments, start)
+
+# area = list(itertools.chain.from_iterable(clustered_points))
+# area_segments = list(itertools.chain.from_iterable(clustered_segments))
 
 unique_intersections: list[Point] = []
 unique_intersection_ids: set[str] = set()
@@ -122,9 +132,14 @@ for segment in area_segments:
         unique_intersections.append(segment.end)
         unique_intersection_ids.add(segment.end.id)
 
+print(len(unique_intersection_ids), len(area))
+
 # Run the optimizer
 # optimizer = Optimizer(area, num_lists=12, starting_location=start)
-optimizer = Optimizer(area, num_lists=1, intersections=unique_intersections)
+# optimizer = Optimizer(area, num_lists=10, intersections=unique_intersections)
+
+# TODO TODO: FIX ENTIRE TURF SPLIT PROBLEM
+optimizer = Optimizer(area, num_lists=10, starting_location=start)
 solution = optimizer.optimize()
 
 if solution is None:
@@ -133,13 +148,19 @@ if solution is None:
 
 optimizer.visualize()
 
-sys.exit()
 # Post-process
+
+# depot = Point(-1, -1, id='depot')
+# points = area + unique_intersections + [depot]
 post_processor = PostProcess(segments, points=area, canvas_start=start)
 walk_lists: list[list[SubSegment]] = []
-for tour in solution['tours']:
+for i, tour in enumerate(solution['tours']):
     # Do not count the starting location service at the start or end
     tour['stops'] = tour['stops'][1:-1]
+
+    if len(tour['stops']) == 0:
+        print('List {} has 0 stops'.format(i))
+        continue
 
     walk_lists.append(post_processor.post_process(tour))
 
@@ -147,6 +168,39 @@ list_visualizations = display_walk_lists(walk_lists)
 for i, walk_list in enumerate(list_visualizations):
     walk_list.save(os.path.join(BASE_DIR, 'viz', 'walk_lists', '{}.html'.format(i)))
 
+scores = [score(start, start, lis) for lis in walk_lists]
+total_crossings = {
+    'motorway': 0,
+    'trunk': 0,
+    'primary': 0,
+    'secondary': 0,
+    'tertiary': 0,
+    'unclassified': 0,
+    'residential': 0,
+    'service': 0,
+    'other': 0
+}
+for s in scores:
+    for key, value in s['road_crossings'].items():
+        total_crossings[key] += value
+print('all crossings', total_crossings)
+print('distance', sum([s['distance'] for s in scores]))
+print('num segments', sum([s['segments'] for s in scores]))
+print('num houses', sum([s['num_houses'] for s in scores]))
+
+output = {}
+output['segments'] = []
+for sub in walk_lists[0]:
+    segment = {}
+    segment['nodes'] = []
+    for nav_pt in sub.navigation_points:
+        segment['nodes'].append({'coordinates': {'lat': nav_pt.lat, 'lon': nav_pt.lon}})
+    segment['houses'] = []
+    for house in sub.houses:
+        segment['houses'].append({'address': house.id, 'coordinates': {'lat': house.lat, 'lon': house.lon}})
+    output['segments'].append(segment)
+
+json.dump(output, open('app_list.json', 'w'), indent=2)
 # for s in walk_lists[0]:
 #     print('segment:', s.segment.id)
 #     print('start:', s.start)

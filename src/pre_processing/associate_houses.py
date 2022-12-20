@@ -7,7 +7,7 @@ import itertools
 import json
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Optional
+from typing import Literal, Optional
 
 from src.config import (HouseAssociationDict, Node, SegmentDict,
                         address_pts_file, block_output_file, blocks_file,
@@ -54,6 +54,7 @@ class Segment():
     id: int
     side: bool
     all_nodes: list[str]
+    type: Literal['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'unclassified', 'residential']
 
 
 with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progress:
@@ -100,6 +101,9 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
                             if DEBUG:
                                 print('Replacing best segment with distance {:.2f}'.format(
                                     -1 if best_segment is None else best_segment.distance))
+                            
+                            used_info = possible_street_names.index(street_name)
+
                             best_segment = Segment(
                                 start_node_id=start_node,
                                 sub_node_1=deepcopy(node_1),
@@ -108,7 +112,8 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
                                 distance=abs(house_to_segment),
                                 id=block[1],
                                 side=True if house_to_segment > 0 else False,
-                                all_nodes=[str(id) for id in block[2]['nodes']])
+                                all_nodes=[str(id) for id in block[2]['nodes']],
+                                type=block[2]['ways'][used_info][1]['highway'])
 
         if best_segment is not None and best_segment.distance <= MAX_DISTANCE:
             # Create the segment ID from the two nodes, ID, and direction if necessary
@@ -134,7 +139,8 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
                 # Place this segment in the table
                 segments_by_id[segment_id] = SegmentDict(
                     addresses={},
-                    nodes=all_nodes_coords
+                    nodes=all_nodes_coords,
+                    type=best_segment.type
                 )
 
             all_points = segments_by_id[segment_id]['nodes']

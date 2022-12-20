@@ -10,11 +10,11 @@ from termcolor import colored
 
 from src.config import (BASE_DIR, MAX_ROUTE_DISTANCE, MAX_ROUTE_TIME,
                         MINS_PER_HOUSE, VRP_CLI_PATH, WALKING_M_PER_S, Costs,
-                        DistanceMatrix, Fleet, Job, Location, Objective, Place,
+                        DistanceMatrix, Fleet, Job, Location, Objective, PlaceTW,
                         Plan, Problem, Profile, Service, Shift, ShiftEnd,
                         ShiftStart, Solution, Statistic, Stop, Time, Tour,
                         Vehicle, VehicleLimits, VehicleProfile, problem_path,
-                        solution_path)
+                        solution_path, Place)
 from src.distances.houses import HouseDistances
 from src.distances.mix import MixDistances
 from src.gps_utils import Point
@@ -25,7 +25,7 @@ class Optimizer():
     distance_matrix_save = os.path.join(BASE_DIR, 'optimize', 'distances.json')
 
     def __init__(self, cluster: list[Point], num_lists: int,
-                 starting_location: Optional[Point] = None, intersections: Optional[list[Point]] = None):
+                 starting_location: Optional[Point] = None, intersections: Optional[list[Point]] = None) -> None:
         self.points = deepcopy(cluster)
 
         if starting_location is None:
@@ -86,14 +86,14 @@ class Optimizer():
         jobs: list[Job] = []
         for i, location in enumerate(self.points):
             if location.type == 'node':
-                service_start = Service(places=[Place(
+                service_start = Service(places=[PlaceTW(
                     location=Location(index=i), duration=60, times=[[node_start_open, node_start_close]])])
-                service_end = Service(places=[Place(
+                service_end = Service(places=[PlaceTW(
                     location=Location(index=i), duration=60, times=[[node_end_open, node_end_close]])])
                 jobs.append(Job(id=location.id, services=[service_start, service_end], value=1))
             else:
                 delivery = Service(places=[Place(location=Location(index=i),
-                                                 duration=round(MINS_PER_HOUSE * 60), times=[full_time_window])])
+                                                 duration=round(MINS_PER_HOUSE * 60))])
                 jobs.append(Job(id=location.id, services=[delivery], value=10))
 
         # Create the fleet
@@ -114,14 +114,19 @@ class Optimizer():
         json.dump(problem, open(os.path.join(BASE_DIR, 'optimize', 'problem.json'), 'w'), indent=2)
 
     def create_group_canvas(self, num_lists: int):
+        start_time = datetime(year=2022, month=1, day=1, hour=0, minute=0, second=0)
+        end_time = start_time + MAX_ROUTE_TIME
+
+        full_time_window = [start_time.strftime('%Y-%m-%dT%H:%M:%SZ'), end_time.strftime('%Y-%m-%dT%H:%M:%SZ')]
+
         # Construct the distance matrix file
         distance_matrix = DistanceMatrix(profile='person', travelTimes=[], distances=[])
         for pt in self.points:
             for other_pt in self.points:
-                distance = HouseDistances.get_distance(pt, other_pt)
-                distance = distance if distance is not None else 10000.
-                distance_matrix['distances'].append(round(distance))
-                distance_matrix['travelTimes'].append(round(distance / WALKING_M_PER_S))
+                distance_cost = HouseDistances.get_distance(pt, other_pt)
+                distance_cost = distance_cost if distance_cost is not None else (10000, 10000)
+                distance_matrix['distances'].append(round(distance_cost[0] + distance_cost[1]))
+                distance_matrix['travelTimes'].append(round(distance_cost[0] / WALKING_M_PER_S))
 
         json.dump(distance_matrix, open(self.distance_matrix_save, 'w'), indent=2)
 
@@ -133,7 +138,7 @@ class Optimizer():
             if i == self.start_idx:
                 # The starting location is not a real service
                 continue
-            service = Service(places=[Place(location=Location(index=i), duration=round(MINS_PER_HOUSE * 60), times=[])])
+            service = Service(places=[Place(location=Location(index=i), duration=round(MINS_PER_HOUSE * 60))])
             jobs.append(Job(id=house.id, services=[service], value=1))
 
         # Create the fleet
@@ -141,14 +146,14 @@ class Optimizer():
             typeId='person',
             vehicleIds=['walker_{}'.format(i) for i in range(num_lists)],
             profile=Profile(matrix='person'),
-            costs=Costs(fixed=0, distance=2, time=3),
-            shifts=[Shift(start=ShiftStart(earliest='2022-08-01T05:00:00Z', location=Location(index=self.start_idx)),
-                          end=ShiftEnd(latest='2022-08-01T08:00:00Z', location=Location(index=self.start_idx)))],
+            costs=Costs(fixed=0, distance=1, time=0),
+            shifts=[Shift(start=ShiftStart(earliest=full_time_window[0], location=Location(index=self.start_idx)),
+                          end=ShiftEnd(latest=full_time_window[1], location=Location(index=self.start_idx)))],
             capacity=[1],
             limits=VehicleLimits(shiftTime=MAX_ROUTE_TIME.seconds, maxDistance=MAX_ROUTE_DISTANCE))
 
         fleet = Fleet(vehicles=[walker], profiles=[VehicleProfile(name='person')])
-        objectives = [[Objective(type='maximize-value')], [Objective(type='minimize-cost')]]
+        objectives = [[Objective(type='maximize-value')], [Objective(type='minimize-distance')], [Objective(type='minimize-cost')]]
         problem = Problem(plan=Plan(jobs=jobs), fleet=fleet, objectives=objectives)
 
         json.dump(problem, open(os.path.join(BASE_DIR, 'optimize', 'problem.json'), 'w'), indent=2)
@@ -156,11 +161,11 @@ class Optimizer():
     def optimize(self) -> Optional[Solution]:
         start_time = time.time()
 
-        search_deep = True
+        search_deep = False
 
         p = subprocess.run(
             [VRP_CLI_PATH, 'solve', 'pragmatic', problem_path, '-m', self.distance_matrix_save,
-             '-o', solution_path, '-t', '60', '--min-cv', 'period,5,0.01,true',
+             '-o', solution_path, '-t', '60', '--min-cv', 'sample,200,0.01,true',
              '--search-mode', 'deep' if search_deep else 'broad', '--log'])
 
         if p.returncode != 0:

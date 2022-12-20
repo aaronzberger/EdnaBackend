@@ -1,4 +1,4 @@
-# TODO: If a segment is traversed more than once, combine them into 1 (less confusing, same time)
+# TODO: If a segment is traversed more than once, make sure it matches (down one back on other side)
 
 import itertools
 import json
@@ -78,6 +78,7 @@ class PostProcess():
         return destination_segment.end if through_end < through_start else destination_segment.start
 
     def _process_subsegment(self, houses: list[Point], segment: Segment, entrance: Point, exit: Point) -> SubSegment:
+        original_houses = deepcopy(houses)
         block_info = self.blocks[segment.id]['addresses']
 
         # Find the first subsegment containing houses
@@ -96,6 +97,10 @@ class PostProcess():
         closest_to_end = max(houses_on_last, key=lambda d: d['distance_to_start'])
         closest_to_end = Point(closest_to_end['lat'], closest_to_end['lon'])
 
+        # print('Found that segment {} had first add {} and last {}, on subsegments {} and {}'.format(
+        #     segment.id, closest_to_start, closest_to_end, first_subsegment, last_subsegment
+        # ))
+
         # Project these houses onto their respective subsegments to obtain the furthest points on the segment
         extremum = (
             project_to_line(
@@ -106,8 +111,18 @@ class PostProcess():
                 p2=segment.navigation_points[last_subsegment[0]], p3=segment.navigation_points[last_subsegment[1]])
         )
 
+        # TODO: Fix extremum calculation
+        # extremum = (
+        #     project_to_line(
+        #         p1=closest_to_start,
+        #         p2=Point(**self.blocks[segment.id]['nodes'][first_subsegment[0]]), p3=Point(**self.blocks[segment.id]['nodes'][first_subsegment[1]])),
+        #     project_to_line(
+        #         p1=closest_to_end,
+        #         p2=Point(**self.blocks[segment.id]['nodes'][last_subsegment[0]]), p3=Point(**self.blocks[segment.id]['nodes'][last_subsegment[1]]))
+        # )
+
         # Calculate the navigation points
-        middle_points = self.blocks[segment.id]['nodes'][first_subsegment[1]:last_subsegment[0]]
+        middle_points = self.blocks[segment.id]['nodes'][first_subsegment[1] + 1:last_subsegment[0]]
         navigation_points = [extremum[0]] + [Point(**p, type='other') for p in middle_points] + [extremum[1]]
 
         # If the start and end are different, this is a forward or backward bouncing block
@@ -137,7 +152,12 @@ class PostProcess():
 
         current_subsegment_points: list[Point] = []
 
-        houses = [self.points[h['location']['index']] for h in tour['stops']]
+        try:
+            houses = [self.points[h['location']['index']] for h in tour['stops']]
+        except IndexError:
+            print(tour['stops'])
+            print(len(self.points))
+            print([h['location']['index']] for h in tour['stops'])
 
         # Determine the starting intersection for the walk list
         if self.canvas_start is None:
@@ -159,15 +179,22 @@ class PostProcess():
 
             if next_segment_id != segment_id:
                 exit_point = self._calculate_exit(house, next_house)
-                walk_list.append(self._process_subsegment(
+                subsegment = self._process_subsegment(
                     current_subsegment_points, self.id_to_segment[segment_id],
                     entrance=self._calculate_entrance(running_intersection, current_subsegment_points[0]),
-                    exit=exit_point))
+                    exit=exit_point)
 
                 current_subsegment_points = []
 
                 # After completing this segment, the canvasser is at the end of the subsegment
                 running_intersection = exit_point
+
+                # If this is a single-house segment on the side
+                if subsegment.start == subsegment.end and len(subsegment.houses) == 1:
+                    print('Removed a stray segment for walkability')
+                    continue
+
+                walk_list.append(subsegment)
 
         # Since we used pairwise, the last house is never evaluated
         current_subsegment_points.append(houses[-1])
@@ -181,5 +208,7 @@ class PostProcess():
         walk_list.append(self._process_subsegment(
             current_subsegment_points, self.id_to_segment[self.address_to_segment_id[houses[-1].id]],
             entrance=running_intersection, exit=exit_point))
+        
+        # Now, do inter-segment ordering
 
         return walk_list

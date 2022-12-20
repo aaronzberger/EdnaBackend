@@ -3,11 +3,11 @@ import itertools
 import json
 import os
 import random
+from statistics import mean
 from typing import Optional
 
-from src.config import (BASE_DIR, DIFFERENT_SEGMENT_ADDITION,
-                        DIFFERENT_SIDE_ADDITION, KEEP_APARTMENTS, blocks_file,
-                        blocks_file_t)
+from src.config import (BASE_DIR, DIFFERENT_SIDE_COST, DIFFERENT_SIDE_TIME_DIVISION, KEEP_APARTMENTS,
+                        blocks_file, blocks_file_t)
 from src.distances.nodes import NodeDistances
 from src.gps_utils import Point
 from src.route import get_distance
@@ -17,7 +17,7 @@ from tqdm import tqdm
 
 class HouseDistances():
     MAX_STORAGE_DISTANCE = 1600
-    _house_distances: dict[str, dict[str, float]] = {}
+    _house_distances: dict[str, dict[str, tuple[float, float]]] = {}
     _save_file = os.path.join(BASE_DIR, 'store', 'house_distances.json')
     _blocks: blocks_file_t = json.load(open(blocks_file))
 
@@ -38,7 +38,7 @@ class HouseDistances():
         end_distances = [distance_to_start, distance_to_end]
 
         if pt.id not in cls._house_distances:
-            cls._house_distances[pt.id] = {pt.id: 0}
+            cls._house_distances[pt.id] = {pt.id: (0, 0)}
 
         for address, info in s_houses.items():
             if not KEEP_APARTMENTS and ' APT ' in address:
@@ -47,7 +47,7 @@ class HouseDistances():
             through_start = end_distances[0] + info['distance_to_start']
             through_end = end_distances[1] + info['distance_to_end']
 
-            cls._house_distances[pt.id][address] = round(min([through_start, through_end]))
+            cls._house_distances[pt.id][address] = (round(min([through_start, through_end])), 0)
 
     @classmethod
     def _insert_pair(cls, s1: Segment, s2: Segment):
@@ -73,14 +73,22 @@ class HouseDistances():
                     cls._house_distances[address_1] = {}
 
                 if address_1 == address_2:
-                    cls._house_distances[address_1][address_2] = 0
+                    cls._house_distances[address_1][address_2] = (0, 0)
                 else:
+                    cost = 0
                     # Simply use the difference of the distances to the start
                     distance = round(
                         abs(info_1['distance_to_start'] - info_2['distance_to_start']))
                     if info_1['side'] != info_2['side']:
-                        distance += DIFFERENT_SIDE_ADDITION
-                    cls._house_distances[address_1][address_2] = distance
+                        # Add the actual distance to cross the road
+                        distance += (info_1['distance_to_road'] + info_2['distance_to_road']) / DIFFERENT_SIDE_TIME_DIVISION
+
+                        # Add the cost of crossing (depending on the type of road)
+                        try:
+                            cost = DIFFERENT_SIDE_COST[s1.type]
+                        except KeyError:
+                            print('Unable to find penalty for crossing {} street. Adding none'.format(s1.type))
+                    cls._house_distances[address_1][address_2] = (distance, cost)
             return
 
         # Calculate the distances between the segment endpoints
@@ -104,8 +112,13 @@ class HouseDistances():
             end_start = end_distances[2] + info_1['distance_to_end'] + info_2['distance_to_start']
             end_end = end_distances[3] + info_1['distance_to_end'] + info_2['distance_to_end']
 
-            cls._house_distances[address_1][address_2] = round(
-                min([start_start, start_end, end_start, end_end])) + DIFFERENT_SEGMENT_ADDITION
+            distance = round(min([start_start, start_end, end_start, end_end]))
+            cost = 0
+            try:
+                cost = mean([DIFFERENT_SIDE_COST[s1.type], DIFFERENT_SIDE_COST[s2.type]])
+            except KeyError:
+                print('Unable to find penalty for crossing {} street. Adding none'.format(s1.type))
+            cls._house_distances[address_1][address_2] = (distance, cost)
 
     @classmethod
     def __init__(cls, cluster: list[Segment], center: Point):
@@ -149,7 +162,7 @@ class HouseDistances():
         json.dump(cls._house_distances, open(cls._save_file, 'w', encoding='utf-8'), indent=4)
 
     @classmethod
-    def get_distance(cls, p1: Point, p2: Point) -> Optional[float]:
+    def get_distance(cls, p1: Point, p2: Point) -> Optional[tuple[float, float]]:
         '''
         Get the distance between two houses by their coordinates
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 import itertools
 from copy import deepcopy
 from dataclasses import dataclass
+from typing import Literal
 
 from src.config import MINS_PER_HOUSE, WALKING_M_PER_S
 from src.gps_utils import Point, great_circle_distance
@@ -15,6 +16,7 @@ class Segment():
     end: Point
     num_houses: int
     navigation_points: list[Point]
+    type: Literal['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'unclassified', 'residential']
 
     def __post_init__(self):
         self.length: float = 0.0
