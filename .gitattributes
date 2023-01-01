@@ -1,4 +1,1 @@
-address_pts.csv filter=lfs diff=lfs merge=lfs -text
-hash_nodes.pkl filter=lfs diff=lfs merge=lfs -text
-associated.csv filter=lfs diff=lfs merge=lfs -text
-store/house_distances.json filter=lfs diff=lfs merge=lfs -text
+cs61-build-docker    text eol=lf
