@@ -3,14 +3,14 @@
 from __future__ import annotations
 
 import csv
-import itertools
 import json
 import os
 import sys
 from copy import deepcopy
 from sys import argv
 
-import kmedoids
+# import kmedoids
+from sklearn_extra.cluster import KMedoids
 from termcolor import colored
 
 from gps_utils import Point
@@ -82,8 +82,8 @@ MixDistances()
 
 # Cluster segments using kmedoids
 distance_matrix = SegmentDistances.get_distance_matrix()
-km: kmedoids.KMedoidsResult = kmedoids.fasterpam(diss=distance_matrix, medoids=10, max_iter=100, random_state=0)
-labels: list[int] = km.labels
+km = KMedoids(metric='precomputed', max_iter=100).fit(distance_matrix)
+labels: list[int] = km.labels_
 
 clustered_segments: list[list[Segment]] = [[segments[i] for i in range(len(segments)) if labels[i] == k]
                                            for k in range(max(labels))]

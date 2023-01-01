@@ -22,7 +22,46 @@ RUN apt-get -y install\
  psmisc\
  sudo\
  vim\
- wget
+ wget\
+ locales\
+ python3\
+ python3-pip
+
+RUN pip install\
+ scikit-learn==1.1.1\
+ scikit-learn-extra==0.2.0\
+ branca==0.5.0\
+ certifi==2022.6.15\
+ charset-normalizer==2.1.0\
+ cycler==0.11.0\
+ folium==0.12.1.post1\
+ fonttools==4.34.4\
+ geographiclib==2.0\
+ geojson==2.5.0\
+ haversine==2.6.0\
+ idna==3.3\
+ Jinja2==3.1.2\
+ kiwisolver==1.4.4\
+ MarkupSafe==2.1.1\
+ matplotlib==3.5.2\
+ mccabe==0.6.1\
+ nptyping==2.2.0\
+ numpy==1.23.1\
+ overpass==0.7\
+ packaging==21.3\
+ Pillow==9.2.0\
+ polyline==1.4.0\
+ pycodestyle==2.8.0\
+ pyflakes==2.4.0\
+ pyparsing==3.0.9\
+ python-dateutil==2.8.2\
+ requests==2.28.1\
+ Shapely==1.8.2\
+ six==1.16.0\
+ termcolor==1.1.0\
+ tqdm==4.64.0\
+ urllib3==1.26.11\
+ utm==0.7.0
 
 # set up default locale
 RUN locale-gen en_US.UTF-8
@@ -60,5 +99,10 @@ RUN git config --global user.name "${USER}" && \
 
 WORKDIR /home/user
 CMD ["/bin/bash", "-l"]
+
+# Install Rust, Cargo, and the VRP solver
+RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
+ENV PATH="/home/user/.cargo/bin:${PATH}"
+RUN cargo install vrp-cli
 
 # Initial version of this Dockerfile by Todd Morrill, CS 61 DCE student
