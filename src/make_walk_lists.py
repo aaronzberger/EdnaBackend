@@ -9,7 +9,6 @@ import sys
 from copy import deepcopy
 from sys import argv
 
-# import kmedoids
 from sklearn_extra.cluster import KMedoids
 from termcolor import colored
 
@@ -28,18 +27,24 @@ from src.viz_utils import (display_clustered_segments, display_segments,
                            display_walk_lists)
 from src.walkability_scorer import score
 
-blocks: blocks_file_t = json.load(open(blocks_file))
+all_blocks: blocks_file_t = json.load(open(blocks_file))
 
 '-----------------------------------------------------------------------------------------'
 '                                Handle universe file                                     '
+' The universe file is the list of voters to target for these routes. It should be a CSV  '
+' file in the format [Voter ID, Address, City, Zip]                                       '
 '-----------------------------------------------------------------------------------------'
 if len(argv) == 2:
+    # Ensure the provided file exists
     if not os.path.exists(argv[1]):
         raise FileExistsError('Usage: make_walk_lists.py [UNIVERSE FILE]')
+
     reader = csv.DictReader(open(argv[1]))
     houses_to_id: houses_file_t = json.load(open(houses_file))
     requested_blocks: blocks_file_t = {}
     total_houses = failed_houses = 0
+
+    # Process each requested house
     for house in reader:
         formatted_address = house['Address'].upper()
         total_houses += 1
@@ -47,20 +52,20 @@ if len(argv) == 2:
             failed_houses += 1
             continue
         block_id = houses_to_id[formatted_address]
-        house_info = deepcopy(blocks[block_id]['addresses'][formatted_address])
+        house_info = deepcopy(all_blocks[block_id]['addresses'][formatted_address])
 
         if block_id in requested_blocks:
             requested_blocks[block_id]['addresses'][formatted_address] = house_info
         else:
-            requested_blocks[block_id] = deepcopy(blocks[block_id])
+            requested_blocks[block_id] = deepcopy(all_blocks[block_id])
             requested_blocks[block_id]['addresses'] = {formatted_address: house_info}
     print('Failed on {} of {} houses'.format(failed_houses, total_houses))
 else:
-    requested_blocks = deepcopy(blocks)
+    requested_blocks = json.load(open(blocks_file))
 
-# After this point, the original blocks variable should never be used, so delete it for error finding
-blocks.clear()
-del blocks
+# After this point, the original blocks variable should never be used, so delete it
+all_blocks.clear()
+del all_blocks
 
 # Convert the blocks to segments
 segments = [Segment(

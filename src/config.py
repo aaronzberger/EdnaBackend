@@ -6,8 +6,10 @@ from typing import Any, TypedDict
 '                                     File Paths                                   '
 '----------------------------------------------------------------------------------'
 
-BASE_DIR = '/Users/aaron/Documents/GitHub/WLC'
-VRP_CLI_PATH = "/Users/aaron/.cargo/bin/vrp-cli"
+# BASE_DIR = '/Users/aaron/Documents/GitHub/WLC'
+BASE_DIR = '/home/user/WLC'
+# VRP_CLI_PATH = "/Users/aaron/.cargo/bin/vrp-cli"
+VRP_CLI_PATH = "/home/user/.cargo/bin/vrp-cli"
 
 node_distance_table_file = os.path.join(BASE_DIR, 'store', 'node_distances.json')
 segment_distance_matrix_file = os.path.join(BASE_DIR, 'store', 'segment_distance_matrix.json')
@@ -16,7 +18,10 @@ address_pts_file = os.path.join(BASE_DIR, 'input', 'address_pts.csv')
 block_output_file = os.path.join(BASE_DIR, 'input', 'block_output.json')
 blocks_file = os.path.join(BASE_DIR, 'blocks.json')
 associated_file = os.path.join(BASE_DIR, 'associated.csv')
+
+# Map addresses to block IDs
 houses_file = os.path.join(BASE_DIR, 'houses.json')
+
 problem_path = os.path.join(BASE_DIR, 'optimize', 'problem.json')
 solution_path = os.path.join(BASE_DIR, 'optimize', 'solution.json')
 

@@ -153,7 +153,8 @@ class Optimizer():
             limits=VehicleLimits(shiftTime=MAX_ROUTE_TIME.seconds, maxDistance=MAX_ROUTE_DISTANCE))
 
         fleet = Fleet(vehicles=[walker], profiles=[VehicleProfile(name='person')])
-        objectives = [[Objective(type='maximize-value')], [Objective(type='minimize-distance')], [Objective(type='minimize-cost')]]
+        # objectives = [[Objective(type='maximize-value')], [Objective(type='minimize-distance')], [Objective(type='minimize-cost')]]
+        objectives = [[Objective(type='maximize-value')], [Objective(type='minimize-cost')], [Objective(type='minimize-tours')]]
         problem = Problem(plan=Plan(jobs=jobs), fleet=fleet, objectives=objectives)
 
         json.dump(problem, open(os.path.join(BASE_DIR, 'optimize', 'problem.json'), 'w'), indent=2)

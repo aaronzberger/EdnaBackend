@@ -5,7 +5,8 @@ import requests
 
 from src.gps_utils import Point
 
-SERVER = 'http://0.0.0.0:5000'
+# SERVER = 'http://0.0.0.0:5000'
+SERVER = 'http://172.17.0.2:5000'
 
 
 def get_distance(start: Point, end: Point) -> float:
