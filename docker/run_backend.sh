@@ -1,0 +1,62 @@
+#! /bin/bash
+
+WARN='\033[1;33m'
+ERR='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m'
+
+CONTAINER_NAME=WLC
+OSRM_CONTAINER_NAME=osrm_container
+
+if [[ $(docker ps | grep $CONTAINER_NAME) ]]; then
+    echo "${ERR}A container with name $CONTAINER_NAME is already running!${NC}"
+    exit 1
+fi
+
+destdir=`basename $(pwd)`
+
+arch="`arch`"
+tag=
+platform=
+while test "$#" -ne 0; do
+    if test "$1" = "-a" -o "$1" = "--arm" -o "$1" = "--arm64"; then
+        if test "$arch" = "arm64" -o "$arch" = "aarch64"; then
+            platform=linux/arm64
+            shift
+        else
+            echo "\`run-docker --arm\` only works on ARM64 hosts" 1>&2
+            exit 1
+        fi
+    elif test "$1" = "-x" -o "$1" = "--x86-64" -o "$1" = "--x86_64" -o "$1" = "--amd64"; then
+        platform=linux/amd64
+        shift
+    else
+        armtext=
+        if test "$arch" = "arm64" -o "$arch" = "aarch64"; then
+            armtext=" [-a|--arm] [-x|--x86-64]"
+        fi
+        echo "Usage: run-docker" 1>&2
+        exit 1
+    fi
+done
+if test -z "$platform" -a \( "$arch" = "arm64" -o "$arch" = "aarch64" \); then
+    platform=linux/arm64
+elif test -z "$platform"; then
+    platform=linux/amd64
+fi
+if test -z "$tag" -a "$platform" = linux/arm64; then
+    tag=arm64
+elif test -z "$tag"; then
+    tag=latest
+fi
+
+# If the OSRM container is running, print out its IP address for convenience
+if [[ $(docker ps -a | grep osrm_container) ]]; then
+    IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${OSRM_CONTAINER_NAME})
+    echo -e "${GREEN}IP Address of the OSRM container is ${IP}${NC}"
+else
+    echo -e "${ERR}Could not find OSRM container at ${OSRM_CONTAINER_NAME}. Is it running?"
+fi
+
+echo "Starting container with name $tag"
+docker run -it --platform $platform --rm --privileged --net=bridge --name=$CONTAINER_NAME --security-opt seccomp=unconfined -v "$(pwd):/home/user/$destdir" -w "/home/user/$destdir" $tag

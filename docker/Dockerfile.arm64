@@ -113,5 +113,3 @@ CMD ["/bin/bash", "-l"]
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 ENV PATH="/home/user/.cargo/bin:${PATH}"
 RUN cargo install vrp-cli
-
-# Initial version of this Dockerfile by Todd Morrill, CS 61 DCE student

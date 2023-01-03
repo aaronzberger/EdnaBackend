@@ -21,7 +21,10 @@ def get_distance(start: Point, end: Point) -> float:
     '''
     loc = '{},{};{},{}'.format(start.lon, start.lat, end.lon, end.lat)
     url = SERVER + '/route/v1/walking/' + loc
-    r = requests.get(url)
+    try:
+        r = requests.get(url)
+    except Exception:
+        raise RuntimeError('Request to OSRM server failed. Is it running?')
     if r.status_code == 200:
         return r.json()['routes'][0]['distance']
     raise RuntimeError('Could not contact OSRM server')

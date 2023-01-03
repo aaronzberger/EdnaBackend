@@ -28,8 +28,7 @@ RUN apt-get -y install\
  python3-pip
 
 RUN pip install\
- scikit-learn==1.1.1\
- scikit-learn-extra==0.2.0\
+ scikit-learn-extra\
  branca==0.5.0\
  certifi==2022.6.15\
  charset-normalizer==2.1.0\
@@ -104,5 +103,3 @@ CMD ["/bin/bash", "-l"]
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 ENV PATH="/home/user/.cargo/bin:${PATH}"
 RUN cargo install vrp-cli
-
-# Initial version of this Dockerfile by Todd Morrill, CS 61 DCE student
