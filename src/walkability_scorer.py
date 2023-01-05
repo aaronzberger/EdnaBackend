@@ -5,13 +5,13 @@ from typing import Any
 from src.config import blocks_file, blocks_file_t
 from src.gps_utils import Point
 from src.route import get_distance
-from src.timeline_utils import SubSegment
+from src.timeline_utils import SubBlock
 
 
 _blocks: blocks_file_t = json.load(open(blocks_file))
 
 
-def score(start: Point, end: Point, input: list[SubSegment]) -> dict[str, Any]:
+def score(start: Point, end: Point, input: list[SubBlock]) -> dict[str, Any]:
     road_crossings = {
         'motorway': 0,
         'trunk': 0,

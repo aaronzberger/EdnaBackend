@@ -20,7 +20,7 @@ def get_distance(start: Point, end: Point) -> float:
     Returns:
         float: the distance (in meters), on foot, to walk from start to end
     '''
-    loc = '{},{};{},{}'.format(start.lon, start.lat, end.lon, end.lat)
+    loc = '{},{};{},{}'.format(start['lon'], start['lat'], end['lon'], end['lat'])
     url = SERVER + '/route/v1/walking/' + loc
     try:
         r = requests.get(url)
@@ -46,7 +46,7 @@ def get_route(start: Point, end: Point) -> dict[str, Any]:
             'end_point' (list): the ending point in the format [lat, lon]
             'distance' (float): the distance from start to end
     '''
-    loc = '{},{};{},{}'.format(start.lon, start.lat, end.lon, end.lat)
+    loc = '{},{};{},{}'.format(start['lon'], start['lat'], end['lon'], end['lat'])
     url = SERVER + '/route/v1/walking/' + loc
     r = requests.get(url)
     if r.status_code != 200:

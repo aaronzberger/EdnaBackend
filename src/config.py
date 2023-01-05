@@ -1,6 +1,6 @@
-from datetime import timedelta
 import os
-from typing import Any, TypedDict
+from datetime import timedelta
+from typing import Any, Literal, Optional, TypedDict
 
 '----------------------------------------------------------------------------------'
 '                                     File Paths                                   '
@@ -12,7 +12,7 @@ BASE_DIR = '/home/user/WLC'
 VRP_CLI_PATH = "/home/user/.cargo/bin/vrp-cli"
 
 node_distance_table_file = os.path.join(BASE_DIR, 'store', 'node_distances.json')
-segment_distance_matrix_file = os.path.join(BASE_DIR, 'store', 'segment_distance_matrix.json')
+block_distance_matrix_file = os.path.join(BASE_DIR, 'store', 'segment_distance_matrix.json')
 node_coords_file = os.path.join(BASE_DIR, 'store', 'node_coords.json')
 address_pts_file = os.path.join(BASE_DIR, 'input', 'address_pts.csv')
 block_output_file = os.path.join(BASE_DIR, 'input', 'block_output.json')
@@ -53,16 +53,22 @@ DIFFERENT_SIDE_COST = {
 '----------------------------------------------------------------------------------'
 
 
-class Node(TypedDict):
+class Point(TypedDict):
     lat: float
     lon: float
+    type: Optional[Literal['house', 'node', 'other']]
+    id: Optional[str]
 
 
-house_t = dict[str, Node]
-node_list_t = list[Node]
+def pt_id(p: Point) -> str:
+    return str(p['lat']) + ':' + str(p['lon']) if 'id' not in p or p['id'] is None else p['id']
 
 
-class HouseAssociationDict(TypedDict):
+house_t = dict[str, Point]
+node_list_t = list[Point]
+
+
+class HouseInfo(TypedDict):
     lat: float
     lon: float
     distance_to_start: int
@@ -72,15 +78,14 @@ class HouseAssociationDict(TypedDict):
     subsegment: tuple[int, int]
 
 
-class SegmentDict(TypedDict):
-    addresses: dict[str, HouseAssociationDict]
+class Block(TypedDict):
+    addresses: dict[str, HouseInfo]
     nodes: node_list_t
-    type: str
+    type: Literal['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'unclassified', 'residential']
 
 
-blocks_file_t = dict[str, SegmentDict]
+blocks_file_t = dict[str, Block]
 houses_file_t = dict[str, str]
-
 
 '----------------------------------------------------------------------------------'
 '                                 Solution Type Hints                              '
@@ -217,3 +222,13 @@ class DistanceMatrix(TypedDict):
     profile: str
     travelTimes: list[int]
     distances: list[int]
+
+
+'----------------------------------------------------------------------------------'
+'                             Optimization Parameters                              '
+'----------------------------------------------------------------------------------'
+OPTIM_COSTS = Costs(fixed=0, distance=2, time=3)
+
+OPTIM_OBJECTIVES = [[Objective(type='maximize-value')],
+                    [Objective(type='minimize-cost')],
+                    [Objective(type='minimize-tours')]]

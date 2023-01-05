@@ -8,18 +8,20 @@ import matplotlib
 import matplotlib.cm as cm
 from folium.features import DivIcon
 
-from src.gps_utils import Point
-from src.timeline_utils import Segment, SubSegment
+from src.config import blocks_file_t, Point
+from src.gps_utils import SubBlock
 
 
-def generate_starter_map(segments: Optional[list[Segment]] = None,
+def generate_starter_map(blocks: Optional[blocks_file_t] = None,
                          lats: Optional[list[float]] = None, lons: Optional[list[float]] = None) -> folium.Map:
     # Store all the latitudes and longitudes
-    if lats is None and lons is None and segments is not None:
-        lats = list(itertools.chain.from_iterable((i.start.lat, i.end.lat) for i in segments))
-        lons = list(itertools.chain.from_iterable((i.start.lon, i.end.lon) for i in segments))
+    if lats is None and lons is None and blocks is not None:
+        lats = list(itertools.chain.from_iterable(
+            (i['nodes'][0]['lat'], i['nodes'][-1]['lat']) for i in blocks.values()))
+        lons = list(itertools.chain.from_iterable(
+            (i['nodes'][0]['lon'], i['nodes'][-1]['lon']) for i in blocks.values()))
     # Check if it's not the only other possible correct arguments
-    elif not ((lats is not None and lons is not None) and segments is None):
+    elif not ((lats is not None and lons is not None) and blocks is None):
         raise RuntimeError('Must pass either \'lats\' and \'lons\' argument, or \'segments\', not both or neither')
 
     if len(lats) == 0:
@@ -46,15 +48,16 @@ class ColorMap():
         return matplotlib.colors.rgb2hex((1 - rgb[0], 1 - rgb[1], 1 - rgb[2]))
 
 
-def display_segments(segments: list[Segment]) -> folium.Map:
-    m = generate_starter_map(segments)
+def display_blocks(blocks: blocks_file_t) -> folium.Map:
+    m = generate_starter_map(blocks)
 
-    min_houses, max_houses = min([s.num_houses for s in segments]), max([s.num_houses for s in segments])
+    num_houses_per_block = [len(b['addresses']) for b in blocks.values()]
+    min_houses, max_houses = min(num_houses_per_block), max(num_houses_per_block)
 
-    for segment in segments:
-        weight = 4 + ((segment.num_houses - min_houses) / (max_houses - min_houses)) * 8
+    for block in blocks.values():
+        weight = 4 + ((len(block['addresses']) - min_houses) / (max_houses - min_houses)) * 8
         folium.PolyLine(
-            [[p.lat, p.lon] for p in segment.navigation_points],
+            [[p['lat'], p['lon']] for p in block['nodes']],
             weight=weight,
             color='blue',
             opacity=0.6
@@ -63,14 +66,14 @@ def display_segments(segments: list[Segment]) -> folium.Map:
     return m
 
 
-def display_clustered_segments(segments: list[Segment],
-                               labels: list[int], centers: Optional[list[Point]]) -> folium.Map:
-    m = generate_starter_map(segments)
+def display_clustered_blocks(blocks: blocks_file_t,
+                             labels: list[int], centers: Optional[list[Point]]) -> folium.Map:
+    m = generate_starter_map(blocks)
     cmap = ColorMap(0, max(labels))
 
-    for segment, label in zip(segments, labels):
+    for block, label in zip(blocks.values(), labels):
         folium.PolyLine(
-            [[p.lat, p.lon] for p in segment.navigation_points],
+            [[p['lat'], p['lon']] for p in block['nodes']],
             weight=8,
             color=cmap.get(label),
             opacity=0.6
@@ -80,14 +83,14 @@ def display_clustered_segments(segments: list[Segment],
         assert len(centers) == max(labels)
         for i in range(len(centers)):
             folium.Circle(
-                [centers[i].lat, centers[i].lon],
+                [centers[i]['lat'], centers[i]['lon']],
                 weight=10,
                 color=cmap.get(i),
                 opacity=1.0,
                 radius=30
             ).add_to(m)
             folium.Marker(
-                location=[centers[i].lat, centers[i].lon],
+                location=[centers[i]['lat'], centers[i]['lon']],
                 icon=DivIcon(
                     icon_size=(50, 50),
                     icon_anchor=(5, 12),  # left-right, up-down
@@ -99,8 +102,8 @@ def display_clustered_segments(segments: list[Segment],
 
 
 def display_house_orders(walk_lists: list[list[Point]], cmap: Optional[ColorMap] = None) -> folium.Map:
-    lats = [i.lat for walk_list in walk_lists for i in walk_list]
-    lons = [i.lon for walk_list in walk_lists for i in walk_list]
+    lats = [i['lat'] for walk_list in walk_lists for i in walk_list]
+    lons = [i['lon'] for walk_list in walk_lists for i in walk_list]
     m = generate_starter_map(lats=lats, lons=lons)
 
     if cmap is None:
@@ -110,7 +113,7 @@ def display_house_orders(walk_lists: list[list[Point]], cmap: Optional[ColorMap]
         text_color = cmap.get(i)
         for j, house in enumerate(walk_list[:-1]):
             folium.Marker(
-                location=[house.lat, house.lon],
+                location=[house['lat'], house['lon']],
                 icon=DivIcon(
                     icon_size=(25, 25),
                     icon_anchor=(10, 10),  # left-right, up-down
@@ -121,7 +124,7 @@ def display_house_orders(walk_lists: list[list[Point]], cmap: Optional[ColorMap]
     return m
 
 
-def display_walk_lists(walk_lists: list[list[SubSegment]]) -> list[folium.Map]:
+def display_walk_lists(walk_lists: list[list[SubBlock]]) -> list[folium.Map]:
     points = [list(itertools.chain.from_iterable([s.houses for s in walk_list])) for walk_list in walk_lists]
     cmap = ColorMap(0, len(walk_lists) - 1, cmap='RdYlGn')
 
@@ -132,7 +135,7 @@ def display_walk_lists(walk_lists: list[list[SubSegment]]) -> list[folium.Map]:
 
         for subsegment in walk_list:
             folium.PolyLine(
-                [[p.lat, p.lon] for p in subsegment.navigation_points],
+                [[p['lat'], p['lon']] for p in subsegment.navigation_points],
                 weight=8,
                 color='#212121',
                 opacity=0.7

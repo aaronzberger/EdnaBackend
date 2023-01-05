@@ -9,12 +9,12 @@ from typing import Optional
 from termcolor import colored
 
 from src.config import (BASE_DIR, MAX_ROUTE_DISTANCE, MAX_ROUTE_TIME,
-                        MINS_PER_HOUSE, VRP_CLI_PATH, WALKING_M_PER_S, Costs,
-                        DistanceMatrix, Fleet, Job, Location, Objective, PlaceTW,
-                        Plan, Problem, Profile, Service, Shift, ShiftEnd,
-                        ShiftStart, Solution, Statistic, Stop, Time, Tour,
-                        Vehicle, VehicleLimits, VehicleProfile, problem_path,
-                        solution_path, Place)
+                        MINS_PER_HOUSE, OPTIM_COSTS, OPTIM_OBJECTIVES,
+                        VRP_CLI_PATH, WALKING_M_PER_S, DistanceMatrix, Fleet,
+                        Job, Location, Place, PlaceTW, Plan, Problem, Profile,
+                        Service, Shift, ShiftEnd, ShiftStart, Solution,
+                        Statistic, Stop, Time, Tour, Vehicle, VehicleLimits,
+                        VehicleProfile, problem_path, pt_id, solution_path)
 from src.distances.houses import HouseDistances
 from src.distances.mix import MixDistances
 from src.gps_utils import Point
@@ -25,32 +25,62 @@ class Optimizer():
     distance_matrix_save = os.path.join(BASE_DIR, 'optimize', 'distances.json')
 
     def __init__(self, cluster: list[Point], num_lists: int,
-                 starting_location: Optional[Point] = None, intersections: Optional[list[Point]] = None) -> None:
+                 starting_locations: Point | list[Point]):
         self.points = deepcopy(cluster)
 
-        if starting_location is None:
-            if intersections is None:
-                raise RuntimeError('If starting_location is not provided, intersections must be provided')
-            depot = Point(-1, -1, id='depot')
-            self.points = self.points + intersections + [depot]
+        # Determine whether to run group canvas or turf split problem
+        if isinstance(starting_locations, list):
+            depot = Point(lat=-1, lon=-1, type='other', id='depot')
+            self.points = self.points + starting_locations + [depot]
             self.start_idx = len(self.points) - 1
-            self.create_area_lists(num_lists)
+            self.create_turf_split(num_lists)
         else:
-            if intersections is not None:
-                raise RuntimeError('If starting_location is provided, intersections should not be provided')
-            self.points.append(starting_location)
+            self.points.append(starting_locations)
             self.start_idx = len(self.points) - 1
             self.create_group_canvas(num_lists)
 
-    def create_area_lists(self, num_lists: int):
-        start_time = datetime(year=2022, month=1, day=1, hour=0, minute=0, second=0)
+    def build_fleet(self, shift_time: timedelta, num_vehicles: int, time_window: list[str]):
+        '''
+        Build the fleet (for both the group canvas and turf split problems).
+
+        Parameters:
+            shift_time (timedelta): length of the shift in which the vehicles can operate
+            num_lists (int): the number of vehicles
+            time_window (list[str]): a two-long list of start and end time of the canvas, datetime-formatted
+        '''
+        walker = Vehicle(
+            typeId='person',
+            vehicleIds=['walker_{}'.format(i) for i in range(num_vehicles)],
+            profile=Profile(matrix='person'),
+            costs=OPTIM_COSTS,
+            shifts=[Shift(start=ShiftStart(earliest=time_window[0], location=Location(index=self.start_idx)),
+                          end=ShiftEnd(latest=time_window[1], location=Location(index=self.start_idx)))],
+            capacity=[1],
+            limits=VehicleLimits(shiftTime=shift_time.seconds, maxDistance=MAX_ROUTE_DISTANCE))
+
+        return Fleet(vehicles=[walker], profiles=[VehicleProfile(name='person')])
+
+    def create_turf_split(self, num_lists: int):
+        '''
+        Construct the problem file for a turf split to be processed by the VRP solver.
+
+        Parameters:
+            num_lists (int): the number of lists to generate
+
+        Notes:
+            See the summary paper for a full explanation of mapping the turf split problem to standard VRP
+        '''
+        start_time = datetime(year=3000, month=1, day=1, hour=0, minute=0, second=0)
         depot_to_node_duration = MAX_ROUTE_TIME
         end_time = start_time + MAX_ROUTE_TIME + (2 * depot_to_node_duration)
 
         full_time_window = [start_time.strftime('%Y-%m-%dT%H:%M:%SZ'), end_time.strftime('%Y-%m-%dT%H:%M:%SZ')]
+
+        # Define the times at which a possible starting location can be visited
         node_start_open = (start_time + depot_to_node_duration).strftime('%Y-%m-%dT%H:%M:%SZ')
         node_start_close = (start_time + depot_to_node_duration + timedelta(minutes=2)).strftime('%Y-%m-%dT%H:%M:%SZ')
 
+        # Define the times at which a possible ending location can be visited
         node_end_open = (end_time - depot_to_node_duration - timedelta(minutes=2)).strftime('%Y-%m-%dT%H:%M:%SZ')
         node_end_close = (end_time - depot_to_node_duration).strftime('%Y-%m-%dT%H:%M:%SZ')
 
@@ -59,11 +89,11 @@ class Optimizer():
 
         for pt in self.points:
             for other_pt in self.points:
-                if pt.id == 'depot' or other_pt.id == 'depot':
-                    if pt.id == other_pt.id == 'depot':
+                if pt['id'] == 'depot' or other_pt['id'] == 'depot':
+                    if pt['id'] == other_pt['id'] == 'depot':
                         distance = time = 0
                     else:
-                        if pt.type == 'house' or other_pt.type == 'house':
+                        if pt['type'] == 'house' or other_pt['type'] == 'house':
                             # Make it impossible to traverse from a house to a depot
                             distance = MAX_ROUTE_DISTANCE
                             time = 0
@@ -85,36 +115,31 @@ class Optimizer():
         # Create the plan
         jobs: list[Job] = []
         for i, location in enumerate(self.points):
-            if location.type == 'node':
+            if location['type'] == 'node':
                 service_start = Service(places=[PlaceTW(
                     location=Location(index=i), duration=60, times=[[node_start_open, node_start_close]])])
                 service_end = Service(places=[PlaceTW(
                     location=Location(index=i), duration=60, times=[[node_end_open, node_end_close]])])
-                jobs.append(Job(id=location.id, services=[service_start, service_end], value=1))
+                jobs.append(Job(id=pt_id(location), services=[service_start, service_end], value=1))
             else:
                 delivery = Service(places=[Place(location=Location(index=i),
                                                  duration=round(MINS_PER_HOUSE * 60))])
-                jobs.append(Job(id=location.id, services=[delivery], value=10))
+                jobs.append(Job(id=pt_id(location), services=[delivery], value=10))
 
-        # Create the fleet
-        walker = Vehicle(
-            typeId='person',
-            vehicleIds=['walker_{}'.format(i) for i in range(num_lists)],
-            profile=Profile(matrix='person'),
-            costs=Costs(fixed=0, distance=2, time=3),
-            shifts=[Shift(start=ShiftStart(earliest=full_time_window[0], location=Location(index=self.start_idx)),
-                          end=ShiftEnd(latest=full_time_window[1], location=Location(index=self.start_idx)))],
-            capacity=[1],
-            limits=VehicleLimits(shiftTime=(end_time - start_time).seconds, maxDistance=MAX_ROUTE_DISTANCE))
-
-        fleet = Fleet(vehicles=[walker], profiles=[VehicleProfile(name='person')])
-        objectives = [[Objective(type='maximize-value')], [Objective(type='minimize-cost')]]
-        problem = Problem(plan=Plan(jobs=jobs), fleet=fleet, objectives=objectives)
+        fleet = self.build_fleet(
+            shift_time=(end_time - start_time), num_vehicles=num_lists, time_window=full_time_window)
+        problem = Problem(plan=Plan(jobs=jobs), fleet=fleet, objectives=OPTIM_OBJECTIVES)
 
         json.dump(problem, open(os.path.join(BASE_DIR, 'optimize', 'problem.json'), 'w'), indent=2)
 
     def create_group_canvas(self, num_lists: int):
-        start_time = datetime(year=2022, month=1, day=1, hour=0, minute=0, second=0)
+        '''
+        Construct the problem file for a group canvas to be processed by the VRP solver.
+
+        Parameters:
+            num_lists (int): the number of lists to generate
+        '''
+        start_time = datetime(year=3000, month=1, day=1, hour=0, minute=0, second=0)
         end_time = start_time + MAX_ROUTE_TIME
 
         full_time_window = [start_time.strftime('%Y-%m-%dT%H:%M:%SZ'), end_time.strftime('%Y-%m-%dT%H:%M:%SZ')]
@@ -129,33 +154,18 @@ class Optimizer():
                 distance_matrix['travelTimes'].append(round(distance_cost[0] / WALKING_M_PER_S))
 
         json.dump(distance_matrix, open(self.distance_matrix_save, 'w'), indent=2)
-
         print('Saved distance matrix to {}'.format(self.distance_matrix_save))
 
         # Create the plan
         jobs: list[Job] = []
         for i, house in enumerate(self.points):
-            if i == self.start_idx:
-                # The starting location is not a real service
-                continue
-            service = Service(places=[Place(location=Location(index=i), duration=round(MINS_PER_HOUSE * 60))])
-            jobs.append(Job(id=house.id, services=[service], value=1))
+            if i != self.start_idx:  # The starting location is not a real service
+                service = Service(places=[Place(location=Location(index=i), duration=round(MINS_PER_HOUSE * 60))])
+                jobs.append(Job(id=pt_id(house), services=[service], value=1))
 
-        # Create the fleet
-        walker = Vehicle(
-            typeId='person',
-            vehicleIds=['walker_{}'.format(i) for i in range(num_lists)],
-            profile=Profile(matrix='person'),
-            costs=Costs(fixed=0, distance=1, time=0),
-            shifts=[Shift(start=ShiftStart(earliest=full_time_window[0], location=Location(index=self.start_idx)),
-                          end=ShiftEnd(latest=full_time_window[1], location=Location(index=self.start_idx)))],
-            capacity=[1],
-            limits=VehicleLimits(shiftTime=MAX_ROUTE_TIME.seconds, maxDistance=MAX_ROUTE_DISTANCE))
-
-        fleet = Fleet(vehicles=[walker], profiles=[VehicleProfile(name='person')])
-        # objectives = [[Objective(type='maximize-value')], [Objective(type='minimize-distance')], [Objective(type='minimize-cost')]]
-        objectives = [[Objective(type='maximize-value')], [Objective(type='minimize-cost')], [Objective(type='minimize-tours')]]
-        problem = Problem(plan=Plan(jobs=jobs), fleet=fleet, objectives=objectives)
+        fleet = self.build_fleet(
+            shift_time=(end_time - start_time), num_vehicles=num_lists, time_window=full_time_window)
+        problem = Problem(plan=Plan(jobs=jobs), fleet=fleet, objectives=OPTIM_OBJECTIVES)
 
         json.dump(problem, open(os.path.join(BASE_DIR, 'optimize', 'problem.json'), 'w'), indent=2)
 

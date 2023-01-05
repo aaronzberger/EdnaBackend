@@ -10,7 +10,7 @@ from src.config import (Tour, blocks_file, blocks_file_t, houses_file,
 from src.distances.mix import MixDistances
 from src.distances.nodes import NodeDistances
 from src.gps_utils import Point, project_to_line
-from src.timeline_utils import Segment, SubSegment
+from src.timeline_utils import Segment, SubBlock
 
 
 class PostProcess():
@@ -77,7 +77,7 @@ class PostProcess():
 
         return destination_segment.end if through_end < through_start else destination_segment.start
 
-    def _process_subsegment(self, houses: list[Point], segment: Segment, entrance: Point, exit: Point) -> SubSegment:
+    def _process_subsegment(self, houses: list[Point], segment: Segment, entrance: Point, exit: Point) -> SubBlock:
         original_houses = deepcopy(houses)
         block_info = self.blocks[segment.id]['addresses']
 
@@ -142,13 +142,13 @@ class PostProcess():
 
             houses = first_half + second_half
 
-        return SubSegment(
+        return SubBlock(
             segment=segment, start=entrance, end=exit, extremum=extremum,
             houses=houses, navigation_points=navigation_points)
 
-    def post_process(self, tour: Tour) -> list[SubSegment]:
+    def post_process(self, tour: Tour) -> list[SubBlock]:
         # Iterate through the solution and add subsegments
-        walk_list: list[SubSegment] = []
+        walk_list: list[SubBlock] = []
 
         current_subsegment_points: list[Point] = []
 
