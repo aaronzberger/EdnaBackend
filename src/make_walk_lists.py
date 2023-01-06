@@ -14,7 +14,7 @@ from termcolor import colored
 
 from gps_utils import SubBlock
 from src.config import (BASE_DIR, CLUSTERING_CONNECTED_THRESHOLD,
-                        KEEP_APARTMENTS, blocks_file, blocks_file_t,
+                        KEEP_APARTMENTS, SmallPoint, blocks_file, blocks_file_t,
                         houses_file, houses_file_t, Block, Point, pt_id)
 from src.distances.houses import HouseDistances
 from src.distances.mix import MixDistances
@@ -129,7 +129,7 @@ area_blocks.update(clustered_blocks[6])
 HouseDistances(area_blocks, start)
 
 
-unique_intersections: list[Point] = []
+unique_intersections: list[SmallPoint] = []
 unique_intersection_ids: set[str] = set()
 for b_id, block in area_blocks.items():
     if pt_id(block['nodes'][0]) not in unique_intersection_ids:

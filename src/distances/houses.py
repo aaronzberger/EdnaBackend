@@ -1,4 +1,5 @@
 
+from copy import deepcopy
 import itertools
 import json
 import os
@@ -6,7 +7,7 @@ import random
 from statistics import mean
 from typing import Optional
 
-from src.config import (BASE_DIR, DIFFERENT_SIDE_COST, DIFFERENT_SIDE_TIME_DIVISION, KEEP_APARTMENTS,
+from src.config import (BASE_DIR, DIFFERENT_SIDE_COST, DISTANCE_TO_ROAD_MULTIPLIER, KEEP_APARTMENTS, WALKING_M_PER_S,
                         blocks_file, blocks_file_t, Point, Block, pt_id)
 from src.distances.nodes import NodeDistances
 from src.route import get_distance
@@ -49,6 +50,13 @@ class HouseDistances():
 
     @classmethod
     def _insert_pair(cls, b1: Block, b1_id: str, b2: Block, b2_id: str):
+        def crossing_penalty(block: Block):
+            try:
+                return DIFFERENT_SIDE_COST[block['type']]
+            except KeyError:
+                print('Unable to find penalty for crossing {} street. Adding none'.format(b1['type']))
+                return 0
+
         b1_houses = b1['addresses']
         b2_houses = b2['addresses']
 
@@ -73,26 +81,30 @@ class HouseDistances():
                 if address_1 == address_2:
                     cls._house_distances[address_1][address_2] = (0, 0)
                 else:
-                    cost = 0
+                    time = 0
                     # Simply use the difference of the distances to the start
                     distance = round(
-                        abs(info_1['distance_to_start'] - info_2['distance_to_start']))
+                        abs((info_1['distance_to_start'] - info_2['distance_to_start']) +
+                            (info_1['distance_to_road'] + info_2['distance_to_road']) * DISTANCE_TO_ROAD_MULTIPLIER))
 
-                    # region: Street Crossing Penalty (Same Street)
+                    time = distance / WALKING_M_PER_S
+
                     if info_1['side'] != info_2['side']:
-                        # Add the actual distance to cross the road
-                        distance += (info_1['distance_to_road'] + info_2['distance_to_road']) \
-                                    / DIFFERENT_SIDE_TIME_DIVISION
+                        distance += crossing_penalty(b1)
 
-                        # Add the cost of crossing (depending on the type of road)
-                        try:
-                            cost = DIFFERENT_SIDE_COST[b1['type']]
-                        except KeyError:
-                            print('Unable to find penalty for crossing {} street. Adding none'.format(b1['type']))
-                    # endregion
-
-                    cls._house_distances[address_1][address_2] = (distance, cost)
+                    cls._house_distances[address_1][address_2] = (distance, time)
             return
+
+        no_penalty_on_same: bool = False
+        no_penalty_on_switch: bool = False
+        # Determine whether these blocks share an intersection
+        s1, e1, s2, e2 = pt_id(b1['nodes'][0]), pt_id(b1['nodes'][-1]), pt_id(b2['nodes'][0]), pt_id(b2['nodes'][-1])
+        if s1 in [s2, e2] or e1 in [s2, e2]:
+            one_block_away = True
+
+            # If the index is the same and sides are different, no turns are required
+            # TODO: See if 
+            no_penalty_on_switch = True if s1 == s2 or e1 == e2 else False
 
         # Calculate the distances between the segment endpoints
         end_distances = [NodeDistances.get_distance(i, j) for i, j in
@@ -111,18 +123,32 @@ class HouseDistances():
             if address_1 not in cls._house_distances:
                 cls._house_distances[address_1] = {}
 
-            start_start = end_distances[0] + info_1['distance_to_start'] + info_2['distance_to_start']
-            start_end = end_distances[1] + info_1['distance_to_start'] + info_2['distance_to_end']
-            end_start = end_distances[2] + info_1['distance_to_end'] + info_2['distance_to_start']
-            end_end = end_distances[3] + info_1['distance_to_end'] + info_2['distance_to_end']
+            distances_to_road = (info_1['distance_to_road'] + info_2['distance_to_road']) * DISTANCE_TO_ROAD_MULTIPLIER
 
-            distance = round(min([start_start, start_end, end_start, end_end]))
-            cost = 0
-            try:
-                cost = mean([DIFFERENT_SIDE_COST[b1['type']], DIFFERENT_SIDE_COST[b2['type']]])
-            except KeyError:
-                print('Unable to find penalty for crossing {} street. Adding none'.format(b1['type']))
-            cls._house_distances[address_1][address_2] = (distance, cost)
+            # The format of the list is: [start_start, start_end, end_start, end_end]
+            distances = [end_distances[0] + info_1['distance_to_start'] + info_2['distance_to_start'] + distances_to_road,
+                         end_distances[1] + info_1['distance_to_start'] + info_2['distance_to_end'] + distances_to_road,
+                         end_distances[2] + info_1['distance_to_end'] + info_2['distance_to_start'] + distances_to_road,
+                         end_distances[3] + info_1['distance_to_end'] + info_2['distance_to_end'] + distances_to_road]
+
+            times = deepcopy(distances)
+
+            # Add the proper street crossing penalties
+            # (depending on if it's possible to get between the houses without crossing)
+            if one_block_away and no_penalty_on_switch:
+                penalty = mean([crossing_penalty(b1), crossing_penalty(b2)])
+                distances = [d + penalty for i, d in enumerate(distances) if i in [1, 2]]
+            elif one_block_away and not no_penalty_on_switch:
+                penalty = mean([crossing_penalty(b1), crossing_penalty(b2)])
+                distances = [d + penalty for i, d in enumerate(distances) if i in [0, 3]]
+            else:
+                penalty = mean([crossing_penalty(b1), crossing_penalty(b2)])
+                distances = [d + penalty for d in distances]
+
+            min_distance = min(distances)
+            time = times[distances.index(min_distance)]
+
+            cls._house_distances[address_1][address_2] = (min_distance, time)
 
     @classmethod
     def __init__(cls, blocks: blocks_file_t, depot: Point):

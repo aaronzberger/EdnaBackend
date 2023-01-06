@@ -2,6 +2,8 @@
 Associate houses with blocks. Generate blocks.json and houses.json
 '''
 
+# TODO: See 5889 Aylesboro. If ALD is within bounds of block, prefer that block instead of the one that minimizes distance
+
 import csv
 import itertools
 import json
@@ -12,18 +14,19 @@ from typing import Any, Literal, Optional
 from src.config import (HouseInfo, Point, Block,
                         address_pts_file, block_output_file, blocks_file,
                         blocks_file_t, houses_file, houses_file_t,
-                        node_coords_file)
+                        node_coords_file, pt_id, SmallPoint)
 from src.gps_utils import (along_track_distance, cross_track_distance,
-                           great_circle_distance)
+                           great_circle_distance, bearing)
 from tqdm import tqdm
 
 SEPARATE_SIDES = False
 MAX_DISTANCE = 300  # meters from house to segment
 DEBUG = False
 
+
 # Load the hash table containing node coordinates hashed by ID
 print('Loading node coordinates table...')
-node_coords: dict[str, Point] = json.load(open(node_coords_file))
+node_coords: dict[str, SmallPoint] = json.load(open(node_coords_file))
 
 # This file contains the coordinates of every building in the county
 print('Loading coordinates of houses...')
@@ -47,8 +50,8 @@ houses_to_id: houses_file_t = {}
 class Segment():
     '''Define a segment between two nodes on a block relative to a house'''
     start_node_id: str
-    sub_node_1: Point
-    sub_node_2: Point
+    sub_node_1: SmallPoint
+    sub_node_2: SmallPoint
     end_node_id: str
     distance: float
     id: int
@@ -94,7 +97,7 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
 
                         if DEBUG:
                             print('nodes {} and {}, distance {:.2f}.'.format(
-                                node_1['id'], node_2['id'], house_to_segment))
+                                  pt_id(node_1), pt_id(node_2), house_to_segment))
 
                         if best_segment is None or \
                                 (best_segment is not None and abs(house_to_segment) < abs(best_segment.distance)):
@@ -125,21 +128,29 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
             # If this segment has not been inserted yet, generate an entry
             if segment_id not in segments_by_id:
                 # Create the list of sub points in this segment
-                all_nodes_coords: list[Point] = []
+                all_nodes: list[SmallPoint] = []
                 for id in best_segment.all_nodes:
                     try:
                         coords = node_coords[id]
                     except KeyError:
                         continue
-                    all_nodes_coords.append(coords)
+                    all_nodes.append(coords)
 
                 if best_segment.all_nodes.index(best_segment.start_node_id) != 0:
-                    all_nodes_coords = list(reversed(all_nodes_coords))
+                    all_nodes = list(reversed(all_nodes))
+
+                # Calculate the bearings from each side of the block
+                b_start = bearing(Point(lat=all_nodes[0]['lat'], lon=all_nodes[0]['lon'], type='node', id=None),
+                                  Point(lat=all_nodes[1]['lat'], lon=all_nodes[1]['lon'], type='node', id=None))
+
+                b_end = bearing(Point(lat=all_nodes[-1]['lat'], lon=all_nodes[-1]['lon'], type='node', id=None),
+                                Point(lat=all_nodes[-2]['lat'], lon=all_nodes[-2]['lon'], type='node', id=None))
 
                 # Place this segment in the table
                 segments_by_id[segment_id] = Block(
                     addresses={},
-                    nodes=all_nodes_coords,
+                    nodes=all_nodes,
+                    bearings=(b_start, b_end),
                     type=best_segment.type
                 )
 

@@ -7,7 +7,7 @@ from typing import Optional
 
 from tqdm import tqdm
 
-from src.config import Point, blocks_file_t, node_distance_table_file, pt_id
+from src.config import AnyPoint, Point, blocks_file_t, node_distance_table_file, pt_id
 from src.gps_utils import great_circle_distance
 from src.route import get_distance
 
@@ -17,7 +17,7 @@ class NodeDistances():
     _node_distances: dict[str, dict[str, float]] = {}
 
     @classmethod
-    def _insert_pair(cls, node_1: Point, node_2: Point):
+    def _insert_pair(cls, node_1: AnyPoint, node_2: AnyPoint):
         # If this pair already exists in the opposite order, skip
         try:
             cls._node_distances[pt_id(node_2)][pt_id(node_1)]
@@ -77,7 +77,7 @@ class NodeDistances():
         json.dump(cls._node_distances, open(node_distance_table_file, 'w', encoding='utf-8'), indent=4)
 
     @classmethod
-    def get_distance(cls, p1: Point, p2: Point) -> Optional[float]:
+    def get_distance(cls, p1: AnyPoint, p2: AnyPoint) -> Optional[float]:
         '''
         Get the distance between two nodes by their coordinates
 

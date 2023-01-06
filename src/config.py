@@ -37,20 +37,27 @@ WALKING_M_PER_S = 0.75
 MINS_PER_HOUSE = 1.5
 CLUSTERING_CONNECTED_THRESHOLD = 100  # Meters where blocks are connected
 KEEP_APARTMENTS = False
-DIFFERENT_SIDE_TIME_DIVISION = 3
+DISTANCE_TO_ROAD_MULTIPLIER = 0.5
+
+# Cost of crossing the street (technically, in meters)
 DIFFERENT_SIDE_COST = {
     'motorway': 400,
     'trunk': 400,
     'primary': 100,
     'secondary': 60,
-    'tertiary': 25,
-    'unclassified': 15,
-    'residential': 15,
-    'service': 5
+    'tertiary': 35,
+    'unclassified': 20,
+    'residential': 20,
+    'service': 10
 }
 '----------------------------------------------------------------------------------'
 '                                       Type Hints                                 '
 '----------------------------------------------------------------------------------'
+
+
+class SmallPoint(TypedDict):
+    lat: float
+    lon: float
 
 
 class Point(TypedDict):
@@ -60,12 +67,26 @@ class Point(TypedDict):
     id: Optional[str]
 
 
-def pt_id(p: Point) -> str:
-    return str(p['lat']) + ':' + str(p['lon']) if 'id' not in p or p['id'] is None else p['id']
+# For type hinting
+AnyPoint = Point | SmallPoint
+
+
+def pt_id(p: Point | SmallPoint) -> str:
+    '''
+    Get the ID of a point
+
+    Parameters:
+        p (Point): the point
+
+    Returns:
+        str: the ID, if it was provided upon creation. Otherwise, an ID made up of the rounded coordinates
+    '''
+    return str('{:.7f}'.format(p['lat'])) + ':' + str('{:.7f}'.format(p['lon'])) \
+        if 'id' not in p or p['id'] is None else p['id']
 
 
 house_t = dict[str, Point]
-node_list_t = list[Point]
+node_list_t = list[SmallPoint]
 
 
 class HouseInfo(TypedDict):
@@ -81,6 +102,7 @@ class HouseInfo(TypedDict):
 class Block(TypedDict):
     addresses: dict[str, HouseInfo]
     nodes: node_list_t
+    bearings: tuple[float, float]  # The bearings at the start and end of the block
     type: Literal['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'unclassified', 'residential']
 
 

@@ -8,12 +8,12 @@ import utm
 from geographiclib.geodesic import Geodesic
 from haversine import Unit, haversine
 
-from src.config import MINS_PER_HOUSE, WALKING_M_PER_S, Block, Point
+from src.config import MINS_PER_HOUSE, WALKING_M_PER_S, AnyPoint, Block, Point, SmallPoint
 
 converter: Geodesic = Geodesic.WGS84  # type: ignore
 
 
-def along_track_distance(p1: Point, p2: Point, p3: Point) -> tuple[float, float]:
+def along_track_distance(p1: AnyPoint, p2: AnyPoint, p3: AnyPoint) -> tuple[float, float]:
     '''
     Calculate the along-track distances from a point to a line in GPS coordinates
 
@@ -54,7 +54,7 @@ def along_track_distance(p1: Point, p2: Point, p3: Point) -> tuple[float, float]
     return ald_p2, ald_p3
 
 
-def cross_track_distance(p1: Point, p2: Point, p3: Point, debug: bool = False) -> float:
+def cross_track_distance(p1: AnyPoint, p2: AnyPoint, p3: AnyPoint, debug: bool = False) -> float:
     '''
     Calculate the cross-track distance from a point to a line in GPS coordinates
 
@@ -109,7 +109,7 @@ def cross_track_distance(p1: Point, p2: Point, p3: Point, debug: bool = False) -
         return cross_track_distance
 
 
-def great_circle_distance(p1: Point, p2: Point) -> float:
+def great_circle_distance(p1: AnyPoint, p2: AnyPoint) -> float:
     '''
     Calculate the distance "as the crow flies" between two points in GPS coordinates
 
@@ -123,7 +123,7 @@ def great_circle_distance(p1: Point, p2: Point) -> float:
     return haversine((p1['lat'], p1['lon']), (p2['lat'], p2['lon']), unit=Unit.METERS)
 
 
-def middle(p1: Point, p2: Point) -> Point:
+def middle(p1: AnyPoint, p2: AnyPoint) -> Point:
     '''
     Calculate the midpoint between two points in GPS coordinates
 
@@ -139,7 +139,7 @@ def middle(p1: Point, p2: Point) -> Point:
     return Point(lat=middle['lat2'], lon=middle['lon2'], type='other', id=None)
 
 
-def pt_to_utm(pt: Point) -> tuple[float, float, int, str]:
+def pt_to_utm(pt: AnyPoint) -> tuple[float, float, int, str]:
     '''
     Convert a point in GPS coordinates to UTM x-y grid coordinates
 
@@ -166,10 +166,10 @@ def utm_to_pt(x: float, y: float, zone: int, letter: str) -> Point:
     Returns:
         Point: the geographic point with its GPS coordinates
     '''
-    return Point(*utm.to_latlon(x, y, zone, letter))  # type: ignore
+    return SmallPoint(*utm.to_latlon(x, y, zone, letter))  # type: ignore
 
 
-def angle_between_pts(p1: Point, p2: Point) -> float:
+def angle_between_pts(p1: AnyPoint, p2: AnyPoint) -> float:
     '''
     Calculate the angle between two points
 
@@ -183,7 +183,7 @@ def angle_between_pts(p1: Point, p2: Point) -> float:
     return converter.InverseLine(lat1=p1['lat'], lon1=p1['lon'], lat2=p2['lat'], lon2=p2['lon']).azi1 - 90
 
 
-def project_to_line(p1: Point, p2: Point, p3: Point) -> Point:
+def project_to_line(p1: AnyPoint, p2: AnyPoint, p3: AnyPoint) -> Point:
     '''
     Project a point to the line spanned by two points
 
@@ -199,6 +199,21 @@ def project_to_line(p1: Point, p2: Point, p3: Point) -> Point:
     ald_p1 = along_track_distance(p1, p2, p3)[0]
     projected = path_between.Position(ald_p1)
     return Point(lat=projected['lat2'], lon=projected['lon2'], type='other', id=None)
+
+
+def bearing(p1: AnyPoint, p2: AnyPoint) -> float:
+    '''
+    Get the bearing from point p1 to point p2
+
+    Parameters:
+        p1 (Point): the first point
+        p2 (Point): the second point
+
+    Returns:
+        float: the bearing between p1 and p2
+    '''
+    path_between = converter.InverseLine(lat1=p1['lat'], lon1=p1['lon'], lat2=p2['lat'], lon2=p2['lon'])
+    return path_between.azi1
 
 
 @dataclass
