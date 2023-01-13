@@ -1,1 +1,1 @@
-cs61-build-docker    text eol=lf
+pennsylania.osm.pbf filter=lfs diff=lfs merge=lfs -text
