@@ -1,8 +1,10 @@
-*.pyc
-*.DS_Store
+**/*.pyc
+**/*.DS_Store
 .vscode/
 src/__pycache__/
 venv/
 build/
-WLC.egg-info/
-viz/.DS_Store
+osrm/
+
+# For privacy. Contact for access
+input/example_universe.csv

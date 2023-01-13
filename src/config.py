@@ -1,6 +1,6 @@
-from datetime import timedelta
 import os
-from typing import Any, TypedDict
+from datetime import timedelta
+from typing import Any, Literal, TypedDict
 
 '----------------------------------------------------------------------------------'
 '                                     File Paths                                   '
@@ -12,7 +12,7 @@ BASE_DIR = '/home/user/WLC'
 VRP_CLI_PATH = "/home/user/.cargo/bin/vrp-cli"
 
 node_distance_table_file = os.path.join(BASE_DIR, 'store', 'node_distances.json')
-segment_distance_matrix_file = os.path.join(BASE_DIR, 'store', 'segment_distance_matrix.json')
+block_distance_matrix_file = os.path.join(BASE_DIR, 'store', 'segment_distance_matrix.json')
 node_coords_file = os.path.join(BASE_DIR, 'store', 'node_coords.json')
 address_pts_file = os.path.join(BASE_DIR, 'input', 'address_pts.csv')
 block_output_file = os.path.join(BASE_DIR, 'input', 'block_output.json')
@@ -31,38 +31,60 @@ solution_path = os.path.join(BASE_DIR, 'optimize', 'solution.json')
 
 # Maximum distance between two nodes where they should be stored
 ARBITRARY_LARGE_DISTANCE = 10000
-MAX_ROUTE_TIME = timedelta(minutes=180)
-MAX_ROUTE_DISTANCE = 10000
+MAX_TOURING_TIME = timedelta(minutes=180)
+MAX_TOURING_DISTANCE = 10000
 WALKING_M_PER_S = 0.75
 MINS_PER_HOUSE = 1.5
 CLUSTERING_CONNECTED_THRESHOLD = 100  # Meters where blocks are connected
 KEEP_APARTMENTS = False
-DIFFERENT_SIDE_TIME_DIVISION = 3
+DISTANCE_TO_ROAD_MULTIPLIER = 0.5
+
+# Cost of crossing the street (technically, in meters)
 DIFFERENT_SIDE_COST = {
     'motorway': 400,
     'trunk': 400,
     'primary': 100,
     'secondary': 60,
-    'tertiary': 25,
-    'unclassified': 15,
-    'residential': 15,
-    'service': 5
+    'tertiary': 35,
+    'unclassified': 20,
+    'residential': 20,
+    'service': 10
 }
 '----------------------------------------------------------------------------------'
 '                                       Type Hints                                 '
 '----------------------------------------------------------------------------------'
 
 
-class Node(TypedDict):
+# NOTE: the 'type' and 'id' attributes are not required. When using Python 3.11,
+# wrap these attributes in the 'typing.NotRequired' hint to eliminate errors on instance creation.
+# On earlier versions, either suppress or ignore these errors: they do not affect json export or reading.
+
+class Point(TypedDict):
     lat: float
     lon: float
+    type: Literal['house', 'node', 'other']
+    id: str
 
 
-house_t = dict[str, Node]
-node_list_t = list[Node]
+def pt_id(p: Point) -> str:
+    '''
+    Get the ID of a point
+
+    Parameters:
+        p (Point): the point
+
+    Returns:
+        str: the ID, if it was provided upon creation. Otherwise, an ID made up of the rounded coordinates
+    '''
+    return str('{:.7f}'.format(p['lat'])) + ':' + str('{:.7f}'.format(p['lon'])) \
+        if 'id' not in p or p['id'] is None else p['id']
 
 
-class HouseAssociationDict(TypedDict):
+house_t = dict[str, Point]
+node_list_t = list[Point]
+
+
+class HouseInfo(TypedDict):
     lat: float
     lon: float
     distance_to_start: int
@@ -72,15 +94,15 @@ class HouseAssociationDict(TypedDict):
     subsegment: tuple[int, int]
 
 
-class SegmentDict(TypedDict):
-    addresses: dict[str, HouseAssociationDict]
+class Block(TypedDict):
+    addresses: dict[str, HouseInfo]
     nodes: node_list_t
-    type: str
+    bearings: tuple[float, float]  # The bearings at the start and end of the block
+    type: Literal['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'unclassified', 'residential']
 
 
-blocks_file_t = dict[str, SegmentDict]
+blocks_file_t = dict[str, Block]
 houses_file_t = dict[str, str]
-
 
 '----------------------------------------------------------------------------------'
 '                                 Solution Type Hints                              '
@@ -217,3 +239,13 @@ class DistanceMatrix(TypedDict):
     profile: str
     travelTimes: list[int]
     distances: list[int]
+
+
+'----------------------------------------------------------------------------------'
+'                             Optimization Parameters                              '
+'----------------------------------------------------------------------------------'
+OPTIM_COSTS = Costs(fixed=0, distance=3, time=1)
+
+OPTIM_OBJECTIVES = [[Objective(type='maximize-value')],
+                    [Objective(type='minimize-cost')]]
+# [Objective(type='minimize-tours')][Objective(type='minimize-cost')]

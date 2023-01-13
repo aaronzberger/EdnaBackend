@@ -7,7 +7,7 @@ NC='\033[0m'
 
 CONTAINER_NAME=osrm_container
 
-if [[ $(docker ps -a | grep osrm_container) ]]; then
+if [[ $(docker ps -a | grep ${CONTAINER_NAME}) ]]; then
     echo -e "${WARN}Found an old ${CONTAINER_NAME}. Removing it to make room.${NC}"
     docker stop ${CONTAINER_NAME} > /dev/null
     docker rm ${CONTAINER_NAME} > /dev/null
