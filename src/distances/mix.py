@@ -32,30 +32,30 @@ class MixDistances():
             float: the distance from the intersection to the house through the end of the segment
         '''
         block_id = cls.address_to_block_id[pt_id(house)]
-        block_start = Point(lat=cls.blocks[block_id]['nodes'][0]['lat'], lon=cls.blocks[block_id]['nodes'][0]['lon'],
-                            type='node', id=None)
+        block_start = Point(lat=cls.blocks[block_id]['nodes'][0]['lat'], lon=cls.blocks[block_id]['nodes'][0]['lon'], type='node')  # type: ignore
         through_start = NodeDistances.get_distance(node, block_start)
-        through_start = through_start if through_start is not None else 1600
+        through_start = through_start[0] if through_start is not None else 1600
         through_start += cls.blocks[block_id]['addresses'][pt_id(house)]['distance_to_start']
 
-        segment_end = Point(lat=cls.blocks[block_id]['nodes'][-1]['lat'], lon=cls.blocks[block_id]['nodes'][-1]['lon'],
-                            type='node', id=None)
+        segment_end = Point(lat=cls.blocks[block_id]['nodes'][-1]['lat'], lon=cls.blocks[block_id]['nodes'][-1]['lon'], type='node')  # type: ignore
         through_end = NodeDistances.get_distance(node, segment_end)
-        through_end = through_end if through_end is not None else 1600
+        through_end = through_end[0] if through_end is not None else 1600
         through_end += cls.blocks[block_id]['addresses'][pt_id(house)]['distance_to_end']
         return through_start, through_end
 
     @classmethod
-    def get_distance(cls, p1: Point, p2: Point) -> Optional[float]:
+    def get_distance(cls, p1: Point, p2: Point) -> Optional[tuple[float, float]]:
+        if 'type' not in p1 or 'type' not in p2:
+            raise ValueError('When retrieiving mix distances, both points must have a \'type\'')
+
         if p1['type'] == p2['type'] == 'house':
-            calculated = HouseDistances.get_distance(p1, p2)
-            return None if calculated is None else calculated[0]
+            return HouseDistances.get_distance(p1, p2)
         elif p1['type'] == p2['type'] == 'node':
             return NodeDistances.get_distance(p1, p2)
         elif p1['type'] == 'node' and p2['type'] == 'house':
-            return min(cls.get_distance_through_ends(node=p1, house=p2))
+            return min(cls.get_distance_through_ends(node=p1, house=p2)), 0
         elif p1['type'] == 'house' and p2['type'] == 'node':
-            return min(cls.get_distance_through_ends(node=p2, house=p1))
+            return min(cls.get_distance_through_ends(node=p2, house=p1)), 0
         else:
             print(colored('Warning: getting routed distance between points live is not recommended', color='yellow'))
-            return get_distance(p1, p2)
+            return get_distance(p1, p2), 0

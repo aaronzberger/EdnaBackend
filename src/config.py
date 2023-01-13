@@ -1,6 +1,6 @@
 import os
 from datetime import timedelta
-from typing import Any, Literal, Optional, TypedDict
+from typing import Any, Literal, TypedDict
 
 '----------------------------------------------------------------------------------'
 '                                     File Paths                                   '
@@ -31,8 +31,8 @@ solution_path = os.path.join(BASE_DIR, 'optimize', 'solution.json')
 
 # Maximum distance between two nodes where they should be stored
 ARBITRARY_LARGE_DISTANCE = 10000
-MAX_ROUTE_TIME = timedelta(minutes=180)
-MAX_ROUTE_DISTANCE = 10000
+MAX_TOURING_TIME = timedelta(minutes=180)
+MAX_TOURING_DISTANCE = 10000
 WALKING_M_PER_S = 0.75
 MINS_PER_HOUSE = 1.5
 CLUSTERING_CONNECTED_THRESHOLD = 100  # Meters where blocks are connected
@@ -55,23 +55,18 @@ DIFFERENT_SIDE_COST = {
 '----------------------------------------------------------------------------------'
 
 
-class SmallPoint(TypedDict):
-    lat: float
-    lon: float
-
+# NOTE: the 'type' and 'id' attributes are not required. When using Python 3.11,
+# wrap these attributes in the 'typing.NotRequired' hint to eliminate errors on instance creation.
+# On earlier versions, either suppress or ignore these errors: they do not affect json export or reading.
 
 class Point(TypedDict):
     lat: float
     lon: float
-    type: Optional[Literal['house', 'node', 'other']]
-    id: Optional[str]
+    type: Literal['house', 'node', 'other']
+    id: str
 
 
-# For type hinting
-AnyPoint = Point | SmallPoint
-
-
-def pt_id(p: Point | SmallPoint) -> str:
+def pt_id(p: Point) -> str:
     '''
     Get the ID of a point
 
@@ -86,7 +81,7 @@ def pt_id(p: Point | SmallPoint) -> str:
 
 
 house_t = dict[str, Point]
-node_list_t = list[SmallPoint]
+node_list_t = list[Point]
 
 
 class HouseInfo(TypedDict):
@@ -249,8 +244,8 @@ class DistanceMatrix(TypedDict):
 '----------------------------------------------------------------------------------'
 '                             Optimization Parameters                              '
 '----------------------------------------------------------------------------------'
-OPTIM_COSTS = Costs(fixed=0, distance=2, time=3)
+OPTIM_COSTS = Costs(fixed=0, distance=3, time=1)
 
 OPTIM_OBJECTIVES = [[Objective(type='maximize-value')],
-                    [Objective(type='minimize-cost')],
-                    [Objective(type='minimize-tours')]]
+                    [Objective(type='minimize-cost')]]
+# [Objective(type='minimize-tours')][Objective(type='minimize-cost')]

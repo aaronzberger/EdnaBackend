@@ -101,13 +101,13 @@ def display_clustered_blocks(blocks: blocks_file_t,
     return m
 
 
-def display_house_orders(walk_lists: list[list[Point]], cmap: Optional[ColorMap] = None) -> folium.Map:
+def display_house_orders(walk_lists: list[list[Point]], cmap: Optional[ColorMap] = None, dcs: Optional[list[list[Optional[tuple[float, float]]]]] = None) -> folium.Map:
     lats = [i['lat'] for walk_list in walk_lists for i in walk_list]
     lons = [i['lon'] for walk_list in walk_lists for i in walk_list]
     m = generate_starter_map(lats=lats, lons=lons)
 
     if cmap is None:
-        cmap = ColorMap(0, len(walk_lists) - 1, cmap='RdYlGn')
+        cmap = ColorMap(0, len(walk_lists) - 1, cmap='tab10')
 
     for i, walk_list in enumerate(walk_lists):
         text_color = cmap.get(i)
@@ -120,7 +120,13 @@ def display_house_orders(walk_lists: list[list[Point]], cmap: Optional[ColorMap]
                     html='<div style="font-size: 15pt; color:{}">{}</div>'.format(text_color, j)
                 )
             ).add_to(m)
-
+        
+        if dcs is not None:
+            for j, dc in enumerate(dcs[i]):
+                points = [[walk_list[j]['lat'], walk_list[j]['lon']],
+                          [walk_list[j + 1]['lat'], walk_list[j + 1]['lon']]]
+                display = "None" if dc is None else "{}, {}".format(dc[0], dc[1])
+                folium.PolyLine(points, color=text_color, weight=10, opacity=0.5, tooltip=display).add_to(m)
     return m
 
 

@@ -2,13 +2,13 @@ from typing import Any
 
 import polyline
 import requests
-from src.config import AnyPoint
+from src.config import Point
 
 # SERVER = 'http://0.0.0.0:5000'
-SERVER = 'http://172.17.0.2:5000'
+SERVER = 'http://172.17.0.3:5000'
 
 
-def get_distance(start: AnyPoint, end: AnyPoint) -> float:
+def get_distance(start: Point, end: Point) -> float:
     '''
     Get the distance on foot (in meters) between two points
 
@@ -30,7 +30,7 @@ def get_distance(start: AnyPoint, end: AnyPoint) -> float:
     raise RuntimeError('Could not contact OSRM server')
 
 
-def get_route(start: AnyPoint, end: AnyPoint) -> dict[str, Any]:
+def get_route(start: Point, end: Point) -> dict[str, Any]:
     '''
     Get the full route on foot between two points
 

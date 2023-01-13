@@ -8,9 +8,11 @@ from typing import Optional
 
 import numpy as np
 from nptyping import Float32, NDArray, Shape
-from src.config import ARBITRARY_LARGE_DISTANCE, block_distance_matrix_file, Block, blocks_file_t
-from src.distances.nodes import NodeDistances
 from tqdm import tqdm
+
+from src.config import (ARBITRARY_LARGE_DISTANCE, Block,
+                        block_distance_matrix_file, blocks_file_t)
+from src.distances.nodes import NodeDistances
 
 
 class BlockDistances():

@@ -8,9 +8,10 @@ NC='\033[0m'
 CONTAINER_NAME=WLC
 OSRM_CONTAINER_NAME=osrm_container
 
-if [[ $(docker ps | grep $CONTAINER_NAME) ]]; then
+if [[ $(docker ps -a | grep $CONTAINER_NAME) ]]; then
     echo "${ERR}A container with name $CONTAINER_NAME is already running!${NC}"
-    exit 1
+    docker stop ${CONTAINER_NAME} > /dev/null
+    docker rm ${CONTAINER_NAME} > /dev/null
 fi
 
 destdir=`basename $(pwd)`

@@ -14,7 +14,7 @@ from termcolor import colored
 
 from gps_utils import SubBlock
 from src.config import (BASE_DIR, CLUSTERING_CONNECTED_THRESHOLD,
-                        KEEP_APARTMENTS, SmallPoint, blocks_file, blocks_file_t,
+                        KEEP_APARTMENTS, blocks_file, blocks_file_t,
                         houses_file, houses_file_t, Block, Point, pt_id)
 from src.distances.houses import HouseDistances
 from src.distances.mix import MixDistances
@@ -119,7 +119,7 @@ centers = [c[0] for c in clustered_points]
 display_clustered_blocks(requested_blocks, labels, centers).save(os.path.join(BASE_DIR, 'viz', 'clusters.html'))
 # endregion
 
-start = Point(lat=40.4418183, lon=-79.9198965, type='node', id=None)
+start = Point(lat=40.4418183, lon=-79.9198965, type='node')  # type: ignore
 area = clustered_points[1] + clustered_points[2] + clustered_points[6]
 area_blocks = deepcopy(clustered_blocks[1])
 area_blocks.update(clustered_blocks[2])
@@ -129,15 +129,17 @@ area_blocks.update(clustered_blocks[6])
 HouseDistances(area_blocks, start)
 
 
-unique_intersections: list[SmallPoint] = []
+unique_intersections: list[Point] = []
 unique_intersection_ids: set[str] = set()
 for b_id, block in area_blocks.items():
     if pt_id(block['nodes'][0]) not in unique_intersection_ids:
-        unique_intersections.append(block['nodes'][0])
-        unique_intersection_ids.add(pt_id(block['nodes'][0]))
+        new_pt = Point(lat=block['nodes'][0]['lat'], lon=block['nodes'][0]['lon'], type='node')  # type: ignore
+        unique_intersections.append(new_pt)
+        unique_intersection_ids.add(pt_id(new_pt))
     if pt_id(block['nodes'][-1]) not in unique_intersection_ids:
-        unique_intersections.append(block['nodes'][-1])
-        unique_intersection_ids.add(pt_id(block['nodes'][-1]))
+        new_pt = Point(lat=block['nodes'][-1]['lat'], lon=block['nodes'][-1]['lon'], type='node')  # type: ignore
+        unique_intersections.append(new_pt)
+        unique_intersection_ids.add(pt_id(new_pt))
 
 '-----------------------------------------------------------------------------------------'
 '                                      Optimize                                           '

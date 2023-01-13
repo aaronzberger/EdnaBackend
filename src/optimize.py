@@ -1,3 +1,4 @@
+import itertools
 import json
 import os
 import subprocess
@@ -8,16 +9,15 @@ from typing import Optional
 
 from termcolor import colored
 
-from src.config import (BASE_DIR, MAX_ROUTE_DISTANCE, MAX_ROUTE_TIME,
+from src.config import (BASE_DIR, MAX_TOURING_DISTANCE, MAX_TOURING_TIME,
                         MINS_PER_HOUSE, OPTIM_COSTS, OPTIM_OBJECTIVES,
                         VRP_CLI_PATH, WALKING_M_PER_S, DistanceMatrix, Fleet,
                         Job, Location, Place, PlaceTW, Plan, Problem, Profile,
                         Service, Shift, ShiftEnd, ShiftStart, Solution,
                         Statistic, Stop, Time, Tour, Vehicle, VehicleLimits,
-                        VehicleProfile, problem_path, pt_id, solution_path)
+                        VehicleProfile, problem_path, pt_id, solution_path, Point)
 from src.distances.houses import HouseDistances
 from src.distances.mix import MixDistances
-from src.gps_utils import Point
 from src.viz_utils import display_house_orders
 
 
@@ -56,7 +56,7 @@ class Optimizer():
             shifts=[Shift(start=ShiftStart(earliest=time_window[0], location=Location(index=self.start_idx)),
                           end=ShiftEnd(latest=time_window[1], location=Location(index=self.start_idx)))],
             capacity=[1],
-            limits=VehicleLimits(shiftTime=shift_time.seconds, maxDistance=MAX_ROUTE_DISTANCE))
+            limits=VehicleLimits(shiftTime=shift_time.seconds, maxDistance=MAX_TOURING_DISTANCE))
 
         return Fleet(vehicles=[walker], profiles=[VehicleProfile(name='person')])
 
@@ -71,8 +71,9 @@ class Optimizer():
             See the summary paper for a full explanation of mapping the turf split problem to standard VRP
         '''
         start_time = datetime(year=3000, month=1, day=1, hour=0, minute=0, second=0)
-        depot_to_node_duration = MAX_ROUTE_TIME
-        end_time = start_time + MAX_ROUTE_TIME + (2 * depot_to_node_duration)
+        depot_to_node_duration = MAX_TOURING_TIME
+        MAX_ROUTE_TIME = MAX_TOURING_TIME + (2 * depot_to_node_duration)
+        end_time = start_time + MAX_ROUTE_TIME
 
         full_time_window = [start_time.strftime('%Y-%m-%dT%H:%M:%SZ'), end_time.strftime('%Y-%m-%dT%H:%M:%SZ')]
 
@@ -89,24 +90,25 @@ class Optimizer():
 
         for pt in self.points:
             for other_pt in self.points:
-                if pt['id'] == 'depot' or other_pt['id'] == 'depot':
-                    if pt['id'] == other_pt['id'] == 'depot':
-                        distance = time = 0
+                if pt_id(pt) == 'depot' or pt_id(other_pt) == 'depot':
+                    if pt_id(pt) == pt_id(other_pt) == 'depot' or pt['type'] == 'house' or other_pt['type'] == 'house':
+                        # It is impossible to traverse between depots, or from a house to a depot
+                        time = MAX_ROUTE_TIME.seconds
+                        cost = 0
                     else:
-                        if pt['type'] == 'house' or other_pt['type'] == 'house':
-                            # Make it impossible to traverse from a house to a depot
-                            distance = MAX_ROUTE_DISTANCE
-                            time = 0
-                        else:
-                            # Exactly 2 hours to traverse from depot to a node
-                            distance = 0
-                            time = depot_to_node_duration.seconds
+                        # It is possible to travel exactly to one intersection and back
+                        time = depot_to_node_duration.seconds
+                        cost = 0
                 else:
-                    distance = MixDistances.get_distance(pt, other_pt)
-                    distance = distance if distance is not None else depot_to_node_duration.seconds * WALKING_M_PER_S
-                    time = distance / WALKING_M_PER_S
-                distance_matrix['distances'].append(round(distance))
+                    # Calculate the distance between two nodes, two houses, or a house and a node
+                    distance_cost = MixDistances.get_distance(pt, other_pt)
+                    time = MAX_ROUTE_TIME.seconds if distance_cost is None else distance_cost[0] / WALKING_M_PER_S
+                    cost = distance_cost[1] if distance_cost is not None else 0
+
+                # if 'BARNSDALE' in pt_id(pt) and 'BARNSDALE' in pt_id(other_pt):
+                    # print('From {} to {} is c:{}, t:{}. {}:{} to {}:{}'.format(pt_id(pt), pt_id(other_pt), cost, time, pt['lat'], pt['lon'], other_pt['lat'], other_pt['lon']))
                 distance_matrix['travelTimes'].append(round(time))
+                distance_matrix['distances'].append(round(cost))
 
         json.dump(distance_matrix, open(self.distance_matrix_save, 'w'), indent=2)
 
@@ -140,18 +142,17 @@ class Optimizer():
             num_lists (int): the number of lists to generate
         '''
         start_time = datetime(year=3000, month=1, day=1, hour=0, minute=0, second=0)
-        end_time = start_time + MAX_ROUTE_TIME
+        end_time = start_time + MAX_TOURING_TIME
 
         full_time_window = [start_time.strftime('%Y-%m-%dT%H:%M:%SZ'), end_time.strftime('%Y-%m-%dT%H:%M:%SZ')]
-
         # Construct the distance matrix file
         distance_matrix = DistanceMatrix(profile='person', travelTimes=[], distances=[])
         for pt in self.points:
             for other_pt in self.points:
                 distance_cost = HouseDistances.get_distance(pt, other_pt)
-                distance_cost = distance_cost if distance_cost is not None else (10000, 10000)
-                distance_matrix['distances'].append(round(distance_cost[0] + distance_cost[1]))
+                distance_cost = distance_cost if distance_cost is not None else (10000, 0)
                 distance_matrix['travelTimes'].append(round(distance_cost[0] / WALKING_M_PER_S))
+                distance_matrix['distances'].append(round(distance_cost[1]))
 
         json.dump(distance_matrix, open(self.distance_matrix_save, 'w'), indent=2)
         print('Saved distance matrix to {}'.format(self.distance_matrix_save))
@@ -176,7 +177,7 @@ class Optimizer():
 
         p = subprocess.run(
             [VRP_CLI_PATH, 'solve', 'pragmatic', problem_path, '-m', self.distance_matrix_save,
-             '-o', solution_path, '-t', '60', '--min-cv', 'sample,200,0.01,true',
+             '-o', solution_path, '-t', '300', '--min-cv', 'sample,300,0.001,true',
              '--search-mode', 'deep' if search_deep else 'broad', '--log'])
 
         if p.returncode != 0:
@@ -205,5 +206,7 @@ class Optimizer():
             walk_lists.append([])
             for stop in route['stops'][1:-1]:
                 walk_lists[i].append(self.points[stop['location']['index']])
+        
+        house_dcs = [[HouseDistances.get_distance(i, j) for (i, j) in itertools.pairwise(l)] for l in walk_lists]
 
-        display_house_orders(walk_lists).save(os.path.join(BASE_DIR, 'viz', 'optimal.html'))
+        display_house_orders(walk_lists, dcs=house_dcs).save(os.path.join(BASE_DIR, 'viz', 'optimal.html'))

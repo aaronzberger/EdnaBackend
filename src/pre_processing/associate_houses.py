@@ -14,7 +14,7 @@ from typing import Any, Literal, Optional
 from src.config import (HouseInfo, Point, Block,
                         address_pts_file, block_output_file, blocks_file,
                         blocks_file_t, houses_file, houses_file_t,
-                        node_coords_file, pt_id, SmallPoint)
+                        node_coords_file, pt_id)
 from src.gps_utils import (along_track_distance, cross_track_distance,
                            great_circle_distance, bearing)
 from tqdm import tqdm
@@ -26,7 +26,7 @@ DEBUG = False
 
 # Load the hash table containing node coordinates hashed by ID
 print('Loading node coordinates table...')
-node_coords: dict[str, SmallPoint] = json.load(open(node_coords_file))
+node_coords: dict[str, Point] = json.load(open(node_coords_file))
 
 # This file contains the coordinates of every building in the county
 print('Loading coordinates of houses...')
@@ -50,8 +50,8 @@ houses_to_id: houses_file_t = {}
 class Segment():
     '''Define a segment between two nodes on a block relative to a house'''
     start_node_id: str
-    sub_node_1: SmallPoint
-    sub_node_2: SmallPoint
+    sub_node_1: Point
+    sub_node_2: Point
     end_node_id: str
     distance: float
     id: int
@@ -66,7 +66,7 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
         if item['municipality'].strip().upper() != 'PITTSBURGH' or \
                 int(item['zip_code']) != 15217:
             continue
-        house_pt = Point(lat=float(item['latitude']), lon=float(item['longitude']), type='house', id=None)
+        house_pt = Point(lat=float(item['latitude']), lon=float(item['longitude']), type='house')  # type: ignore
         street_name = item['st_name'].split(' ')[0].upper()
 
         best_segment: Optional[Segment] = None  # Store the running closest segment to the house
@@ -92,8 +92,8 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
 
                         house_to_segment = cross_track_distance(
                             house_pt,
-                            Point(lat=node_1['lat'], lon=node_1['lon'], type='node', id=None),
-                            Point(lat=node_2['lat'], lon=node_2['lon'], type='node', id=None))
+                            Point(lat=node_1['lat'], lon=node_1['lon']),  # type: ignore
+                            Point(lat=node_2['lat'], lon=node_2['lon']))  # type: ignore
 
                         if DEBUG:
                             print('nodes {} and {}, distance {:.2f}.'.format(
@@ -128,7 +128,7 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
             # If this segment has not been inserted yet, generate an entry
             if segment_id not in segments_by_id:
                 # Create the list of sub points in this segment
-                all_nodes: list[SmallPoint] = []
+                all_nodes: list[Point] = []
                 for id in best_segment.all_nodes:
                     try:
                         coords = node_coords[id]
@@ -140,11 +140,11 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
                     all_nodes = list(reversed(all_nodes))
 
                 # Calculate the bearings from each side of the block
-                b_start = bearing(Point(lat=all_nodes[0]['lat'], lon=all_nodes[0]['lon'], type='node', id=None),
-                                  Point(lat=all_nodes[1]['lat'], lon=all_nodes[1]['lon'], type='node', id=None))
+                b_start = bearing(Point(lat=all_nodes[0]['lat'], lon=all_nodes[0]['lon']),  # type: ignore
+                                  Point(lat=all_nodes[1]['lat'], lon=all_nodes[1]['lon']))  # type: ignore
 
-                b_end = bearing(Point(lat=all_nodes[-1]['lat'], lon=all_nodes[-1]['lon'], type='node', id=None),
-                                Point(lat=all_nodes[-2]['lat'], lon=all_nodes[-2]['lon'], type='node', id=None))
+                b_end = bearing(Point(lat=all_nodes[-1]['lat'], lon=all_nodes[-1]['lon']),  # type: ignore
+                                Point(lat=all_nodes[-2]['lat'], lon=all_nodes[-2]['lon']))  # type: ignore
 
                 # Place this segment in the table
                 segments_by_id[segment_id] = Block(
@@ -165,24 +165,24 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
             # Calculate the distance from the start of the block to the beginning of this house's sub-segment
             for first, second in itertools.pairwise(all_points[:min(sub_nodes) + 1]):
                 distance_to_start += great_circle_distance(
-                    Point(lat=first['lat'], lon=first['lon'], type='other', id=None),
-                    Point(lat=second['lat'], lon=second['lon'], type='other', id=None))
+                    Point(lat=first['lat'], lon=first['lon']),  # type: ignore
+                    Point(lat=second['lat'], lon=second['lon']))  # type: ignore
 
             # Split this sub-segment's length between the two distances, based on this house's location
             sub_start = all_points[min(sub_nodes)]
             sub_end = all_points[max(sub_nodes)]
             distances = along_track_distance(
                 p1=house_pt,
-                p2=Point(lat=sub_start['lat'], lon=sub_start['lon'], type='other', id=None),
-                p3=Point(lat=sub_end['lat'], lon=sub_end['lon'], type='other', id=None))
+                p2=Point(lat=sub_start['lat'], lon=sub_start['lon']),  # type: ignore
+                p3=Point(lat=sub_end['lat'], lon=sub_end['lon']))  # type: ignore
             distance_to_start += distances[0]
             distance_to_end += distances[1]
 
             # Lastly, calculate the distance from the end of this house's sub-segment to the end of the block
             for first, second in itertools.pairwise(all_points[min(sub_nodes) + 1:]):
                 distance_to_end += great_circle_distance(
-                    Point(lat=first['lat'], lon=first['lon'], type='other', id=None),
-                    Point(lat=second['lat'], lon=second['lon'], type='other', id=None))
+                    Point(lat=first['lat'], lon=first['lon']),  # type: ignore
+                    Point(lat=second['lat'], lon=second['lon']))  # type: ignore
 
             output_house = HouseInfo(
                 lat=house_pt['lat'], lon=house_pt['lon'],
