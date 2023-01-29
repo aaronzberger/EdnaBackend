@@ -1,3 +1,4 @@
+from enum import Enum
 import os
 from datetime import timedelta
 from typing import Any, Literal, TypedDict
@@ -38,6 +39,8 @@ MINS_PER_HOUSE = 1.5
 CLUSTERING_CONNECTED_THRESHOLD = 100  # Meters where blocks are connected
 KEEP_APARTMENTS = False
 DISTANCE_TO_ROAD_MULTIPLIER = 0.5
+ALD_BUFFER = 5   # Meters after a block ends where a house is still on the block
+
 
 # Cost of crossing the street (technically, in meters)
 DIFFERENT_SIDE_COST = {
@@ -98,7 +101,7 @@ class Block(TypedDict):
     addresses: dict[str, HouseInfo]
     nodes: node_list_t
     bearings: tuple[float, float]  # The bearings at the start and end of the block
-    type: Literal['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'unclassified', 'residential']
+    type: str
 
 
 blocks_file_t = dict[str, Block]

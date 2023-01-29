@@ -117,10 +117,16 @@ class HouseDistances():
                 if address_1 == address_2:
                     cls._house_dcs[address_1][address_2] = store(0, 0)
                 else:
-                    # Simply use the difference of the distances to the start
-                    distance = round(
-                        abs(info_1['distance_to_start'] - info_2['distance_to_start']) +
-                            (info_1['distance_to_road'] + info_2['distance_to_road']) * DISTANCE_TO_ROAD_MULTIPLIER)
+                    distance_to_road = (info_1['distance_to_road'] + info_2['distance_to_road']) * DISTANCE_TO_ROAD_MULTIPLIER
+                    # For primary and secondary roads, crossing in the middle of the block is not possible
+                    # Go to the nearest crosswalk and back
+                    if b1['type'] in ['motorway', 'trunk', 'primary', 'secondary']:
+                        distance = min([info_1['distance_to_start'] + info_2['distance_to_start'] + distance_to_road,
+                                        info_1['distance_to_end'] + info_2['distance_to_end'] + distance_to_road])
+                    else:
+                        # Simply use the difference of the distances to the start
+                        distance = round(
+                            abs(info_1['distance_to_start'] - info_2['distance_to_start']) + distance_to_road)
 
                     cost = 0
                     if info_1['side'] != info_2['side']:
