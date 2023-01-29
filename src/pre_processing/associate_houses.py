@@ -15,7 +15,7 @@ from typing import Any, Literal, Optional
 from src.config import (BASE_DIR, HouseInfo, Point, Block,
                         address_pts_file, block_output_file, blocks_file,
                         blocks_file_t, houses_file, houses_file_t,
-                        node_coords_file, pt_id, node_list_t)
+                        node_coords_file, pt_id, node_list_t, ALD_BUFFER)
 from src.gps_utils import (along_track_distance, cross_track_distance,
                            great_circle_distance, bearing)
 from tqdm import tqdm
@@ -126,7 +126,7 @@ with tqdm(total=num_houses, desc='Matching', unit='rows', colour='green') as pro
                             Point(lat=node_2['lat'], lon=node_2['lon']))  # type: ignore
 
                         # The distance from the point this house projects onto the line created by the segment to the segment (0 if within bounds)
-                        house_offset = max(0, max(alds) - great_circle_distance(node_1, node_2))
+                        house_offset = max(0, max(alds) - great_circle_distance(node_1, node_2) - ALD_BUFFER)
 
                         if DEBUG:
                             print('nodes {} and {}, distance {:.2f}.'.format(
