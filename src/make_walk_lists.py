@@ -33,7 +33,7 @@ all_blocks: blocks_file_t = json.load(open(blocks_file))
 ' The universe file is the list of voters to target for these routes. It should be a CSV  '
 ' file in the format [Voter ID, Address, City, Zip]                                       '
 '-----------------------------------------------------------------------------------------'
-# region: Handle universe file
+# region Handle universe file
 if len(argv) == 2:
     # Ensure the provided file exists
     if not os.path.exists(argv[1]):
@@ -84,7 +84,7 @@ MixDistances()
 ' Using K-medoids, we cluster the blocks and designate a center node for each cluster     '
 ' Clusters are used for partitioning the space into more reasonable and optimizable areas '
 '-----------------------------------------------------------------------------------------'
-# region: Cluster
+# region Cluster
 # Cluster blocks using kmedoids
 distance_matrix = BlockDistances.get_distance_matrix()
 km = KMedoids(metric='precomputed', max_iter=100).fit(distance_matrix)
@@ -146,7 +146,7 @@ for b_id, block in area_blocks.items():
 ' Run the optimizer on the subset of the universe, providing a startting location for the '
 ' group canvas problem and nothing for the turf split problem                             '
 '-----------------------------------------------------------------------------------------'
-# region: Optimize
+# region Optimize
 optimizer = Optimizer(area, num_lists=10, starting_locations=start)
 solution = optimizer.optimize()
 

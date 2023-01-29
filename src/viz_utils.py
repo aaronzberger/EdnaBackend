@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import itertools
+import os
 from typing import Optional
 
 import folium
@@ -10,6 +11,7 @@ from folium.features import DivIcon
 
 from src.config import blocks_file_t, Point
 from src.gps_utils import SubBlock
+import humanhash
 
 
 def generate_starter_map(blocks: Optional[blocks_file_t] = None,
@@ -49,19 +51,35 @@ class ColorMap():
 
 
 def display_blocks(blocks: blocks_file_t) -> folium.Map:
+    # Seed the hash consistently for better visualization
+    os.environ['PYTHONHASHSEED'] = '0'
+
     m = generate_starter_map(blocks)
+    cmap = ColorMap(0, len(blocks.values()))
 
     num_houses_per_block = [len(b['addresses']) for b in blocks.values()]
     min_houses, max_houses = min(num_houses_per_block), max(num_houses_per_block)
 
-    for block in blocks.values():
+    for i, (b_id, block) in enumerate(blocks.items()):
+        word = humanhash.humanize(str(hash(b_id)), words=1)
         weight = 4 + ((len(block['addresses']) - min_houses) / (max_houses - min_houses)) * 8
         folium.PolyLine(
             [[p['lat'], p['lon']] for p in block['nodes']],
             weight=weight,
-            color='blue',
-            opacity=0.6
+            color=cmap.get(i),
+            opacity=0.6,
+            tooltip=word
         ).add_to(m)
+
+        for address, house in block['addresses'].items():
+            folium.Circle(
+                [house['lat'], house['lon']],
+                weight=10,
+                color=cmap.get(i),
+                opacity=1.0,
+                radius=1,
+                tooltip='{}: {}'.format(address, word)
+            ).add_to(m)
 
     return m
 
