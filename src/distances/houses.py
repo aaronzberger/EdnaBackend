@@ -63,11 +63,9 @@ class HouseDistances():
         # Calculate the distances between the segment endpoints
         dc_to_start = NodeDistances.get_distance(pt, b['nodes'][0])
         if dc_to_start is None:
-            print('Failed at loc 1')
             dc_to_start = get_distance(pt, b['nodes'][0]), 0
         dc_to_end = NodeDistances.get_distance(pt, b['nodes'][-1])
         if dc_to_end is None:
-            print('Failed at loc 2')
             dc_to_end = get_distance(pt, b['nodes'][-1]), 0
 
         if pt_id(pt) not in cls._house_dcs:

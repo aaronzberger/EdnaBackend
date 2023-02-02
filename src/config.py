@@ -1,4 +1,3 @@
-from enum import Enum
 import os
 from datetime import timedelta
 from typing import Any, Literal, TypedDict
@@ -29,6 +28,8 @@ solution_path = os.path.join(BASE_DIR, 'optimize', 'solution.json')
 '----------------------------------------------------------------------------------'
 '                                     Constants                                    '
 '----------------------------------------------------------------------------------'
+
+TURF_SPLIT = False  # Which problem to run
 
 # Maximum distance between two nodes where they should be stored
 ARBITRARY_LARGE_DISTANCE = 10000

@@ -218,6 +218,7 @@ def bearing(p1: Point, p2: Point) -> float:
 
 @dataclass
 class SubBlock():
+    '''Like a block, but ordered and optimized for post-processing and output format'''
     block: Block
 
     # Note that start and end could be the same point.
@@ -239,3 +240,5 @@ class SubBlock():
 
         # TODO: Time to walk depends on walk_method and should likely be iterated through
         self.time_to_walk = len(self.houses) * MINS_PER_HOUSE + (self.length / WALKING_M_PER_S * (1/60))
+
+    # Maybe def
