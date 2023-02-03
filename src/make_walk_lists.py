@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 import json
 import os
+import pickle
 import sys
 from copy import deepcopy
 from sys import argv
@@ -170,6 +171,8 @@ optimizer.visualize()
 ' Details coming soon...                                                                  '
 '-----------------------------------------------------------------------------------------'
 # region: Post-Process
+
+pickle.dump(optimizer.points, open(os.path.join(BASE_DIR, 'optimize', 'points.pkl'), 'wb'))
 
 post_processor = PostProcess(requested_blocks, points=optimizer.points)
 walk_lists: list[list[SubBlock]] = []

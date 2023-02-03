@@ -206,7 +206,7 @@ class Optimizer():
             walk_lists.append([])
             for stop in route['stops'][1:-1]:
                 walk_lists[i].append(self.points[stop['location']['index']])
-        
+
         house_dcs = [[HouseDistances.get_distance(i, j) for (i, j) in itertools.pairwise(l)] for l in walk_lists]
 
         display_house_orders(walk_lists, dcs=house_dcs).save(os.path.join(BASE_DIR, 'viz', 'optimal.html'))

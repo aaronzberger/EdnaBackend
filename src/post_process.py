@@ -1,10 +1,18 @@
+import csv
 import itertools
 import json
+import os
+from copy import deepcopy
+import pickle
+from sys import argv
 
-from src.config import Tour, blocks_file_t, houses_file, houses_file_t
+from src.config import (BASE_DIR, TURF_SPLIT, Tour, blocks_file, blocks_file_t,
+                        houses_file, houses_file_t, Point)
+from src.distances.blocks import BlockDistances
 from src.distances.mix import MixDistances
 from src.distances.nodes import NodeDistances
-from src.gps_utils import Point, SubBlock, project_to_line
+from src.gps_utils import SubBlock, project_to_line
+from src.viz_utils import display_walk_lists
 
 
 class PostProcess():
@@ -71,11 +79,14 @@ class PostProcess():
         return destination_block['nodes'][-1] if through_end < through_start else destination_block['nodes'][0]
 
     def _process_sub_block(self, houses: list[Point], block_id: str, entrance: Point, exit: Point) -> SubBlock:
-        block_addresses = self.blocks[block_id]['addresses']
+        assigned_addresses = [i['id'] for i in houses]
+        block_addresses = {add: inf for add, inf in self.blocks[block_id]['addresses'].items() if add in assigned_addresses}
         block = self.blocks[block_id]
 
         # Find the first subsegment containing houses
         first_subsegment = min(block_addresses.values(), key=lambda a: a['subsegment'][1])['subsegment']
+
+        # print(assigned_addresses, [i for i in block_addresses.keys()])
 
         # Determine which houses are on this subsegment
         houses_on_first = [i for i in block_addresses.values() if i['subsegment'] == first_subsegment]
@@ -86,9 +97,9 @@ class PostProcess():
 
         # Repeat for the furthest subsegment
         last_subsegment = max(block_addresses.values(), key=lambda a: a['subsegment'][1])['subsegment']
-        houses_on_last = [i for _, i in block_addresses.items() if i['subsegment'] == last_subsegment]
+        houses_on_last = [i for i in block_addresses.values() if i['subsegment'] == last_subsegment]
         closest_to_end = max(houses_on_last, key=lambda d: d['distance_to_start'])
-        closest_to_end = Point(closest_to_end['lat'], closest_to_end['lon'])  # type: ignore
+        closest_to_end = Point(lat=closest_to_end['lat'], lon=closest_to_end['lon'])  # type: ignore
 
         # Project these houses onto their respective subsegments to obtain the furthest points on the segment
         extremum = (
@@ -103,7 +114,7 @@ class PostProcess():
         # TODO: Correct extremum by making the extremum the entry or exit points if they apply
 
         # Calculate the navigation points
-        middle_points = block['nodes'][first_subsegment[1] + 1:last_subsegment[0]]
+        middle_points = block['nodes'][first_subsegment[1]:last_subsegment[0] + 1]
         navigation_points = [extremum[0]] + [Point(**p) for p in middle_points] + [extremum[1]]
 
         return SubBlock(
@@ -115,7 +126,7 @@ class PostProcess():
         walk_list: list[SubBlock] = []
 
         tour_stops = [self.points[h['location']['index']] for h in tour['stops']]
-        depot, houses = tour_stops[0], tour_stops[1:]
+        depot, houses = tour_stops[0], tour_stops[1:-1]
 
         current_sub_block_points: list[Point] = []
 
@@ -152,3 +163,62 @@ class PostProcess():
             current_sub_block_points, running_block_id, entrance=running_intersection, exit=exit_point))
 
         return walk_list
+
+
+if __name__ == '__main__':
+    # region Handle universe file
+    all_blocks: blocks_file_t = json.load(open(blocks_file))
+
+    if len(argv) == 2:
+        # Ensure the provided file exists
+        if not os.path.exists(argv[1]):
+            raise FileExistsError('Usage: make_walk_lists.py [UNIVERSE FILE]')
+
+        reader = csv.DictReader(open(argv[1]))
+        houses_to_id: houses_file_t = json.load(open(houses_file))
+        requested_blocks: blocks_file_t = {}
+        total_houses = failed_houses = 0
+
+        # Process each requested house
+        for house in reader:
+            formatted_address = house['Address'].upper()
+            total_houses += 1
+            if formatted_address not in houses_to_id:
+                failed_houses += 1
+                continue
+            block_id = houses_to_id[formatted_address]
+            house_info = deepcopy(all_blocks[block_id]['addresses'][formatted_address])
+
+            if block_id in requested_blocks:
+                requested_blocks[block_id]['addresses'][formatted_address] = house_info
+            else:
+                requested_blocks[block_id] = deepcopy(all_blocks[block_id])
+                requested_blocks[block_id]['addresses'] = {formatted_address: house_info}
+        print('Failed on {} of {} houses'.format(failed_houses, total_houses))
+    else:
+        requested_blocks: blocks_file_t = json.load(open(blocks_file))
+    # endregion
+
+    NodeDistances(requested_blocks)
+    BlockDistances(requested_blocks)
+    MixDistances()
+
+    # Load the solution file
+    solution = json.load(open(os.path.join(BASE_DIR, 'optimize', 'solution.json')))
+
+    points = pickle.load(open(os.path.join(BASE_DIR, 'optimize', 'points.pkl'), 'rb'))
+
+    post_processor = PostProcess(requested_blocks, points=points)
+    walk_lists: list[list[SubBlock]] = []
+    for i, tour in enumerate(solution['tours']):
+        # Do not count the starting location service at the start or end
+        tour['stops'] = tour['stops'][1:-1] if TURF_SPLIT else tour['stops']
+
+        if len(tour['stops']) == 0:
+            print('List {} has 0 stops'.format(i))
+            continue
+
+        walk_lists.append(post_processor.post_process(tour))
+
+    # Save the walk lists
+    display_walk_lists(walk_lists).save(os.path.join(BASE_DIR, 'viz', 'walk_lists.html'))
