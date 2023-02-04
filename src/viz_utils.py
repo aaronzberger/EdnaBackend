@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import itertools
+import os
 from typing import Optional
 
 import folium
@@ -10,6 +11,7 @@ from folium.features import DivIcon
 
 from src.config import blocks_file_t, Point
 from src.gps_utils import SubBlock
+import humanhash
 
 
 def generate_starter_map(blocks: Optional[blocks_file_t] = None,
@@ -49,19 +51,35 @@ class ColorMap():
 
 
 def display_blocks(blocks: blocks_file_t) -> folium.Map:
+    # Seed the hash consistently for better visualization
+    os.environ['PYTHONHASHSEED'] = '0'
+
     m = generate_starter_map(blocks)
+    cmap = ColorMap(0, len(blocks.values()))
 
     num_houses_per_block = [len(b['addresses']) for b in blocks.values()]
     min_houses, max_houses = min(num_houses_per_block), max(num_houses_per_block)
 
-    for block in blocks.values():
+    for i, (b_id, block) in enumerate(blocks.items()):
+        word = humanhash.humanize(str(hash(b_id)), words=1)
         weight = 4 + ((len(block['addresses']) - min_houses) / (max_houses - min_houses)) * 8
         folium.PolyLine(
             [[p['lat'], p['lon']] for p in block['nodes']],
             weight=weight,
-            color='blue',
-            opacity=0.6
+            color=cmap.get(i),
+            opacity=0.6,
+            tooltip=word
         ).add_to(m)
+
+        for address, house in block['addresses'].items():
+            folium.Circle(
+                [house['lat'], house['lon']],
+                weight=10,
+                color=cmap.get(i),
+                opacity=1.0,
+                radius=1,
+                tooltip='{}: {}'.format(address, word)
+            ).add_to(m)
 
     return m
 
@@ -120,7 +138,7 @@ def display_house_orders(walk_lists: list[list[Point]], cmap: Optional[ColorMap]
                     html='<div style="font-size: 15pt; color:{}">{}</div>'.format(text_color, j)
                 )
             ).add_to(m)
-        
+
         if dcs is not None:
             for j, dc in enumerate(dcs[i]):
                 points = [[walk_list[j]['lat'], walk_list[j]['lon']],
@@ -132,21 +150,33 @@ def display_house_orders(walk_lists: list[list[Point]], cmap: Optional[ColorMap]
 
 def display_walk_lists(walk_lists: list[list[SubBlock]]) -> list[folium.Map]:
     points = [list(itertools.chain.from_iterable([s.houses for s in walk_list])) for walk_list in walk_lists]
-    cmap = ColorMap(0, len(walk_lists) - 1, cmap='RdYlGn')
+    points = list(itertools.chain.from_iterable(points))
 
-    list_visualizations: list[folium.Map] = []
+    lats = [i['lat'] for walk_list in walk_lists for i in walk_list for i in i.houses]
+    lons = [i['lon'] for walk_list in walk_lists for i in walk_list for i in i.houses]
+    m = generate_starter_map(lats=lats, lons=lons)
+
+    cmap = ColorMap(0, len(walk_lists) - 1, cmap='tab10')
 
     for i, walk_list in enumerate(walk_lists):
-        m = display_house_orders([points[i]], cmap=cmap)
-
-        for subsegment in walk_list:
+        house_counter = 1
+        color = cmap.get(i)
+        for sub_block in walk_list:
             folium.PolyLine(
-                [[p['lat'], p['lon']] for p in subsegment.navigation_points],
+                [[p['lat'], p['lon']] for p in sub_block.navigation_points],
                 weight=8,
-                color='#212121',
-                opacity=0.7
+                color=color,
+                opacity=0.7,
             ).add_to(m)
+            for house in sub_block.houses:
+                folium.Marker(
+                    location=[house['lat'], house['lon']],
+                    icon=DivIcon(
+                        icon_size=(25, 25),
+                        icon_anchor=(10, 10),  # left-right, up-down
+                        html='<div style="font-size: 15pt; color:{}">{}</div>'.format(color, house_counter)
+                    )
+                ).add_to(m)
 
-        list_visualizations.append(m)
-
-    return list_visualizations
+                house_counter += 1
+    return m

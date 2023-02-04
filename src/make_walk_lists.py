@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 import json
 import os
+import pickle
 import sys
 from copy import deepcopy
 from sys import argv
@@ -14,14 +15,14 @@ from termcolor import colored
 
 from gps_utils import SubBlock
 from src.config import (BASE_DIR, CLUSTERING_CONNECTED_THRESHOLD,
-                        KEEP_APARTMENTS, blocks_file, blocks_file_t,
+                        KEEP_APARTMENTS, TURF_SPLIT, blocks_file, blocks_file_t,
                         houses_file, houses_file_t, Block, Point, pt_id)
 from src.distances.houses import HouseDistances
 from src.distances.mix import MixDistances
 from src.distances.nodes import NodeDistances
 from src.distances.blocks import BlockDistances
 from src.optimize import Optimizer
-# from src.post_process import PostProcess
+from src.post_process import PostProcess
 from src.viz_utils import (display_clustered_blocks, display_blocks,
                            display_walk_lists)
 # from src.walkability_scorer import score
@@ -33,7 +34,7 @@ all_blocks: blocks_file_t = json.load(open(blocks_file))
 ' The universe file is the list of voters to target for these routes. It should be a CSV  '
 ' file in the format [Voter ID, Address, City, Zip]                                       '
 '-----------------------------------------------------------------------------------------'
-# region: Handle universe file
+# region Handle universe file
 if len(argv) == 2:
     # Ensure the provided file exists
     if not os.path.exists(argv[1]):
@@ -84,7 +85,7 @@ MixDistances()
 ' Using K-medoids, we cluster the blocks and designate a center node for each cluster     '
 ' Clusters are used for partitioning the space into more reasonable and optimizable areas '
 '-----------------------------------------------------------------------------------------'
-# region: Cluster
+# region Cluster
 # Cluster blocks using kmedoids
 distance_matrix = BlockDistances.get_distance_matrix()
 km = KMedoids(metric='precomputed', max_iter=100).fit(distance_matrix)
@@ -119,35 +120,43 @@ centers = [c[0] for c in clustered_points]
 display_clustered_blocks(requested_blocks, labels, centers).save(os.path.join(BASE_DIR, 'viz', 'clusters.html'))
 # endregion
 
-start = Point(lat=40.4418183, lon=-79.9198965, type='node')  # type: ignore
-area = clustered_points[1] + clustered_points[2] + clustered_points[6]
-area_blocks = deepcopy(clustered_blocks[1])
+# Use a subset of the clusters as potential depot locations
+area = clustered_points[0] + clustered_points[2] + clustered_points[3] + clustered_points[4] + clustered_points[5] + clustered_points[6]
+area_blocks = deepcopy(clustered_blocks[0])
 area_blocks.update(clustered_blocks[2])
+area_blocks.update(clustered_blocks[3])
+area_blocks.update(clustered_blocks[4])
+area_blocks.update(clustered_blocks[5])
 area_blocks.update(clustered_blocks[6])
 
-# Generate house distance matrix
-HouseDistances(area_blocks, start)
 
+depot: Point | list[Point] = []
 
-unique_intersections: list[Point] = []
-unique_intersection_ids: set[str] = set()
-for b_id, block in area_blocks.items():
-    if pt_id(block['nodes'][0]) not in unique_intersection_ids:
-        new_pt = Point(lat=block['nodes'][0]['lat'], lon=block['nodes'][0]['lon'], type='node')  # type: ignore
-        unique_intersections.append(new_pt)
-        unique_intersection_ids.add(pt_id(new_pt))
-    if pt_id(block['nodes'][-1]) not in unique_intersection_ids:
-        new_pt = Point(lat=block['nodes'][-1]['lat'], lon=block['nodes'][-1]['lon'], type='node')  # type: ignore
-        unique_intersections.append(new_pt)
-        unique_intersection_ids.add(pt_id(new_pt))
+if TURF_SPLIT:
+    depot = []
+    unique_intersection_ids: set[str] = set()
+    for b_id, block in area_blocks.items():
+        if pt_id(block['nodes'][0]) not in unique_intersection_ids:
+            new_pt = Point(lat=block['nodes'][0]['lat'], lon=block['nodes'][0]['lon'], type='node')  # type: ignore
+            depot.append(new_pt)
+            unique_intersection_ids.add(pt_id(new_pt))
+        if pt_id(block['nodes'][-1]) not in unique_intersection_ids:
+            new_pt = Point(lat=block['nodes'][-1]['lat'], lon=block['nodes'][-1]['lon'], type='node')  # type: ignore
+            depot.append(new_pt)
+            unique_intersection_ids.add(pt_id(new_pt))
+else:
+    depot = Point(lat=40.4409128, lon=-79.9277741, type='node')  # type: ignore
+
+    # Generate house distance matrix
+    HouseDistances(area_blocks, depot)
 
 '-----------------------------------------------------------------------------------------'
 '                                      Optimize                                           '
 ' Run the optimizer on the subset of the universe, providing a startting location for the '
 ' group canvas problem and nothing for the turf split problem                             '
 '-----------------------------------------------------------------------------------------'
-# region: Optimize
-optimizer = Optimizer(area, num_lists=10, starting_locations=start)
+# region Optimize
+optimizer = Optimizer(area, num_lists=10, starting_locations=depot)
 solution = optimizer.optimize()
 
 if solution is None:
@@ -163,19 +172,19 @@ optimizer.visualize()
 '-----------------------------------------------------------------------------------------'
 # region: Post-Process
 
-# depot = Point(-1, -1, id='depot')
-# points = area + unique_intersections + [depot]
-# post_processor = PostProcess(requested_blocks, points=area, canvas_start=start)
-# walk_lists: list[list[SubBlock]] = []
-# for i, tour in enumerate(solution['tours']):
-#     # Do not count the starting location service at the start or end
-#     tour['stops'] = tour['stops'][1:-1]
+pickle.dump(optimizer.points, open(os.path.join(BASE_DIR, 'optimize', 'points.pkl'), 'wb'))
 
-#     if len(tour['stops']) == 0:
-#         print('List {} has 0 stops'.format(i))
-#         continue
+post_processor = PostProcess(requested_blocks, points=optimizer.points)
+walk_lists: list[list[SubBlock]] = []
+for i, tour in enumerate(solution['tours']):
+    # Do not count the starting location service at the start or end
+    tour['stops'] = tour['stops'][1:-1] if TURF_SPLIT else tour['stops']
 
-#     walk_lists.append(post_processor.post_process(tour))
+    if len(tour['stops']) == 0:
+        print('List {} has 0 stops'.format(i))
+        continue
+
+    walk_lists.append(post_processor.post_process(tour))
 
 # list_visualizations = display_walk_lists(walk_lists)
 # for i, walk_list in enumerate(list_visualizations):

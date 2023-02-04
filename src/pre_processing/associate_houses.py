@@ -1,45 +1,51 @@
 '''
-Associate houses with blocks. Generate blocks.json and houses.json
+Associate houses with blocks. Take in block_output.json and generate blocks.json and houses.json
 '''
 
-# TODO: See 5889 Aylesboro. If ALD is within bounds of block, prefer that block instead of the one that minimizes distance
+# TODO: See Covode Pl and Wendover Pl (both have same-named streets, to which all the houses on pl have been wrongly assigned)
 
 import csv
 import itertools
 import json
 from copy import deepcopy
 from dataclasses import dataclass
+import os
 from typing import Any, Literal, Optional
 
-from src.config import (HouseInfo, Point, Block,
+from src.config import (BASE_DIR, HouseInfo, Point, Block,
                         address_pts_file, block_output_file, blocks_file,
                         blocks_file_t, houses_file, houses_file_t,
-                        node_coords_file, pt_id)
+                        node_coords_file, pt_id, node_list_t, ALD_BUFFER)
 from src.gps_utils import (along_track_distance, cross_track_distance,
                            great_circle_distance, bearing)
 from tqdm import tqdm
 
-SEPARATE_SIDES = False
+from src.viz_utils import display_blocks
+
 MAX_DISTANCE = 300  # meters from house to segment
 DEBUG = False
 
-
-# Load the hash table containing node coordinates hashed by ID
+'-----------------------------------------------------------------------------------------'
+'                                     Load files                                          '
+'-----------------------------------------------------------------------------------------'
+# region Load files
+# Load the table containing node coordinates by ID
 print('Loading node coordinates table...')
 node_coords: dict[str, Point] = json.load(open(node_coords_file))
 
-# This file contains the coordinates of every building in the county
+# Load the file (unorganized) containing house coordinates (and info) 
 print('Loading coordinates of houses...')
 house_points_file = open(address_pts_file)
-num_rows = -1
+num_houses = -1
 for line in house_points_file:
-    num_rows += 1
+    num_houses += 1
 house_points_file.seek(0)
 house_points_reader = csv.DictReader(house_points_file)
 
 # Load the block_output file, containing the blocks returned from the OSM query
 print('Loading node and way coordinations query...')
 blocks: dict[str, Any] = json.load(open(block_output_file))
+# endregion
 
 # Map segment IDs to a dict containting the addresses and node IDs
 segments_by_id: blocks_file_t = {}
@@ -48,19 +54,38 @@ houses_to_id: houses_file_t = {}
 
 @dataclass
 class Segment():
-    '''Define a segment between two nodes on a block relative to a house'''
+    '''Define an alternate Block with more geographic information'''
     start_node_id: str
     sub_node_1: Point
     sub_node_2: Point
     end_node_id: str
-    distance: float
+    ctd: float  # cross track distance (to road)
+    ald_offset: float  # along track distance offset (to segment bounds)
     id: int
     side: bool
     all_nodes: list[str]
     type: Literal['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'unclassified', 'residential']
 
 
-with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progress:
+def distance_along_path(path: node_list_t) -> float:
+    '''
+    Find the distance through a list of Points
+
+    Parameters:
+        path (node_list_t): the navigation path to follow
+
+    Returns:
+        float: the distance through the path
+    '''
+    distance = 0
+    for first, second in itertools.pairwise(path):
+        distance += great_circle_distance(
+            Point(lat=first['lat'], lon=first['lon']),  # type: ignore
+            Point(lat=second['lat'], lon=second['lon']))  # type: ignore
+    return distance
+
+
+with tqdm(total=num_houses, desc='Matching', unit='rows', colour='green') as progress:
     for item in house_points_reader:
         progress.update()  # Update the progress bar
         if item['municipality'].strip().upper() != 'PITTSBURGH' or \
@@ -71,7 +96,7 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
 
         best_segment: Optional[Segment] = None  # Store the running closest segment to the house
 
-        # Iterate through the blocks looking for possible matches
+        # region: Find the best segment match for this house
         for start_node in blocks:
             for block in blocks[start_node]:
                 if block[2] is None:
@@ -90,20 +115,30 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
                         except KeyError:
                             continue
 
-                        house_to_segment = cross_track_distance(
+                        ctd = cross_track_distance(
                             house_pt,
                             Point(lat=node_1['lat'], lon=node_1['lon']),  # type: ignore
                             Point(lat=node_2['lat'], lon=node_2['lon']))  # type: ignore
 
+                        alds = along_track_distance(
+                            house_pt,
+                            Point(lat=node_1['lat'], lon=node_1['lon']),  # type: ignore
+                            Point(lat=node_2['lat'], lon=node_2['lon']))  # type: ignore
+
+                        # The distance from the point this house projects onto the line created by the segment to the segment (0 if within bounds)
+                        house_offset = max(0, max(alds) - great_circle_distance(node_1, node_2) - ALD_BUFFER)
+
                         if DEBUG:
                             print('nodes {} and {}, distance {:.2f}.'.format(
-                                  pt_id(node_1), pt_id(node_2), house_to_segment))
+                                  pt_id(node_1), pt_id(node_2), ctd))
 
+                        # region: If this segment is better than the best segment, insert it
                         if best_segment is None or \
-                                (best_segment is not None and abs(house_to_segment) < abs(best_segment.distance)):
+                                house_offset < best_segment.ald_offset or \
+                                (house_offset == best_segment.ald_offset and abs(ctd) < best_segment.ctd):
                             if DEBUG:
                                 print('Replacing best segment with distance {:.2f}'.format(
-                                    -1 if best_segment is None else best_segment.distance))
+                                    -1 if best_segment is None else best_segment.ctd))
 
                             used_info = possible_street_names.index(street_name)
 
@@ -112,20 +147,19 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
                                 sub_node_1=deepcopy(node_1),
                                 sub_node_2=deepcopy(node_2),
                                 end_node_id=str(block[0]),
-                                distance=abs(house_to_segment),
+                                ctd=abs(ctd),
+                                ald_offset=house_offset,
                                 id=block[1],
-                                side=True if house_to_segment > 0 else False,
+                                side=True if ctd > 0 else False,
                                 all_nodes=[str(id) for id in block[2]['nodes']],
                                 type=block[2]['ways'][used_info][1]['highway'])
 
-        if best_segment is not None and best_segment.distance <= MAX_DISTANCE:
+        if best_segment is not None and best_segment.ctd <= MAX_DISTANCE:
             # Create the segment ID from the two nodes, ID, and direction if necessary
             segment_id = str(best_segment.start_node_id) + ':' + str(best_segment.end_node_id) + \
                          ':' + str(best_segment.id)
-            if SEPARATE_SIDES:
-                segment_id += ':' + str(best_segment.side)
 
-            # If this segment has not been inserted yet, generate an entry
+            # region: If this segment has not been inserted yet, generate an entry
             if segment_id not in segments_by_id:
                 # Create the list of sub points in this segment
                 all_nodes: list[Point] = []
@@ -154,6 +188,7 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
                     type=best_segment.type
                 )
 
+            # region Create house to insert into table
             all_points = segments_by_id[segment_id]['nodes']
             sub_nodes = [all_points.index(best_segment.sub_node_1),
                          all_points.index(best_segment.sub_node_2)]
@@ -163,10 +198,7 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
             distance_to_end: float = 0
 
             # Calculate the distance from the start of the block to the beginning of this house's sub-segment
-            for first, second in itertools.pairwise(all_points[:min(sub_nodes) + 1]):
-                distance_to_start += great_circle_distance(
-                    Point(lat=first['lat'], lon=first['lon']),  # type: ignore
-                    Point(lat=second['lat'], lon=second['lon']))  # type: ignore
+            distance_to_start += distance_along_path(all_points[:min(sub_nodes) + 1])
 
             # Split this sub-segment's length between the two distances, based on this house's location
             sub_start = all_points[min(sub_nodes)]
@@ -179,21 +211,19 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
             distance_to_end += distances[1]
 
             # Lastly, calculate the distance from the end of this house's sub-segment to the end of the block
-            for first, second in itertools.pairwise(all_points[min(sub_nodes) + 1:]):
-                distance_to_end += great_circle_distance(
-                    Point(lat=first['lat'], lon=first['lon']),  # type: ignore
-                    Point(lat=second['lat'], lon=second['lon']))  # type: ignore
+            distance_to_end += distance_along_path(all_points[min(sub_nodes) + 1:])
 
             output_house = HouseInfo(
                 lat=house_pt['lat'], lon=house_pt['lon'],
                 distance_to_start=round(distance_to_start),
                 distance_to_end=round(distance_to_end),
                 side=best_segment.side,
-                distance_to_road=round(best_segment.distance),
+                distance_to_road=round(best_segment.ctd),
                 subsegment=(min(sub_nodes), max(sub_nodes))
             )
+            # endregion
 
-            # Add the house to the list of addresses in the output
+            # Add the house to the segments output
             segments_by_id[segment_id]['addresses'][item['full_address']] = output_house
 
             # Add this association to the houses file
@@ -205,3 +235,5 @@ with tqdm(total=num_rows, desc='Matching', unit='rows', colour='green') as progr
 print('Writing...')
 json.dump(segments_by_id, open(blocks_file, 'w'), indent=4)
 json.dump(houses_to_id, open((houses_file), 'w'), indent=4)
+
+display_blocks(segments_by_id).save(os.path.join(BASE_DIR, 'viz', 'segments.html'))

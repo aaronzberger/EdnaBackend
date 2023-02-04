@@ -29,6 +29,8 @@ solution_path = os.path.join(BASE_DIR, 'optimize', 'solution.json')
 '                                     Constants                                    '
 '----------------------------------------------------------------------------------'
 
+TURF_SPLIT = False  # Which problem to run
+
 # Maximum distance between two nodes where they should be stored
 ARBITRARY_LARGE_DISTANCE = 10000
 MAX_TOURING_TIME = timedelta(minutes=180)
@@ -38,6 +40,8 @@ MINS_PER_HOUSE = 1.5
 CLUSTERING_CONNECTED_THRESHOLD = 100  # Meters where blocks are connected
 KEEP_APARTMENTS = False
 DISTANCE_TO_ROAD_MULTIPLIER = 0.5
+ALD_BUFFER = 5   # Meters after a block ends where a house is still on the block
+
 
 # Cost of crossing the street (technically, in meters)
 DIFFERENT_SIDE_COST = {
@@ -98,7 +102,7 @@ class Block(TypedDict):
     addresses: dict[str, HouseInfo]
     nodes: node_list_t
     bearings: tuple[float, float]  # The bearings at the start and end of the block
-    type: Literal['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'unclassified', 'residential']
+    type: str
 
 
 blocks_file_t = dict[str, Block]
