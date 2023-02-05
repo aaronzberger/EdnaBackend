@@ -7,7 +7,7 @@ import pickle
 from sys import argv
 
 from src.config import (BASE_DIR, TURF_SPLIT, Tour, blocks_file, blocks_file_t,
-                        houses_file, houses_file_t, Point)
+                        houses_file, houses_file_t, Point, pt_id)
 from src.distances.blocks import BlockDistances
 from src.distances.mix import MixDistances
 from src.distances.nodes import NodeDistances
@@ -83,39 +83,70 @@ class PostProcess():
         block_addresses = {add: inf for add, inf in self.blocks[block_id]['addresses'].items() if add in assigned_addresses}
         block = self.blocks[block_id]
 
-        # Find the first subsegment containing houses
-        first_subsegment = min(block_addresses.values(), key=lambda a: a['subsegment'][1])['subsegment']
+        extremum: tuple[Point, Point] = (entrance, exit)
 
-        # print(assigned_addresses, [i for i in block_addresses.keys()])
+        # region: Calculate the navigation points
+        if pt_id(entrance) != pt_id(exit):
+            navigation_points = block['nodes']
 
-        # Determine which houses are on this subsegment
-        houses_on_first = [i for i in block_addresses.values() if i['subsegment'] == first_subsegment]
+        elif pt_id(entrance) == pt_id(exit) == pt_id(block['nodes'][0]):
+            # Find the last subsegment containing houses
+            last_subsegment = max(block_addresses.values(), key=lambda a: a['subsegment'][1])['subsegment']
 
-        # Find the house on this subsegment closest to the start
-        closest_to_start = min(houses_on_first, key=lambda d: d['distance_to_start'])
-        closest_to_start = Point(lat=closest_to_start['lat'], lon=closest_to_start['lon'])  # type: ignore
+            # Find the last house on that segment
+            houses_on_last = [i for i in block_addresses.values() if i['subsegment'] == last_subsegment]
+            closest_to_end = max(houses_on_last, key=lambda d: d['distance_to_start'])
+            closest_to_end = Point(lat=closest_to_end['lat'], lon=closest_to_end['lon'])  # type: ignore
 
-        # Repeat for the furthest subsegment
-        last_subsegment = max(block_addresses.values(), key=lambda a: a['subsegment'][1])['subsegment']
-        houses_on_last = [i for i in block_addresses.values() if i['subsegment'] == last_subsegment]
-        closest_to_end = max(houses_on_last, key=lambda d: d['distance_to_start'])
-        closest_to_end = Point(lat=closest_to_end['lat'], lon=closest_to_end['lon'])  # type: ignore
-
-        # Project these houses onto their respective subsegments to obtain the furthest points on the segment
-        extremum = (
-            project_to_line(
-                p1=closest_to_start,
-                p2=block['nodes'][first_subsegment[0]], p3=block['nodes'][first_subsegment[1]]),
-            project_to_line(
+            # Project that house onto the segment
+            end_extremum = project_to_line(
                 p1=closest_to_end,
-                p2=block['nodes'][last_subsegment[0]], p3=block['nodes'][last_subsegment[1]]),
-        )
+                p2=block['nodes'][last_subsegment[0]], p3=block['nodes'][last_subsegment[1]])
+            extremum = (extremum[0], end_extremum)
 
-        # TODO: Correct extremum by making the extremum the entry or exit points if they apply
+            navigation_points = block['nodes'][:last_subsegment[0] + 1] + [end_extremum]
 
-        # Calculate the navigation points
-        middle_points = block['nodes'][first_subsegment[1]:last_subsegment[0] + 1]
-        navigation_points = [extremum[0]] + [Point(**p) for p in middle_points] + [extremum[1]]
+        elif pt_id(entrance) == pt_id(exit) == pt_id(block['nodes'][-1]):
+            # Find the first subsegment containing houses
+            first_subsegment = min(block_addresses.values(), key=lambda a: a['subsegment'][1])['subsegment']
+
+            # Find the first house on that segment
+            houses_on_first = [i for i in block_addresses.values() if i['subsegment'] == first_subsegment]
+            closest_to_start = min(houses_on_first, key=lambda d: d['distance_to_start'])
+            closest_to_start = Point(lat=closest_to_start['lat'], lon=closest_to_start['lon'])  # type: ignore
+
+            # Project that house onto the segment
+            start_extremum = project_to_line(
+                p1=closest_to_start,
+                p2=block['nodes'][first_subsegment[0]], p3=block['nodes'][first_subsegment[1]])
+            extremum = (start_extremum, extremum[1])
+
+            navigation_points = [start_extremum] + block['nodes'][first_subsegment[1]:]
+        # endregion
+
+        # region: Order the houses
+        if pt_id(entrance) != pt_id(exit):
+            running_side = block_addresses[houses[0]['id']]['side']
+            start = 0
+            for i, house in enumerate(houses):
+                if block_addresses[house['id']]['side'] != running_side:
+                    houses[start:i] = sorted(houses[start:i], key=lambda h: block_addresses[h['id']]['distance_to_start'],
+                                             reverse=pt_id(entrance) != pt_id(block['nodes'][0]))
+                    running_side = block_addresses[house['id']]['side']
+                    start = i
+            # Now, sort the last side
+            houses[start:] = sorted(houses[start:], key=lambda h: block_addresses[h['id']]['distance_to_start'],
+                                    reverse=pt_id(entrance) != pt_id(block['nodes'][0]))
+        elif pt_id(entrance) == pt_id(exit):
+            # We can assume that the first house is on the "out" side
+            out_side = [h for h in houses if block_addresses[h['id']]['side'] == block_addresses[houses[0]['id']]['side']]
+            back_side = [h for h in houses if block_addresses[h['id']]['side'] != block_addresses[houses[0]['id']]['side']]
+
+            # Put the "out" side houses first, then the "back" side houses
+            houses = sorted(out_side, key=lambda h: block_addresses[h['id']]['distance_to_start'], reverse=pt_id(entrance) != pt_id(block['nodes'][0])) + \
+                sorted(back_side, key=lambda h: block_addresses[h['id']]['distance_to_end'], reverse=pt_id(entrance) != pt_id(block['nodes'][0]))
+
+        # endregion
 
         return SubBlock(
             block=block, start=entrance, end=exit, extremum=extremum,
