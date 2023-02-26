@@ -23,7 +23,7 @@ from src.distances.nodes import NodeDistances
 from src.distances.blocks import BlockDistances
 from src.optimize import Optimizer
 from src.post_process import PostProcess
-from src.viz_utils import (display_clustered_blocks, display_blocks,
+from src.viz_utils import (display_clustered_blocks, display_blocks, display_individual_walk_lists,
                            display_walk_lists)
 # from src.walkability_scorer import score
 
@@ -186,93 +186,8 @@ for i, tour in enumerate(solution['tours']):
 
     walk_lists.append(post_processor.post_process(tour))
 
-# list_visualizations = display_walk_lists(walk_lists)
-# for i, walk_list in enumerate(list_visualizations):
-#     walk_list.save(os.path.join(BASE_DIR, 'viz', 'walk_lists', '{}.html'.format(i)))
-
-# scores = [score(start, start, lis) for lis in walk_lists]
-# total_crossings = {
-#     'motorway': 0,
-#     'trunk': 0,
-#     'primary': 0,
-#     'secondary': 0,
-#     'tertiary': 0,
-#     'unclassified': 0,
-#     'residential': 0,
-#     'service': 0,
-#     'other': 0
-# }
-# for s in scores:
-#     for key, value in s['road_crossings'].items():
-#         total_crossings[key] += value
-# print('all crossings', total_crossings)
-# print('distance', sum([s['distance'] for s in scores]))
-# print('num segments', sum([s['segments'] for s in scores]))
-# print('num houses', sum([s['num_houses'] for s in scores]))
-
-# output = {}
-# output['segments'] = []
-# for sub in walk_lists[0]:
-#     segment = {}
-#     segment['nodes'] = []
-#     for nav_pt in sub.navigation_points:
-#         segment['nodes'].append({'coordinates': {'lat': nav_pt.lat, 'lon': nav_pt.lon}})
-#     segment['houses'] = []
-#     for house in sub.houses:
-#         segment['houses'].append({'address': house.id, 'coordinates': {'lat': house.lat, 'lon': house.lon}})
-#     output['segments'].append(segment)
-
-# json.dump(output, open('app_list.json', 'w'), indent=2)
-# # for s in walk_lists[0]:
-# #     print('segment:', s.segment.id)
-# #     print('start:', s.start)
-# #     print('end:', s.end)
-# #     print('extremum:', s.extremum)
-# #     print('houses:', [h.id for h in s.houses])
-# #     print('nav pts:', s.navigation_points)
-
-
-# def modify_labels(segments: list[Segment], labels: list[int]) -> list[int]:
-#     '''Apply DFS to split clusters into multiple clusters if they are not fully connected'''
-#     clusters: list[list[Segment]] = [[segments[i] for i in range(len(segments)) if labels[i] == k]
-#                                      for k in range(max(labels))]
-
-#     def dfs(segment: Segment, cluster: list[Segment], visited: set[str]):
-#         '''Depth-first search on a connected tree, tracking all visited nodes'''
-#         if segment.id in visited:
-#             return
-
-#         visited.add(segment.id)
-
-#         # Continuously update the visited set until it includes all segments connected to the original segment
-#         distances = [BlockDistances.get_distance(s, segment) for s in cluster]
-#         distances = [d for d in distances if d is not None]
-#         neighbors = [cluster[i] for i in range(len(cluster)) if distances[i] < CLUSTERING_CONNECTED_THRESHOLD]
-#         for neighbor in neighbors:
-#             dfs(neighbor, cluster, visited)
-
-#     def split_cluster(cluster: list[Segment]):
-#         '''Split a cluster recursively until all sub-clusters are fully connected'''
-#         sub_cluster: set[str] = set()
-#         dfs(cluster[0], cluster, sub_cluster)
-
-#         # Check if there are non-connected sub-clusters
-#         if len(sub_cluster) < len(cluster):
-#             # Change the indices of the subcluster to a new cluster
-#             indices = [i for i in range(len(segments)) if segments[i].id in sub_cluster]
-#             new_idx = max(labels) + 1
-#             for idx in indices:
-#                 labels[idx] = new_idx
-
-#             # Continously split the remaining parts of the cluster until each are fully connected
-#             split_cluster(cluster=[segment for segment in cluster if segment.id not in sub_cluster])
-
-#     for cluster in clusters:
-#         split_cluster(cluster)
-
-#     return labels
-
-# If needed, run post-processing on the created labels
-# labels = modify_labels(segments, labels)
+list_visualizations = display_individual_walk_lists(walk_lists)
+for i, walk_list in enumerate(list_visualizations):
+    walk_list.save(os.path.join(BASE_DIR, 'viz', 'walk_lists', '{}.html'.format(i)))
 
 # endregion

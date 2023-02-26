@@ -108,6 +108,23 @@ class Block(TypedDict):
 blocks_file_t = dict[str, Block]
 houses_file_t = dict[str, str]
 
+
+'----------------------------------------------------------------------------------'
+'                               Output File Type Hints                             '
+'----------------------------------------------------------------------------------'
+
+
+class Person(TypedDict):
+    name: str
+    age: int
+
+
+class HousePeople(TypedDict):
+    address: str
+    coordinates: Point
+    voter_info: list[Person]
+
+
 '----------------------------------------------------------------------------------'
 '                                 Solution Type Hints                              '
 '----------------------------------------------------------------------------------'

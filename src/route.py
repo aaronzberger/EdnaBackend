@@ -5,7 +5,7 @@ import requests
 from src.config import Point
 
 # SERVER = 'http://0.0.0.0:5000'
-SERVER = 'http://172.17.0.2:5000'
+SERVER = 'http://172.17.0.3:5000'
 
 
 def get_distance(start: Point, end: Point) -> float:
@@ -52,6 +52,8 @@ def get_route(start: Point, end: Point) -> dict[str, Any]:
         return {}
 
     res = r.json()
+
+    print(res)
     routes = polyline.decode(res['routes'][0]['geometry'])
     start_point = [res['waypoints'][0]['location'][1], res['waypoints'][0]['location'][0]]
     end_point = [res['waypoints'][1]['location'][1], res['waypoints'][1]['location'][0]]

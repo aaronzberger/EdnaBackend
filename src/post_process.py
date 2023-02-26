@@ -2,17 +2,22 @@ import csv
 import itertools
 import json
 import os
-from copy import deepcopy
 import pickle
+from copy import deepcopy
+from random import randint
 from sys import argv
 
-from src.config import (BASE_DIR, TURF_SPLIT, Tour, blocks_file, blocks_file_t,
-                        houses_file, houses_file_t, Point, pt_id)
+import names
+
+from src.config import (BASE_DIR, TURF_SPLIT, HousePeople, Person, Point, Tour,
+                        blocks_file, blocks_file_t, houses_file, houses_file_t,
+                        pt_id)
 from src.distances.blocks import BlockDistances
 from src.distances.mix import MixDistances
 from src.distances.nodes import NodeDistances
 from src.gps_utils import SubBlock, project_to_line
-from src.viz_utils import display_walk_lists
+from src.route import get_route
+from src.viz_utils import display_individual_walk_lists, display_walk_lists
 
 
 class PostProcess():
@@ -87,7 +92,8 @@ class PostProcess():
 
         # region: Calculate the navigation points
         if pt_id(entrance) != pt_id(exit):
-            navigation_points = block['nodes']
+            # Order the navigation points
+            navigation_points = block['nodes'] if pt_id(entrance) == pt_id(block['nodes'][0]) else block['nodes'][::-1]
 
         elif pt_id(entrance) == pt_id(exit) == pt_id(block['nodes'][0]):
             # Find the last subsegment containing houses
@@ -152,6 +158,45 @@ class PostProcess():
             block=block, start=entrance, end=exit, extremum=extremum,
             houses=houses, navigation_points=navigation_points)
 
+    def fill_holes(self, walk_list: list[SubBlock]) -> list[SubBlock]:
+        '''
+        Fill in intermediate blocks between sub-blocks, wherever the end of one block is not the same as the start of the next one
+
+        Parameters:
+            walk_list (list[SubBlock]): The list of sub-blocks to fill in
+
+        Returns:
+            list[SubBlock]: The list of sub-blocks with holes filled in
+        '''
+        # Iterate through the solution and add subsegments
+        new_walk_list: list[SubBlock] = []
+
+        for first, second in itertools.pairwise(walk_list):
+            new_walk_list.append(first)
+
+            # If the end of the first subblock is not the same as the start of the second subblock, add a new subblock
+            if pt_id(first.end) != pt_id(second.start):
+                directions = get_route(first.end, second.start)
+
+                print("Directions from {} to {}: {}".format(first.end, second.start, directions['route']))
+
+                for start_pt, end_pt in itertools.pairwise(directions['route']):
+                    start = Point(lat=start_pt[0], lon=start_pt[1])
+                    end = Point(lat=end_pt[0], lon=end_pt[1])
+
+                    # TODO: associate with an actual block to fill in intermediate navigation_points
+
+                    # TODO: routing does not actually give intermediate intersections when no turns are required,
+                    # so implement a function that takes two points on the same street and finds all intermediate intersections
+
+                    new_walk_list.append(SubBlock(
+                        block=None, start=start, end=end, extremum=(start, end),
+                        houses=[], navigation_points=[start, end]))
+
+        new_walk_list.append(walk_list[-1])
+
+        return new_walk_list
+
     def post_process(self, tour: Tour) -> list[SubBlock]:
         # Iterate through the solution and add subsegments
         walk_list: list[SubBlock] = []
@@ -193,7 +238,49 @@ class PostProcess():
         walk_list.append(self._process_sub_block(
             current_sub_block_points, running_block_id, entrance=running_intersection, exit=exit_point))
 
+        # Fill in any holes
+        walk_list = self.fill_holes(walk_list)
+
         return walk_list
+
+    def generate_file(self, walk_list: list[SubBlock], output_file: str):
+        '''
+        Generate a JSON file with the walk list (for front-end)
+
+        Parameters:
+            walk_list (list[SubBlock]): The walk list to generate the file for
+            output_file (str): The file to write to
+        '''
+        # Generate the JSON file
+        list_out = {}
+        list_out['blocks'] = []
+        for sub_block in walk_list:
+            nodes = []
+            for nav_pt in sub_block.navigation_points:
+                nodes.append({
+                    'lat': nav_pt['lat'],
+                    'lon': nav_pt['lon']
+                })
+            houses = []
+            for house in sub_block.houses:
+                houses.append(HousePeople(
+                    address=house['id'],
+                    coordinates={
+                        'lat': house['lat'],
+                        'lon': house['lon']
+                    },
+                    voter_info=[Person(
+                        name=names.get_full_name(),
+                        age=randint(18, 95))
+                            for _ in range(randint(1, 5))]
+                ))
+            list_out['blocks'].append({
+                'nodes': nodes,
+                'houses': houses
+            })
+
+        # Write the file
+        json.dump(list_out, open(output_file, 'w'))
 
 
 if __name__ == '__main__':
@@ -253,3 +340,10 @@ if __name__ == '__main__':
 
     # Save the walk lists
     display_walk_lists(walk_lists).save(os.path.join(BASE_DIR, 'viz', 'walk_lists.html'))
+
+    list_visualizations = display_individual_walk_lists(walk_lists)
+    for i, walk_list in enumerate(list_visualizations):
+        walk_list.save(os.path.join(BASE_DIR, 'viz', 'walk_lists', '{}.html'.format(i)))
+
+    for i in [3, 7, 8]:
+        post_processor.generate_file(walk_lists[i], os.path.join(BASE_DIR, 'viz', 'files', f'{i}.json'))

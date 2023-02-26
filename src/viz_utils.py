@@ -120,6 +120,17 @@ def display_clustered_blocks(blocks: blocks_file_t,
 
 
 def display_house_orders(walk_lists: list[list[Point]], cmap: Optional[ColorMap] = None, dcs: Optional[list[list[Optional[tuple[float, float]]]]] = None) -> folium.Map:
+    '''
+    Displays the house orders in a map. The color of the house is the same as the color of the block it belongs to.
+
+    Parameters:
+        walk_lists: A list of lists of houses. Each list is a walk, and each house is a dictionary with 'lat' and 'lon' keys.
+        cmap: A colormap to use for the blocks. If None, a new one will be created.
+        dcs: A list of lists of tuples of (distance, cost) for each house. If None, no DCs will be displayed.
+
+    Returns:
+        A folium map with the house orders displayed.
+    '''
     lats = [i['lat'] for walk_list in walk_lists for i in walk_list]
     lons = [i['lon'] for walk_list in walk_lists for i in walk_list]
     m = generate_starter_map(lats=lats, lons=lons)
@@ -148,7 +159,74 @@ def display_house_orders(walk_lists: list[list[Point]], cmap: Optional[ColorMap]
     return m
 
 
-def display_walk_lists(walk_lists: list[list[SubBlock]]) -> list[folium.Map]:
+def display_walk_list(walk_list: list[SubBlock], color: str) -> folium.Map:
+    '''
+    Display a walk list on a map
+
+    Parameters:
+        walk_list (list[SubBlock]): The walk list to display
+        color (str): The color to use for the walk list
+
+    Returns:
+        folium.Map: The map with the walk list displayed
+    '''
+    points = list(itertools.chain.from_iterable([s.houses for s in walk_list]))
+    lats = [i['lat'] for i in points]
+    lons = [i['lon'] for i in points]
+    m = generate_starter_map(lats=lats, lons=lons)
+
+    house_counter = 0
+
+    for sub_block in walk_list:
+        folium.PolyLine(
+            [[p['lat'], p['lon']] for p in sub_block.navigation_points],
+            weight=8,
+            color=color,
+            opacity=0.7
+        ).add_to(m)
+        for house in sub_block.houses:
+            folium.Marker(
+                location=[house['lat'], house['lon']],
+                icon=DivIcon(
+                    icon_size=(25, 25),
+                    icon_anchor=(10, 10),  # left-right, up-down
+                    html='<div style="font-size: 15pt; color:{}">{}</div>'.format(color, house_counter)
+                )
+            ).add_to(m)
+            house_counter += 1
+
+    return m
+
+
+def display_individual_walk_lists(walk_lists: list[list[SubBlock]]) -> folium.Map:
+    '''
+    Displays a list of walk lists, each in its own map
+
+    Parameters:
+        walk_lists (list[list[SubBlock]]): A list of walk lists
+
+    Returns:
+        folium.Map: A map with all the walk lists
+    '''
+    cmap = ColorMap(0, len(walk_lists) - 1, cmap='tab10')
+
+    maps = []
+    for i, walk_list in enumerate(walk_lists):
+        maps.append(display_walk_list(walk_list, cmap.get(i)))
+
+    return maps
+
+
+def display_walk_lists(walk_lists: list[list[SubBlock]]) -> folium.Map:
+    '''
+    Displays a list of walk lists, all in one map
+
+    Parameters:
+        walk_lists (list[list[SubBlock]]): A list of walk lists
+
+    Returns:
+        folium.Map: A map with all the walk lists
+    '''
     points = [list(itertools.chain.from_iterable([s.houses for s in walk_list])) for walk_list in walk_lists]
     points = list(itertools.chain.from_iterable(points))
 
