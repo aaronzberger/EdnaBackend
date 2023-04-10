@@ -37,7 +37,7 @@ RUN apt-get -y install\
  python3-pip
 
 
-RUN pip install\
+RUN pip install --no-cache-dir\
  scikit-learn-extra\
  branca\
  certifi\
@@ -70,7 +70,9 @@ RUN pip install\
  termcolor\
  tqdm\
  urllib3\
- utm
+ utm\
+ humanhash3\
+ names
 
 # set up default locale
 RUN locale-gen en_US.UTF-8

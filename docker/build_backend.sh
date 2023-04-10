@@ -1,13 +1,13 @@
 #! /bin/bash
 
-cd `dirname $0`
+cd "$(dirname "$0")" || exit
 
-arch="`arch`"
+arch="$(arch)"
 tag=
 platform=
 while test "$#" -ne 0; do
     if test "$1" = "-a" -o "$1" = "--arm" -o "$1" = "--arm64"; then
-        if test "`arch`" = "arm64" -o "`arch`" = "aarch64"; then
+        if test "$(arch)" = "arm64" -o "$(arch)" = "aarch64"; then
             platform=linux/arm64
             shift
         else
@@ -19,7 +19,7 @@ while test "$#" -ne 0; do
         shift
     else
         armtext=
-        if test "`arch`" = "arm64" -o "`arch`" = "aarch64"; then
+        if test "$(arch)" = "arm64" -o "$(arch)" = "aarch64"; then
             armtext=" [-a|--arm] [-x|--x86-64]"
         fi
         echo "Usage: build-docker$armtext" 1>&2

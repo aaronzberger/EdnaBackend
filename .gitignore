@@ -5,6 +5,7 @@ src/__pycache__/
 venv/
 build/
 osrm/
+viz/walk_lists/**.html
 
 # For privacy. Contact for access
 input/example_universe.csv
