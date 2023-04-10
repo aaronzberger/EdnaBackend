@@ -20,6 +20,8 @@ from src.distances.houses import HouseDistances
 from src.distances.mix import MixDistances
 from src.viz_utils import display_house_orders
 
+TIME_STRING_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
+
 
 class Optimizer():
     distance_matrix_save = os.path.join(BASE_DIR, 'optimize', 'distances.json')
@@ -75,15 +77,15 @@ class Optimizer():
         MAX_ROUTE_TIME = MAX_TOURING_TIME + (2 * depot_to_node_duration)
         end_time = start_time + MAX_ROUTE_TIME
 
-        full_time_window = [start_time.strftime('%Y-%m-%dT%H:%M:%SZ'), end_time.strftime('%Y-%m-%dT%H:%M:%SZ')]
+        full_time_window = [start_time.strftime(TIME_STRING_FORMAT), end_time.strftime(TIME_STRING_FORMAT)]
 
         # Define the times at which a possible starting location can be visited
-        node_start_open = (start_time + depot_to_node_duration).strftime('%Y-%m-%dT%H:%M:%SZ')
-        node_start_close = (start_time + depot_to_node_duration + timedelta(minutes=2)).strftime('%Y-%m-%dT%H:%M:%SZ')
+        node_start_open = (start_time + depot_to_node_duration).strftime(TIME_STRING_FORMAT)
+        node_start_close = (start_time + depot_to_node_duration + timedelta(minutes=2)).strftime(TIME_STRING_FORMAT)
 
         # Define the times at which a possible ending location can be visited
-        node_end_open = (end_time - depot_to_node_duration - timedelta(minutes=2)).strftime('%Y-%m-%dT%H:%M:%SZ')
-        node_end_close = (end_time - depot_to_node_duration).strftime('%Y-%m-%dT%H:%M:%SZ')
+        node_end_open = (end_time - depot_to_node_duration - timedelta(minutes=2)).strftime(TIME_STRING_FORMAT)
+        node_end_close = (end_time - depot_to_node_duration).strftime(TIME_STRING_FORMAT)
 
         # Construct the distance matrix file
         distance_matrix = DistanceMatrix(profile='person', travelTimes=[], distances=[])
@@ -105,8 +107,6 @@ class Optimizer():
                     time = MAX_ROUTE_TIME.seconds if distance_cost is None else distance_cost[0] / WALKING_M_PER_S
                     cost = distance_cost[1] if distance_cost is not None else 0
 
-                # if 'BARNSDALE' in pt_id(pt) and 'BARNSDALE' in pt_id(other_pt):
-                    # print('From {} to {} is c:{}, t:{}. {}:{} to {}:{}'.format(pt_id(pt), pt_id(other_pt), cost, time, pt['lat'], pt['lon'], other_pt['lat'], other_pt['lon']))
                 distance_matrix['travelTimes'].append(round(time))
                 distance_matrix['distances'].append(round(cost))
 
@@ -144,7 +144,7 @@ class Optimizer():
         start_time = datetime(year=3000, month=1, day=1, hour=0, minute=0, second=0)
         end_time = start_time + MAX_TOURING_TIME
 
-        full_time_window = [start_time.strftime('%Y-%m-%dT%H:%M:%SZ'), end_time.strftime('%Y-%m-%dT%H:%M:%SZ')]
+        full_time_window = [start_time.strftime(TIME_STRING_FORMAT), end_time.strftime(TIME_STRING_FORMAT)]
         # Construct the distance matrix file
         distance_matrix = DistanceMatrix(profile='person', travelTimes=[], distances=[])
         for pt in self.points:
@@ -207,6 +207,6 @@ class Optimizer():
             for stop in route['stops'][1:-1]:
                 walk_lists[i].append(self.points[stop['location']['index']])
 
-        house_dcs = [[HouseDistances.get_distance(i, j) for (i, j) in itertools.pairwise(l)] for l in walk_lists]
+        house_dcs = [[HouseDistances.get_distance(i, j) for (i, j) in itertools.pairwise(list)] for list in walk_lists]
 
         display_house_orders(walk_lists, dcs=house_dcs).save(os.path.join(BASE_DIR, 'viz', 'optimal.html'))

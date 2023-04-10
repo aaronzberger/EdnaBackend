@@ -119,7 +119,8 @@ def display_clustered_blocks(blocks: blocks_file_t,
     return m
 
 
-def display_house_orders(walk_lists: list[list[Point]], cmap: Optional[ColorMap] = None, dcs: Optional[list[list[Optional[tuple[float, float]]]]] = None) -> folium.Map:
+def display_house_orders(walk_lists: list[list[Point]], cmap: Optional[ColorMap] = None,
+                         dcs: Optional[list[list[Optional[tuple[float, float]]]]] = None) -> folium.Map:
     '''
     Displays the house orders in a map. The color of the house is the same as the color of the block it belongs to.
 

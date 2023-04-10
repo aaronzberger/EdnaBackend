@@ -6,9 +6,7 @@ from typing import Any, Literal, TypedDict
 '                                     File Paths                                   '
 '----------------------------------------------------------------------------------'
 
-# BASE_DIR = '/Users/aaron/Documents/GitHub/WLC'
 BASE_DIR = '/home/user/WLC'
-# VRP_CLI_PATH = "/Users/aaron/.cargo/bin/vrp-cli"
 VRP_CLI_PATH = "/home/user/.cargo/bin/vrp-cli"
 
 node_distance_table_file = os.path.join(BASE_DIR, 'store', 'node_distances.json')
@@ -16,6 +14,8 @@ block_distance_matrix_file = os.path.join(BASE_DIR, 'store', 'segment_distance_m
 node_coords_file = os.path.join(BASE_DIR, 'store', 'node_coords.json')
 address_pts_file = os.path.join(BASE_DIR, 'input', 'address_pts.csv')
 block_output_file = os.path.join(BASE_DIR, 'input', 'block_output.json')
+adjacency_list_file = os.path.join(BASE_DIR, 'input', 'adjacency_list.json')
+coords_node_file = os.path.join(BASE_DIR, 'input', 'coords_node.json')
 blocks_file = os.path.join(BASE_DIR, 'blocks.json')
 associated_file = os.path.join(BASE_DIR, 'associated.csv')
 
@@ -269,4 +269,3 @@ OPTIM_COSTS = Costs(fixed=0, distance=3, time=1)
 
 OPTIM_OBJECTIVES = [[Objective(type='maximize-value')],
                     [Objective(type='minimize-cost')]]
-# [Objective(type='minimize-tours')][Objective(type='minimize-cost')]

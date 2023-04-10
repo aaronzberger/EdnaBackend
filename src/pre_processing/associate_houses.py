@@ -96,7 +96,7 @@ with tqdm(total=num_houses, desc='Matching', unit='rows', colour='green') as pro
 
         best_segment: Optional[Segment] = None  # Store the running closest segment to the house
 
-        # region: Find the best segment match for this house
+        # Find the best segment match for this house
         for start_node in blocks:
             for block in blocks[start_node]:
                 if block[2] is None:
@@ -132,7 +132,7 @@ with tqdm(total=num_houses, desc='Matching', unit='rows', colour='green') as pro
                             print('nodes {} and {}, distance {:.2f}.'.format(
                                   pt_id(node_1), pt_id(node_2), ctd))
 
-                        # region: If this segment is better than the best segment, insert it
+                        # If this segment is better than the best segment, insert it
                         if best_segment is None or \
                                 house_offset < best_segment.ald_offset or \
                                 (house_offset == best_segment.ald_offset and abs(ctd) < best_segment.ctd):
@@ -159,7 +159,7 @@ with tqdm(total=num_houses, desc='Matching', unit='rows', colour='green') as pro
             segment_id = str(best_segment.start_node_id) + ':' + str(best_segment.end_node_id) + \
                          ':' + str(best_segment.id)
 
-            # region: If this segment has not been inserted yet, generate an entry
+            # If this segment has not been inserted yet, generate an entry
             if segment_id not in segments_by_id:
                 # Create the list of sub points in this segment
                 all_nodes: list[Point] = []

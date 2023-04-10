@@ -3,16 +3,14 @@ import itertools
 import json
 import os
 import random
-from copy import deepcopy
 from statistics import mean
 from typing import Optional
 
 from tqdm import tqdm
 
 from src.config import (BASE_DIR, DIFFERENT_SIDE_COST,
-                        DISTANCE_TO_ROAD_MULTIPLIER, KEEP_APARTMENTS,
-                        WALKING_M_PER_S, Block, Point, blocks_file,
-                        blocks_file_t, pt_id)
+                        DISTANCE_TO_ROAD_MULTIPLIER, KEEP_APARTMENTS, Block,
+                        Point, blocks_file, blocks_file_t, pt_id)
 from src.distances.nodes import NodeDistances
 from src.route import get_distance
 
@@ -135,8 +133,8 @@ class HouseDistances():
 
         # Calculate the distances between the segment endpoints
         end_dcs = [NodeDistances.get_distance(i, j) for i, j in
-                         [(b1['nodes'][0], b2['nodes'][0]), (b1['nodes'][0], b2['nodes'][-1]),
-                          (b1['nodes'][-1], b2['nodes'][0]), (b1['nodes'][-1], b2['nodes'][1])]]
+                   [(b1['nodes'][0], b2['nodes'][0]), (b1['nodes'][0], b2['nodes'][-1]),
+                    (b1['nodes'][-1], b2['nodes'][0]), (b1['nodes'][-1], b2['nodes'][1])]]
         end_dcs = [d for d in end_dcs if d is not None]
 
         # If this pair is too far away, don't add to the table.

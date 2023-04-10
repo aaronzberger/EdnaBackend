@@ -14,17 +14,18 @@ from sklearn_extra.cluster import KMedoids
 from termcolor import colored
 
 from gps_utils import SubBlock
-from src.config import (BASE_DIR, CLUSTERING_CONNECTED_THRESHOLD,
-                        KEEP_APARTMENTS, TURF_SPLIT, blocks_file, blocks_file_t,
-                        houses_file, houses_file_t, Block, Point, pt_id)
+from src.config import (BASE_DIR, KEEP_APARTMENTS, TURF_SPLIT, Point,
+                        blocks_file, blocks_file_t, houses_file, houses_file_t,
+                        pt_id)
+from src.distances.blocks import BlockDistances
 from src.distances.houses import HouseDistances
 from src.distances.mix import MixDistances
 from src.distances.nodes import NodeDistances
-from src.distances.blocks import BlockDistances
 from src.optimize import Optimizer
 from src.post_process import PostProcess
-from src.viz_utils import (display_clustered_blocks, display_blocks, display_individual_walk_lists,
-                           display_walk_lists)
+from src.viz_utils import (display_blocks, display_clustered_blocks,
+                           display_individual_walk_lists)
+
 # from src.walkability_scorer import score
 
 all_blocks: blocks_file_t = json.load(open(blocks_file))

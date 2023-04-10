@@ -16,7 +16,7 @@ from src.distances.blocks import BlockDistances
 from src.distances.mix import MixDistances
 from src.distances.nodes import NodeDistances
 from src.gps_utils import SubBlock, project_to_line
-from src.route import get_route
+from src.route import get_route, RouteMaker
 from src.viz_utils import display_individual_walk_lists, display_walk_lists
 
 
@@ -26,6 +26,7 @@ class PostProcess():
 
         self.blocks = blocks
         self.points = points
+        RouteMaker()
 
     def _calculate_exit(self, final_house: Point, next_house: Point) -> Point:
         '''
@@ -149,8 +150,10 @@ class PostProcess():
             back_side = [h for h in houses if block_addresses[h['id']]['side'] != block_addresses[houses[0]['id']]['side']]
 
             # Put the "out" side houses first, then the "back" side houses
-            houses = sorted(out_side, key=lambda h: block_addresses[h['id']]['distance_to_start'], reverse=pt_id(entrance) != pt_id(block['nodes'][0])) + \
-                sorted(back_side, key=lambda h: block_addresses[h['id']]['distance_to_end'], reverse=pt_id(entrance) != pt_id(block['nodes'][0]))
+            houses = sorted(out_side, key=lambda h: block_addresses[h['id']]['distance_to_start'],
+                            reverse=pt_id(entrance) != pt_id(block['nodes'][0])) + \
+                sorted(back_side, key=lambda h: block_addresses[h['id']]['distance_to_end'],
+                       reverse=pt_id(entrance) != pt_id(block['nodes'][0]))
 
         # endregion
 
@@ -160,7 +163,8 @@ class PostProcess():
 
     def fill_holes(self, walk_list: list[SubBlock]) -> list[SubBlock]:
         '''
-        Fill in intermediate blocks between sub-blocks, wherever the end of one block is not the same as the start of the next one
+        Fill in intermediate blocks between sub-blocks, wherever the end of one block
+        is not the same as the start of the next one
 
         Parameters:
             walk_list (list[SubBlock]): The list of sub-blocks to fill in
@@ -184,14 +188,14 @@ class PostProcess():
                     start = Point(lat=start_pt[0], lon=start_pt[1])
                     end = Point(lat=end_pt[0], lon=end_pt[1])
 
-                    # TODO: associate with an actual block to fill in intermediate navigation_points
+                    # TODO: DEBUG and test here
+                    block_ids = RouteMaker.get_route(start, end)
+                    for block_id in block_ids:
+                        block = self.blocks[block_id]
 
-                    # TODO: routing does not actually give intermediate intersections when no turns are required,
-                    # so implement a function that takes two points on the same street and finds all intermediate intersections
-
-                    new_walk_list.append(SubBlock(
-                        block=None, start=start, end=end, extremum=(start, end),
-                        houses=[], navigation_points=[start, end]))
+                        new_walk_list.append(SubBlock(
+                            block=block_id, start=start, end=end, extremum=(start, end),
+                            houses=[], navigation_points=block['nodes']))
 
         new_walk_list.append(walk_list[-1])
 
@@ -345,5 +349,5 @@ if __name__ == '__main__':
     for i, walk_list in enumerate(list_visualizations):
         walk_list.save(os.path.join(BASE_DIR, 'viz', 'walk_lists', '{}.html'.format(i)))
 
-    for i in [3, 7, 8]:
+    for i in range(len(walk_lists)):
         post_processor.generate_file(walk_lists[i], os.path.join(BASE_DIR, 'viz', 'files', f'{i}.json'))
