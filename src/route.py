@@ -13,7 +13,7 @@ from src.config import (Point, adjacency_list_file, blocks_file, blocks_file_t,
                         coords_node_file, node_coords_file, node_list_t)
 from src.gps_utils import great_circle_distance
 
-SERVER = 'http://172.17.0.3:5000'
+SERVER = 'http://172.17.0.2:5000'
 
 
 def get_distance(start: Point, end: Point) -> float:
@@ -81,6 +81,20 @@ class RouteMaker:
     _adjacency_list = {}
 
     @classmethod
+    def id(cls, lat: Decimal, lon: Decimal) -> str:
+        '''
+        Get the node ID for a given latitude and longitude
+
+        Parameters:
+            lat (Decimal): the latitude
+            lon (Decimal): the longitude
+
+        Returns:
+            str: the node ID
+        '''
+        return str(lat) + ':' + str(lon)
+
+    @classmethod
     def __init__(cls):
         # Create a hash table, hashing by the first 4 decimal degrees of the latitude and longitude (within 11.1 meters)
         if os.path.exists(coords_node_file):
@@ -90,9 +104,9 @@ class RouteMaker:
             for node_id, node in cls._node_coords.items():
                 lat = Decimal(node['lat']).quantize(Decimal('0.0001'))
                 lon = Decimal(node['lon']).quantize(Decimal('0.0001'))
-                if (lat, lon) not in cls._node_table:
-                    cls._node_table[(lat, lon)] = []
-                cls._node_table[(lat, lon)].append((node_id, node))
+                if cls.id(lat, lon) not in cls._node_table:
+                    cls._node_table[cls.id(lat, lon)] = []
+                cls._node_table[cls.id(lat, lon)].append((node_id, node))
             json.dump(cls._node_table, open(coords_node_file, 'w'))
             print('Done')
 
@@ -132,11 +146,14 @@ class RouteMaker:
             return length
 
         def get_block(node_1: str, node_2: str):
+            '''Get the block, and the appropriate ID, for two given nodes'''
             for i in range(3):
-                if node_1 + ':' + node_2 + ':' + str(i) in cls._blocks:
-                    return cls._blocks[node_1 + ':' + node_2 + ':' + str(i)]
-                if node_2 + ':' + node_1 + ':' + str(i) in cls._blocks:
-                    return cls._blocks[node_2 + ':' + node_1 + ':' + str(i)]
+                id1 = node_1 + ':' + node_2 + ':' + str(i)
+                if id1 in cls._blocks:
+                    return id1, cls._blocks[id1]
+                id2 = node_2 + ':' + node_1 + ':' + str(i)
+                if id2 in cls._blocks:
+                    return id2, cls._blocks[id2]
 
         # Initialize the distance and previous nodes
         distances = defaultdict(lambda: float('inf'))
@@ -158,7 +175,7 @@ class RouteMaker:
 
             # Otherwise, update the distances of the neighbors
             for neighbor in cls._adjacency_list[node]:
-                block = get_block(node, neighbor)
+                _, block = get_block(node, neighbor)
                 if block is None:
                     print('Block not found between {} and {}'.format(node, neighbor))
                 distance = distances[node] + block_distance(block['nodes'])
@@ -178,7 +195,13 @@ class RouteMaker:
             node = previous[node]
         path.reverse()
 
-        return path
+        # These are the nodes that make up the blocks, so convert them to blocks
+        blocks = []
+        for first, second in itertools.pairwise(path):
+            block_id, _ = get_block(first, second)
+            blocks.append(block_id)
+
+        return blocks
 
     @classmethod
     def get_route(cls, start: Point, end: Point):
@@ -189,12 +212,12 @@ class RouteMaker:
         end_lat = Decimal(end['lat']).quantize(Decimal('0.0001'))
         end_lon = Decimal(end['lon']).quantize(Decimal('0.0001'))
 
-        if (start_lat, start_lon) not in cls._node_table or (end_lat, end_lon) not in cls._node_table:
+        if cls.id(start_lat, start_lon) not in cls._node_table or cls.id(end_lat, end_lon) not in cls._node_table:
             print('Could not find start or end node')
             return []
 
-        start_node = min(cls._node_table[(start_lat, start_lon)], key=lambda x: great_circle_distance(start, x[1]))
-        end_node = min(cls._node_table[(end_lat, end_lon)], key=lambda x: great_circle_distance(end, x[1]))
+        start_node = min(cls._node_table[cls.id(start_lat, start_lon)], key=lambda x: great_circle_distance(start, x[1]))
+        end_node = min(cls._node_table[cls.id(end_lat, end_lon)], key=lambda x: great_circle_distance(end, x[1]))
 
         # NOTE: If needed, run this route and only run the Djikstra's on the intermediate steps that are needed
         # route = get_route(start_node[1], end_node[1])
@@ -204,4 +227,4 @@ class RouteMaker:
         # Limit the number of iterations to 5, so this runs in O(n) time
         path = cls.djikstras(start_node[0], end_node[0])
 
-        return [cls._blocks[id] for id in path]
+        return path

@@ -175,27 +175,41 @@ class PostProcess():
         # Iterate through the solution and add subsegments
         new_walk_list: list[SubBlock] = []
 
+        ids = []
+        for subblock in walk_list:
+            ids.append(pt_id(subblock.start))
+            ids.append(pt_id(subblock.end))
+        print("IDs: {}".format(ids))
+
         for first, second in itertools.pairwise(walk_list):
             new_walk_list.append(first)
 
             # If the end of the first subblock is not the same as the start of the second subblock, add a new subblock
             if pt_id(first.end) != pt_id(second.start):
-                directions = get_route(first.end, second.start)
+                # directions = get_route(first.end, second.start)
 
-                print("Directions from {} to {}: {}".format(first.end, second.start, directions['route']))
+                # print("Directions from {} to {}: {}".format(first.end, second.start, directions['route']))
 
-                for start_pt, end_pt in itertools.pairwise(directions['route']):
-                    start = Point(lat=start_pt[0], lon=start_pt[1])
-                    end = Point(lat=end_pt[0], lon=end_pt[1])
+                # for start_pt, end_pt in itertools.pairwise(directions['route']):
+                #     start = Point(lat=start_pt[0], lon=start_pt[1])
+                #     end = Point(lat=end_pt[0], lon=end_pt[1])
 
-                    # TODO: DEBUG and test here
-                    block_ids = RouteMaker.get_route(start, end)
-                    for block_id in block_ids:
-                        block = self.blocks[block_id]
+                # TODO: DEBUG and test here
+                block_ids = RouteMaker.get_route(first.end, second.start)
+                for block_id in block_ids:
+                    block = self.blocks[block_id]
 
-                        new_walk_list.append(SubBlock(
-                            block=block_id, start=start, end=end, extremum=(start, end),
-                            houses=[], navigation_points=block['nodes']))
+                    # NOTE: For now, the order of the block does not matter
+                    start = Point(lat=block['nodes'][0]['lat'], lon=block['nodes'][0]['lon'])
+                    end = Point(lat=block['nodes'][-1]['lat'], lon=block['nodes'][-1]['lon'])
+
+                    new_walk_list.append(SubBlock(
+                        block=block_id, start=start, end=end, extremum=(start, end),
+                        houses=[], navigation_points=block['nodes']))
+
+                print('Starting point ({}, {}) and ending point ({}, {}) are not the same'.format(
+                    first.end['lat'], first.end['lon'], second.start['lat'], second.start['lon']))
+                print('So, adding sub-blocks between them with nodes: {}'.format(block_ids))
 
         new_walk_list.append(walk_list[-1])
 
@@ -238,9 +252,10 @@ class PostProcess():
 
         # Determine the final intersection the canvasser will end up at to process the final subsegment
         exit_point = self._calculate_entrance(depot, current_sub_block_points[-1])
+        entrance_point = self._calculate_entrance(running_intersection, current_sub_block_points[0])
 
         walk_list.append(self._process_sub_block(
-            current_sub_block_points, running_block_id, entrance=running_intersection, exit=exit_point))
+            current_sub_block_points, running_block_id, entrance=entrance_point, exit=exit_point))
 
         # Fill in any holes
         walk_list = self.fill_holes(walk_list)
