@@ -240,5 +240,3 @@ class SubBlock():
 
         # TODO: Time to walk depends on walk_method and should likely be iterated through
         self.time_to_walk = len(self.houses) * MINS_PER_HOUSE + (self.length / WALKING_M_PER_S * (1/60))
-
-    # Maybe def

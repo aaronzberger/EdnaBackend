@@ -16,8 +16,9 @@ from src.distances.blocks import BlockDistances
 from src.distances.mix import MixDistances
 from src.distances.nodes import NodeDistances
 from src.gps_utils import SubBlock, project_to_line
-from src.route import get_route, RouteMaker
+from src.route import RouteMaker
 from src.viz_utils import display_individual_walk_lists, display_walk_lists
+from src.walkability_scorer import score
 
 
 class PostProcess():
@@ -186,15 +187,6 @@ class PostProcess():
 
             # If the end of the first subblock is not the same as the start of the second subblock, add a new subblock
             if pt_id(first.end) != pt_id(second.start):
-                # directions = get_route(first.end, second.start)
-
-                # print("Directions from {} to {}: {}".format(first.end, second.start, directions['route']))
-
-                # for start_pt, end_pt in itertools.pairwise(directions['route']):
-                #     start = Point(lat=start_pt[0], lon=start_pt[1])
-                #     end = Point(lat=end_pt[0], lon=end_pt[1])
-
-                # TODO: DEBUG and test here
                 block_ids = RouteMaker.get_route(first.end, second.start)
                 for block_id in block_ids:
                     block = self.blocks[block_id]
@@ -204,7 +196,7 @@ class PostProcess():
                     end = Point(lat=block['nodes'][-1]['lat'], lon=block['nodes'][-1]['lon'])
 
                     new_walk_list.append(SubBlock(
-                        block=block_id, start=start, end=end, extremum=(start, end),
+                        block=block, start=start, end=end, extremum=(start, end),
                         houses=[], navigation_points=block['nodes']))
 
                 print('Starting point ({}, {}) and ending point ({}, {}) are not the same'.format(
@@ -366,3 +358,10 @@ if __name__ == '__main__':
 
     for i in range(len(walk_lists)):
         post_processor.generate_file(walk_lists[i], os.path.join(BASE_DIR, 'viz', 'files', f'{i}.json'))
+
+    # Print the scores for the walk lists
+    scores = []
+    for walk_list in walk_lists:
+        scores.append(score(walk_list))
+
+    print('Scores: {}'.format(scores))
