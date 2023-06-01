@@ -54,6 +54,18 @@ DIFFERENT_SIDE_COST = {
     'residential': 20,
     'service': 10
 }
+
+# Cost of crossing the street (technically, in meters)
+ROAD_WIDTH = {
+    'motorway': 20,
+    'trunk': 16,
+    'primary': 12,
+    'secondary': 10,
+    'tertiary': 8,
+    'unclassified': 8,
+    'residential': 6,
+    'service': 0
+}
 '----------------------------------------------------------------------------------'
 '                                       Type Hints                                 '
 '----------------------------------------------------------------------------------'
@@ -123,6 +135,7 @@ class HousePeople(TypedDict):
     address: str
     coordinates: Point
     voter_info: list[Person]
+    subsegment_start: int
 
 
 '----------------------------------------------------------------------------------'

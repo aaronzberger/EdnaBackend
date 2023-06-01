@@ -33,7 +33,7 @@ DEBUG = False
 print('Loading node coordinates table...')
 node_coords: dict[str, Point] = json.load(open(node_coords_file))
 
-# Load the file (unorganized) containing house coordinates (and info) 
+# Load the file (unorganized) containing house coordinates (and info)
 print('Loading coordinates of houses...')
 house_points_file = open(address_pts_file)
 num_houses = -1

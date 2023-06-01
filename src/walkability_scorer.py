@@ -6,7 +6,7 @@ from termcolor import colored
 
 from src.gps_utils import Point, SubBlock
 from src.route import get_distance
-from src.config import houses_file_t, houses_file, blocks_file, blocks_file_t, Block, HouseInfo
+from src.config import houses_file_t, houses_file, blocks_file, blocks_file_t, Block, HouseInfo, ROAD_WIDTH
 
 
 _blocks: blocks_file_t = json.load(open(blocks_file))
@@ -71,6 +71,14 @@ def score(input: list[SubBlock]) -> dict[str, Any]:
                 except KeyError:
                     road_crossings['other'] += 1
 
+            if first_house['side'] != second_house['side']:
+                total += first_house['distance_to_road'] + second_house['distance_to_road']
+            else:
+                addition = first_house['distance_to_road'] + second_house['distance_to_road'] - ROAD_WIDTH[block_type]
+                if addition < 10:
+                    print(colored('Warning: distance between {} and {} is less than 10 meters'.format(first, second), color='yellow'))
+                total += addition
+
     return {
         'road_crossings': road_crossings,
         'max_dist': max(distances_from_depot),
@@ -126,4 +134,7 @@ if __name__ == '__main__':
         walk_list.append(current_sub_block)
 
     # Score
-    print(score(walk_list))
+    scored = score(walk_list)
+
+    print(str(scored['num_houses']) + ',' + str(scored['distance']) + ',' + str(scored['road_crossings']['tertiary']) + ',' +
+          str(scored['road_crossings']['secondary']) + ',' + str(scored['road_crossings']['residential']))

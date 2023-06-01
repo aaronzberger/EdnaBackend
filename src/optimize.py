@@ -5,6 +5,7 @@ import subprocess
 import time
 from copy import deepcopy
 from datetime import datetime, timedelta
+from tqdm import tqdm
 from typing import Optional
 
 from termcolor import colored
@@ -90,7 +91,8 @@ class Optimizer():
         # Construct the distance matrix file
         distance_matrix = DistanceMatrix(profile='person', travelTimes=[], distances=[])
 
-        for pt in self.points:
+        # Use progress bar
+        for pt in tqdm(self.points, desc='Building problem', unit='points', leave=False, colour='green'):
             for other_pt in self.points:
                 if pt_id(pt) == 'depot' or pt_id(other_pt) == 'depot':
                     if pt_id(pt) == pt_id(other_pt) == 'depot' or pt['type'] == 'house' or other_pt['type'] == 'house':

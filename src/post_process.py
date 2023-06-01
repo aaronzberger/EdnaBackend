@@ -85,7 +85,39 @@ class PostProcess():
 
         return destination_block['nodes'][-1] if through_end < through_start else destination_block['nodes'][0]
 
-    def _process_sub_block(self, houses: list[Point], block_id: str, entrance: Point, exit: Point) -> SubBlock:
+    def _split_sub_block(self, sub_block: SubBlock, entrance: Point, exit: Point) -> tuple[SubBlock, SubBlock]:
+        nav_pts_1 = sub_block.navigation_points[:len(sub_block.navigation_points) // 2 + 1]
+        nav_pts_2 = sub_block.navigation_points[len(sub_block.navigation_points) // 2:]
+
+        assert nav_pts_1[-1] == nav_pts_2[0]
+
+        houses_1 = [i for i in sub_block.houses if i['subsegment_start'] < len(nav_pts_1) - 1]
+        houses_2 = [i for i in sub_block.houses if i['subsegment_start'] >= len(nav_pts_1) - 1]
+
+        for i in range(len(houses_2)):
+            houses_2[i]['subsegment_start'] -= len(nav_pts_1) - 1
+
+        sub_block_1 = SubBlock(
+            navigation_points=nav_pts_1,
+            houses=houses_1,
+            start=entrance,
+            end=nav_pts_1[-1],
+            block=sub_block.block,
+            extremum=sub_block.extremum
+        )
+
+        sub_block_2 = SubBlock(
+            navigation_points=nav_pts_2,
+            houses=houses_2,
+            start=nav_pts_2[0],
+            end=exit,
+            block=sub_block.block,
+            extremum=sub_block.extremum
+        )
+
+        return sub_block_1, sub_block_2
+
+    def _process_sub_block(self, houses: list[Point], block_id: str, entrance: Point, exit: Point) -> SubBlock | tuple[SubBlock, SubBlock]:
         assigned_addresses = [i['id'] for i in houses]
         block_addresses = {add: inf for add, inf in self.blocks[block_id]['addresses'].items() if add in assigned_addresses}
         block = self.blocks[block_id]
@@ -112,7 +144,7 @@ class PostProcess():
                 p2=block['nodes'][last_subsegment[0]], p3=block['nodes'][last_subsegment[1]])
             extremum = (extremum[0], end_extremum)
 
-            navigation_points = block['nodes'][:last_subsegment[0] + 1] + [end_extremum]
+            navigation_points = block['nodes'][:last_subsegment[0] + 1] + [end_extremum] + list(reversed(block['nodes'][:last_subsegment[0] + 1]))
 
         elif pt_id(entrance) == pt_id(exit) == pt_id(block['nodes'][-1]):
             # Find the first subsegment containing houses
@@ -129,7 +161,7 @@ class PostProcess():
                 p2=block['nodes'][first_subsegment[0]], p3=block['nodes'][first_subsegment[1]])
             extremum = (start_extremum, extremum[1])
 
-            navigation_points = [start_extremum] + block['nodes'][first_subsegment[1]:]
+            navigation_points = block['nodes'][first_subsegment[1]:] + [start_extremum] + list(reversed(block['nodes'][first_subsegment[1]:]))
         # endregion
 
         # region: Order the houses
@@ -145,8 +177,18 @@ class PostProcess():
             # Now, sort the last side
             houses[start:] = sorted(houses[start:], key=lambda h: block_addresses[h['id']]['distance_to_start'],
                                     reverse=pt_id(entrance) != pt_id(block['nodes'][0]))
+
+            # We're always going forward, so the subsegments are as they are
+            for i, house in enumerate(houses):
+                sub_start = block['nodes'][block_addresses[house['id']]['subsegment'][0]]
+                sub_end = block['nodes'][block_addresses[house['id']]['subsegment'][1]]
+                sub_start_idx = navigation_points.index(sub_start)
+                sub_end_idx = navigation_points.index(sub_end)
+                houses[i]['subsegment_start'] = min(sub_start_idx, sub_end_idx)
+
         elif pt_id(entrance) == pt_id(exit):
             # We can assume that the first house is on the "out" side
+            # TODO/NOTE: Eventually, we should make the out side be on the same side as where we're coming from (avoid crossing)
             out_side = [h for h in houses if block_addresses[h['id']]['side'] == block_addresses[houses[0]['id']]['side']]
             back_side = [h for h in houses if block_addresses[h['id']]['side'] != block_addresses[houses[0]['id']]['side']]
 
@@ -156,11 +198,54 @@ class PostProcess():
                 sorted(back_side, key=lambda h: block_addresses[h['id']]['distance_to_end'],
                        reverse=pt_id(entrance) != pt_id(block['nodes'][0]))
 
+            # For the out houses, we're always going forward, so the subsegments are as they are
+            # print('ALL NAV', navigation_points, flush=True)
+            for i, house in enumerate(out_side):
+                out_nav_nodes = navigation_points[:len(navigation_points) // 2 + 1]
+                # print('OUT NAV', out_nav_nodes, flush=True)
+                sub_start = block['nodes'][block_addresses[house['id']]['subsegment'][0]]
+                sub_end = block['nodes'][block_addresses[house['id']]['subsegment'][1]]
+                try:
+                    sub_start_idx = out_nav_nodes.index(sub_start)
+                except ValueError:
+                    sub_start_idx = len(out_nav_nodes)
+                try:
+                    sub_end_idx = out_nav_nodes.index(sub_end)
+                except ValueError:
+                    sub_end_idx = len(out_nav_nodes)
+
+                assert min(sub_start_idx, sub_end_idx) != len(out_nav_nodes), f'House {house["id"]} not found in navigation points'
+                houses[i]['subsegment_start'] = min(sub_start_idx, sub_end_idx)
+
+            # For the back houses, they are on the second half of the subsegments
+            for i, house in enumerate(back_side):
+                back_nav_nodes = navigation_points[len(navigation_points) // 2:]
+                # print('BACK NAV', back_nav_nodes, flush=True)
+                sub_start = block['nodes'][block_addresses[house['id']]['subsegment'][0]]
+                sub_end = block['nodes'][block_addresses[house['id']]['subsegment'][1]]
+                try:
+                    sub_start_idx = back_nav_nodes.index(sub_start)
+                except ValueError:
+                    sub_start_idx = len(back_nav_nodes)
+                try:
+                    sub_end_idx = back_nav_nodes.index(sub_end)
+                except ValueError:
+                    sub_end_idx = len(back_nav_nodes)
+
+                assert min(sub_start_idx, sub_end_idx) != len(back_nav_nodes), f'House {house["id"]} is not on the back side of the block'
+                houses[i + len(out_side)]['subsegment_start'] = min(sub_start_idx, sub_end_idx) + len(navigation_points) // 2 - 1
+
         # endregion
 
-        return SubBlock(
+        sub_block = SubBlock(
             block=block, start=entrance, end=exit, extremum=extremum,
             houses=houses, navigation_points=navigation_points)
+
+        if pt_id(entrance) == pt_id(exit):
+            new_dual = self._split_sub_block(sub_block, entrance, exit)
+            return new_dual
+
+        return sub_block
 
     def fill_holes(self, walk_list: list[SubBlock]) -> list[SubBlock]:
         '''
@@ -180,7 +265,6 @@ class PostProcess():
         for subblock in walk_list:
             ids.append(pt_id(subblock.start))
             ids.append(pt_id(subblock.end))
-        print("IDs: {}".format(ids))
 
         for first, second in itertools.pairwise(walk_list):
             new_walk_list.append(first)
@@ -191,17 +275,19 @@ class PostProcess():
                 for block_id in block_ids:
                     block = self.blocks[block_id]
 
-                    # NOTE: For now, the order of the block does not matter
                     start = Point(lat=block['nodes'][0]['lat'], lon=block['nodes'][0]['lon'])
                     end = Point(lat=block['nodes'][-1]['lat'], lon=block['nodes'][-1]['lon'])
 
+                    reverse = pt_id(start) != pt_id(first.end)
+                    if reverse:
+                        start, end = end, start
+                        nav_pts = block['nodes'][::-1]
+                    else:
+                        nav_pts = block['nodes']
+
                     new_walk_list.append(SubBlock(
                         block=block, start=start, end=end, extremum=(start, end),
-                        houses=[], navigation_points=block['nodes']))
-
-                print('Starting point ({}, {}) and ending point ({}, {}) are not the same'.format(
-                    first.end['lat'], first.end['lon'], second.start['lat'], second.start['lon']))
-                print('So, adding sub-blocks between them with nodes: {}'.format(block_ids))
+                        houses=[], navigation_points=nav_pts))
 
         new_walk_list.append(walk_list[-1])
 
@@ -231,13 +317,17 @@ class PostProcess():
                 subsegment = self._process_sub_block(
                     current_sub_block_points, running_block_id, entrance=entrance_pt, exit=exit_pt)
 
+                if type(subsegment) == tuple:
+                    walk_list.append(subsegment[0])
+                    walk_list.append(subsegment[1])
+                else:
+                    walk_list.append(subsegment)
+
                 current_sub_block_points = []
 
                 # After completing this segment, the canvasser is at the end of the subsegment
                 running_intersection = exit_pt
                 running_block_id = next_block_id
-
-                walk_list.append(subsegment)
 
         # Since we used pairwise, the last house is never evaluated
         current_sub_block_points.append(houses[-1])
@@ -283,7 +373,8 @@ class PostProcess():
                     voter_info=[Person(
                         name=names.get_full_name(),
                         age=randint(18, 95))
-                            for _ in range(randint(1, 5))]
+                            for _ in range(randint(1, 5))],
+                    subsegment_start=house['subsegment_start'],
                 ))
             list_out['blocks'].append({
                 'nodes': nodes,
@@ -364,4 +455,8 @@ if __name__ == '__main__':
     for walk_list in walk_lists:
         scores.append(score(walk_list))
 
-    print('Scores: {}'.format(scores))
+    items = [str(i['num_houses']) + ',' + str(i['distance']) + ',' + str(i['road_crossings']['tertiary']) + ',' + str(i['road_crossings']['secondary']) +
+             ',' + str(i['road_crossings']['residential']) for i in scores]
+
+    for item in items:
+        print(item)
