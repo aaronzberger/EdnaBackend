@@ -35,8 +35,8 @@ TURF_SPLIT = False  # Which problem to run
 ARBITRARY_LARGE_DISTANCE = 10000
 MAX_TOURING_TIME = timedelta(minutes=180)
 MAX_TOURING_DISTANCE = 10000
-WALKING_M_PER_S = 0.75
-MINS_PER_HOUSE = 1.5
+WALKING_M_PER_S = 0.85
+MINS_PER_HOUSE = 1.65
 CLUSTERING_CONNECTED_THRESHOLD = 100  # Meters where blocks are connected
 KEEP_APARTMENTS = False
 DISTANCE_TO_ROAD_MULTIPLIER = 0.5
@@ -98,6 +98,12 @@ def pt_id(p: Point) -> str:
 
 house_t = dict[str, Point]
 node_list_t = list[Point]
+
+# DEPOT = Point(lat=40.4471477, lon=-79.9311578, type='node')  # Kipling and Dunmoyle
+# DEPOT = Point(lat=40.4310603, lon=-79.9191268, type='node')  # Shady and Nicholson
+# DEPOT = Point(lat=40.4430899, lon=-79.9329246, type='node')  # Maynard and Bennington
+DEPOT = Point(lat=40.4362340, lon=-79.9191103, type='node')
+NUM_LISTS = 10
 
 
 class HouseInfo(TypedDict):

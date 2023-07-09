@@ -2,10 +2,23 @@
 **/*.DS_Store
 .vscode/
 src/__pycache__/
-venv/
 build/
+
 osrm/
-viz/walk_lists/**.html
+**.osrm.**
+
+viz/**
+
+house_images/**
+
+# pip build
+WLC.egg-info/**
+
+# Comparison baseline lists
+control_lists/**
+
+# Instance-specific optimization files
+optimize/
 
 # For privacy. Contact for access
 input/example_universe.csv

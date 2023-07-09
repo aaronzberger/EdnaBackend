@@ -14,9 +14,9 @@ from sklearn_extra.cluster import KMedoids
 from termcolor import colored
 
 from gps_utils import SubBlock
-from src.config import (BASE_DIR, KEEP_APARTMENTS, TURF_SPLIT, Point,
-                        blocks_file, blocks_file_t, houses_file, houses_file_t,
-                        pt_id)
+from src.config import (BASE_DIR, DEPOT, KEEP_APARTMENTS, NUM_LISTS,
+                        TURF_SPLIT, Point, blocks_file, blocks_file_t,
+                        houses_file, houses_file_t, pt_id)
 from src.distances.blocks import BlockDistances
 from src.distances.houses import HouseDistances
 from src.distances.mix import MixDistances
@@ -122,8 +122,10 @@ display_clustered_blocks(requested_blocks, labels, centers).save(os.path.join(BA
 # endregion
 
 # Use a subset of the clusters as potential depot locations
-area = clustered_points[0] + clustered_points[2] + clustered_points[3] + clustered_points[4] + clustered_points[5] + clustered_points[6]
+# area = clustered_points[0] + clustered_points[6]
+area = clustered_points[0] + clustered_points[1] + clustered_points[2] + clustered_points[3] + clustered_points[4] + clustered_points[5] + clustered_points[6]
 area_blocks = deepcopy(clustered_blocks[0])
+area_blocks.update(clustered_blocks[1])
 area_blocks.update(clustered_blocks[2])
 area_blocks.update(clustered_blocks[3])
 area_blocks.update(clustered_blocks[4])
@@ -146,7 +148,8 @@ if TURF_SPLIT:
             depot.append(new_pt)
             unique_intersection_ids.add(pt_id(new_pt))
 else:
-    depot = Point(lat=40.4409128, lon=-79.9277741, type='node')  # type: ignore
+    # depot = Point(lat=40.4409128, lon=-79.9277741, type='node')  # type: ignore
+    depot = DEPOT
 
     # Generate house distance matrix
     HouseDistances(area_blocks, depot)
@@ -157,7 +160,7 @@ else:
 ' group canvas problem and nothing for the turf split problem                             '
 '-----------------------------------------------------------------------------------------'
 # region Optimize
-optimizer = Optimizer(area, num_lists=10, starting_locations=depot)
+optimizer = Optimizer(area, num_lists=NUM_LISTS, starting_locations=depot)
 solution = optimizer.optimize()
 
 if solution is None:

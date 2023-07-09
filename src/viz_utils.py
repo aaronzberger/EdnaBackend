@@ -9,7 +9,7 @@ import matplotlib
 import matplotlib.cm as cm
 from folium.features import DivIcon
 
-from src.config import blocks_file_t, Point
+from src.config import DEPOT, blocks_file_t, Point
 from src.gps_utils import SubBlock
 import humanhash
 
@@ -32,7 +32,7 @@ def generate_starter_map(blocks: Optional[blocks_file_t] = None,
 
     return folium.Map(location=[(min(lats) + max(lats)) / 2,
                                 (min(lons) + max(lons)) / 2],
-                      zoom_start=10)
+                      zoom_start=30)
 
 
 class ColorMap():
@@ -243,19 +243,35 @@ def display_walk_lists(walk_lists: list[list[SubBlock]]) -> folium.Map:
         for sub_block in walk_list:
             folium.PolyLine(
                 [[p['lat'], p['lon']] for p in sub_block.navigation_points],
-                weight=8,
+                weight=6,
                 color=color,
                 opacity=0.7,
             ).add_to(m)
             for house in sub_block.houses:
+                # Make a circle
+                folium.Circle(
+                    location=[house['lat'], house['lon']],
+                    radius=11,
+                    weight=1,
+                    color=color,
+                    fill=False).add_to(m)
                 folium.Marker(
                     location=[house['lat'], house['lon']],
                     icon=DivIcon(
-                        icon_size=(25, 25),
-                        icon_anchor=(10, 10),  # left-right, up-down
-                        html='<div style="font-size: 15pt; color:{}">{}</div>'.format(color, house_counter)
+                        icon_size=(20, 20),
+                        icon_anchor=(3, 5),  # left-right, up-down
+                        html='<div style="font-size: 6pt; color:{}">{}</div>'.format(color, house_counter)
                     )
                 ).add_to(m)
 
                 house_counter += 1
+
+    # Place the depot
+    folium.Circle(
+        location=[DEPOT['lat'], DEPOT['lon']],
+        radius=11,
+        color='red',
+        fillOpacity=1,
+        fill=True).add_to(m)
+
     return m

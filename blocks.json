@@ -100997,7 +100997,7 @@
                 "lon": -79.9310306696876,
                 "distance_to_start": 160,
                 "distance_to_end": 101,
-                "side": true,
+                "side": false,
                 "distance_to_road": 22,
                 "subsegment": [
                     2,
