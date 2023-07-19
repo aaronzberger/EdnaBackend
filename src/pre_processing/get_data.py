@@ -12,14 +12,13 @@ from src.config import BASE_DIR
 print(colored('Please wait. This query takes ~ 2m 30s for Squirrel Hill...', color='yellow'))
 print('Querying Overpass API...', end=' ')
 
-api = overpass.API(endpoint='https://overpass.kumi.systems/api/interpreter')
+api = overpass.API(endpoint='https://overpass-api.de/api/interpreter')
 
 # Fetch all ways and nodes in Squirrel Hill
 response = api.get(
     '''
     [out:json][timeout:600];
-    area[name='Squirrel Hill'];
-    way(area)
+    way( 40.5147085, -80.2215597, 40.6199697, -80.0632736)
         ['name']
         ['highway']
         ['highway' != 'path']
