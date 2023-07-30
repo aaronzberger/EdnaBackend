@@ -115,14 +115,21 @@ with tqdm(total=len(blocks), desc='Reading blocks', unit='rows', colour='green')
                     for i in range(len(block[2]['ways']))]))
         progress.update(1)
 
+num_failed_houses = 0
 
 # Next, add the houses to the blocks
 with tqdm(total=num_houses, desc='Associating houses', unit='rows', colour='green') as progress:
     for item in house_points_reader:
         progress.update(1)
-        if item['municipality'].strip().upper() != 'PITTSBURGH' or \
-                int(item['zip_code']) != 15217:
+        # if item['municipality'].strip().upper() != 'PITTSBURGH' or \
+        #         int(item['zip_code']) != 15217:
+        #     continue
+        min_lat, min_lon, max_lat, max_lon = 40.5147085, -80.2215597, 40.6199697, -80.0632736
+        # If this house is not in the area of interest, skip it
+        if float(item['latitude']) < min_lat or float(item['latitude']) > max_lat or \
+                float(item['longitude']) < min_lon or float(item['longitude']) > max_lon:
             continue
+
         house_pt = Point(lat=float(item['latitude']), lon=float(item['longitude']), type='house')  # type: ignore
         street_name = item['st_name'].split(' ')[0].upper()
 
@@ -203,7 +210,10 @@ with tqdm(total=num_houses, desc='Associating houses', unit='rows', colour='gree
 
             # Add this association to the houses file
             houses_to_id[item['full_address']] = best_segment_id
+        else:
+            num_failed_houses += 1
 
+print('Failed to associate {} out of {} total houses'.format(num_failed_houses, num_houses))
 
 # Write the output to files
 print('Writing...')

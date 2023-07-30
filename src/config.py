@@ -9,7 +9,7 @@ from typing import Any, Literal, TypedDict
 BASE_DIR = '/home/user/WLC'
 VRP_CLI_PATH = "/home/user/.cargo/bin/vrp-cli"
 
-AREA_ID = 'squirrel_hill'
+AREA_ID = 'rosselli'
 USE_COST_METRIC = False
 
 node_distance_table_file =      os.path.join(BASE_DIR, 'regions', AREA_ID, 'store', 'node_distances.json')

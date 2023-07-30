@@ -16,7 +16,7 @@ from termcolor import colored
 from gps_utils import SubBlock
 from src.config import (BASE_DIR, DEPOT, KEEP_APARTMENTS, NUM_LISTS,
                         TURF_SPLIT, Point, blocks_file, blocks_file_t,
-                        houses_file, houses_file_t, pt_id)
+                        pt_id)
 from src.distances.blocks import BlockDistances
 from src.distances.houses import HouseDistances
 from src.distances.mix import MixDistances
@@ -25,6 +25,7 @@ from src.optimize import Optimizer
 from src.post_process import PostProcess
 from src.viz_utils import (display_blocks, display_clustered_blocks,
                            display_individual_walk_lists)
+from src.associate import Associater
 
 # from src.walkability_scorer import score
 
@@ -42,18 +43,23 @@ if len(argv) == 2:
         raise FileExistsError('Usage: make_walk_lists.py [UNIVERSE FILE]')
 
     reader = csv.DictReader(open(argv[1]))
-    houses_to_id: houses_file_t = json.load(open(houses_file))
+    associater = Associater()
+
     requested_blocks: blocks_file_t = {}
-    total_houses = failed_houses = 0
+    total_houses = 0
 
     # Process each requested house
     for house in reader:
-        formatted_address = house['Address'].upper()
+        if 'Address' not in house and 'House Number' in house and 'Street Name' in house:
+            formatted_address = '{} {}'.format(house['House Number'], house['Street Name']).upper()
+        elif 'Address' in house:
+            formatted_address = house['Address'].upper()
+        else:
+            raise ValueError('The universe file must contain either an \'Address\' column or \'House Number\', \'Street Name\' columns')
         total_houses += 1
-        if formatted_address not in houses_to_id:
-            failed_houses += 1
+        block_id = associater.associate(formatted_address)
+        if block_id is None:
             continue
-        block_id = houses_to_id[formatted_address]
         house_info = deepcopy(all_blocks[block_id]['addresses'][formatted_address])
 
         if block_id in requested_blocks:
@@ -61,7 +67,7 @@ if len(argv) == 2:
         else:
             requested_blocks[block_id] = deepcopy(all_blocks[block_id])
             requested_blocks[block_id]['addresses'] = {formatted_address: house_info}
-    print('Failed on {} of {} houses'.format(failed_houses, total_houses))
+    print('Failed on {} of {} houses'.format(associater.failed_houses, total_houses))
 else:
     requested_blocks: blocks_file_t = json.load(open(blocks_file))
 
