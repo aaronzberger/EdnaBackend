@@ -13,7 +13,7 @@ from src.config import (Point, adjacency_list_file, blocks_file, blocks_file_t,
                         coords_node_file, node_coords_file, node_list_t)
 from src.gps_utils import great_circle_distance
 
-SERVER = 'http://172.17.0.2:5000'
+SERVER = 'http://172.17.0.3:5000'
 
 
 def get_distance(start: Point, end: Point) -> float:

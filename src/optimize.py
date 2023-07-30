@@ -16,7 +16,7 @@ from src.config import (BASE_DIR, MAX_TOURING_DISTANCE, MAX_TOURING_TIME,
                         Job, Location, Place, PlaceTW, Plan, Problem, Profile,
                         Service, Shift, ShiftEnd, ShiftStart, Solution,
                         Statistic, Stop, Time, Tour, Vehicle, VehicleLimits,
-                        VehicleProfile, problem_path, pt_id, solution_path, Point)
+                        VehicleProfile, problem_path, pt_id, solution_path, Point, USE_COST_METRIC)
 from src.distances.houses import HouseDistances
 from src.distances.mix import MixDistances
 from src.viz_utils import display_house_orders
@@ -34,6 +34,7 @@ class Optimizer():
         # Determine whether to run group canvas or turf split problem
         if isinstance(starting_locations, list):
             depot = Point(lat=-1, lon=-1, type='other', id='depot')
+            print('There are {} houses and {} starting locations'.format(len(self.points), len(starting_locations)))
             self.points = self.points + starting_locations + [depot]
             self.start_idx = len(self.points) - 1
             self.create_turf_split(num_lists)
@@ -73,44 +74,59 @@ class Optimizer():
         Notes:
             See the summary paper for a full explanation of mapping the turf split problem to standard VRP
         '''
-        start_time = datetime(year=3000, month=1, day=1, hour=0, minute=0, second=0)
+        start_time = datetime(year=2022, month=1, day=1, hour=0, minute=0, second=0)
+
+        # The length of the time window in which the real depot can be visited
+        starting_location_delta = timedelta(minutes=2)
+
         depot_to_node_duration = MAX_TOURING_TIME
         MAX_ROUTE_TIME = MAX_TOURING_TIME + (2 * depot_to_node_duration)
         end_time = start_time + MAX_ROUTE_TIME
 
         full_time_window = [start_time.strftime(TIME_STRING_FORMAT), end_time.strftime(TIME_STRING_FORMAT)]
 
+        # TODO: Fix so that the actual route time isn't impacted by the starting_location_delta
+
         # Define the times at which a possible starting location can be visited
         node_start_open = (start_time + depot_to_node_duration).strftime(TIME_STRING_FORMAT)
-        node_start_close = (start_time + depot_to_node_duration + timedelta(minutes=2)).strftime(TIME_STRING_FORMAT)
+        node_start_close = (start_time + depot_to_node_duration + starting_location_delta).strftime(TIME_STRING_FORMAT)
 
         # Define the times at which a possible ending location can be visited
-        node_end_open = (end_time - depot_to_node_duration - timedelta(minutes=2)).strftime(TIME_STRING_FORMAT)
+        node_end_open = (end_time - depot_to_node_duration - starting_location_delta).strftime(TIME_STRING_FORMAT)
         node_end_close = (end_time - depot_to_node_duration).strftime(TIME_STRING_FORMAT)
 
         # Construct the distance matrix file
         distance_matrix = DistanceMatrix(profile='person', travelTimes=[], distances=[])
 
         # Use progress bar
-        for pt in tqdm(self.points, desc='Building problem', unit='points', leave=False, colour='green'):
-            for other_pt in self.points:
-                if pt_id(pt) == 'depot' or pt_id(other_pt) == 'depot':
-                    if pt_id(pt) == pt_id(other_pt) == 'depot' or pt['type'] == 'house' or other_pt['type'] == 'house':
-                        # It is impossible to traverse between depots, or from a house to a depot
-                        time = MAX_ROUTE_TIME.seconds
-                        cost = 0
+        with tqdm(total=len(self.points) ** 2, desc='Building problem', unit='points', leave=False, colour='green') as pbar:
+            for pt in self.points:
+                for other_pt in self.points:
+                    pbar.update(1)
+                    if pt_id(pt) == 'depot' or pt_id(other_pt) == 'depot':
+                        if pt_id(pt) == pt_id(other_pt) == 'depot':
+                            time = cost = 0
+                        else:
+                            if pt['type'] == 'house' or other_pt['type'] == 'house':
+                                # It is impossible to traverse between depots, or from a house to a depot
+                                time = 0
+                                cost = MAX_TOURING_DISTANCE
+                            else:
+                                # It is possible to travel exactly to one intersection and back
+                                time = depot_to_node_duration.seconds
+                                cost = 0
                     else:
-                        # It is possible to travel exactly to one intersection and back
-                        time = depot_to_node_duration.seconds
-                        cost = 0
-                else:
-                    # Calculate the distance between two nodes, two houses, or a house and a node
-                    distance_cost = MixDistances.get_distance(pt, other_pt)
-                    time = MAX_ROUTE_TIME.seconds if distance_cost is None else distance_cost[0] / WALKING_M_PER_S
-                    cost = distance_cost[1] if distance_cost is not None else 0
+                        # Calculate the distance between two nodes, two houses, or a house and a node
+                        distance_cost = MixDistances.get_distance(pt, other_pt)
+                        if USE_COST_METRIC:
+                            cost = distance_cost if distance_cost is not None else MAX_TOURING_DISTANCE
+                            time = cost / WALKING_M_PER_S if distance_cost is not None else MAX_ROUTE_TIME.seconds
+                        else:
+                            cost = distance_cost[1] if distance_cost is not None else 0
+                            time = distance_cost[0] / WALKING_M_PER_S if distance_cost is not None else MAX_ROUTE_TIME.seconds
 
-                distance_matrix['travelTimes'].append(round(time))
-                distance_matrix['distances'].append(round(cost))
+                    distance_matrix['travelTimes'].append(round(time))
+                    distance_matrix['distances'].append(round(cost))
 
         json.dump(distance_matrix, open(self.distance_matrix_save, 'w'), indent=2)
 
@@ -127,7 +143,7 @@ class Optimizer():
                 jobs.append(Job(id=pt_id(location), services=[service_start, service_end], value=1))
             else:
                 delivery = Service(places=[Place(location=Location(index=i),
-                                                 duration=round(MINS_PER_HOUSE * 60))])
+                                                 duration=round(MINS_PER_HOUSE * 60), times=[full_time_window])])
                 jobs.append(Job(id=pt_id(location), services=[delivery], value=10))
 
         fleet = self.build_fleet(
@@ -179,7 +195,7 @@ class Optimizer():
 
         p = subprocess.run(
             [VRP_CLI_PATH, 'solve', 'pragmatic', problem_path, '-m', self.distance_matrix_save,
-             '-o', solution_path, '-t', '300', '--min-cv', 'sample,300,0.001,true',
+             '-o', solution_path, '-t', '60', '--min-cv', 'sample,300,0.001,true',
              '--search-mode', 'deep' if search_deep else 'broad', '--log'])
 
         if p.returncode != 0:

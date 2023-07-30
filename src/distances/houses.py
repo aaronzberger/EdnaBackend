@@ -8,9 +8,9 @@ from typing import Optional
 
 from tqdm import tqdm
 
-from src.config import (BASE_DIR, DIFFERENT_SIDE_COST,
-                        DISTANCE_TO_ROAD_MULTIPLIER, KEEP_APARTMENTS, Block,
-                        Point, blocks_file, blocks_file_t, pt_id)
+from src.config import (DIFFERENT_SIDE_COST, DISTANCE_TO_ROAD_MULTIPLIER,
+                        KEEP_APARTMENTS, USE_COST_METRIC, Block, Point, blocks_file,
+                        blocks_file_t, house_distance_table_file, pt_id)
 from src.distances.nodes import NodeDistances
 from src.route import get_distance
 
@@ -48,7 +48,6 @@ def unstore(value: int) -> tuple[int, int]:
 class HouseDistances():
     MAX_STORAGE_DISTANCE = 1600
     _house_dcs: dict[str, dict[str, int]] = {}
-    _save_file = os.path.join(BASE_DIR, 'store', 'house_distances.json')
     _blocks: blocks_file_t = json.load(open(blocks_file))
 
     @classmethod
@@ -61,24 +60,30 @@ class HouseDistances():
         # Calculate the distances between the segment endpoints
         dc_to_start = NodeDistances.get_distance(pt, b['nodes'][0])
         if dc_to_start is None:
-            dc_to_start = get_distance(pt, b['nodes'][0]), 0
+            dc_to_start = get_distance(pt, b['nodes'][0]), 0 if USE_COST_METRIC else get_distance(pt, b['nodes'][0])
         dc_to_end = NodeDistances.get_distance(pt, b['nodes'][-1])
         if dc_to_end is None:
-            dc_to_end = get_distance(pt, b['nodes'][-1]), 0
+            dc_to_end = get_distance(pt, b['nodes'][-1]), 0 if USE_COST_METRIC else get_distance(pt, b['nodes'][-1])
 
         if pt_id(pt) not in cls._house_dcs:
-            cls._house_dcs[pt_id(pt)] = {pt_id(pt): store(0, 0)}
+            cls._house_dcs[pt_id(pt)] = {pt_id(pt): store(0, 0)} if USE_COST_METRIC else {pt_id(pt): 0}
 
         for address, info in b_houses.items():
             if not KEEP_APARTMENTS and ' APT ' in address:
                 continue
 
-            through_start = (dc_to_start[0] + info['distance_to_start'], dc_to_start[1])
-            through_end = (dc_to_end[0] + info['distance_to_end'], dc_to_end[1])
+            if USE_COST_METRIC:
+                through_start = (dc_to_start[0] + info['distance_to_start'], dc_to_start[1])
+                through_end = (dc_to_end[0] + info['distance_to_end'], dc_to_end[1])
 
-            distance, cost = through_start if through_start[0] < through_end[0] else through_end
+                distance, cost = through_start if through_start[0] < through_end[0] else through_end
 
-            cls._house_dcs[pt_id(pt)][address] = store(round(distance), round(cost))
+                cls._house_dcs[pt_id(pt)][address] = store(round(distance), round(cost))
+            else:
+                through_start = dc_to_start + info['distance_to_start']
+                through_end = dc_to_end + info['distance_to_end']
+
+                cls._house_dcs[pt_id(pt)][address] = round(min(through_start, through_end))
 
     @classmethod
     def _insert_pair(cls, b1: Block, b1_id: str, b2: Block, b2_id: str):
@@ -111,7 +116,7 @@ class HouseDistances():
                     cls._house_dcs[address_1] = {}
 
                 if address_1 == address_2:
-                    cls._house_dcs[address_1][address_2] = store(0, 0)
+                    cls._house_dcs[address_1][address_2] = store(0, 0) if USE_COST_METRIC else 0
                 else:
                     distance_to_road = (info_1['distance_to_road'] + info_2['distance_to_road']) * DISTANCE_TO_ROAD_MULTIPLIER
                     # For primary and secondary roads, crossing in the middle of the block is not possible
@@ -124,11 +129,14 @@ class HouseDistances():
                         distance = round(
                             abs(info_1['distance_to_start'] - info_2['distance_to_start']) + distance_to_road)
 
-                    cost = 0
-                    if info_1['side'] != info_2['side']:
-                        cost += crossing_penalty(b1)
+                    if not USE_COST_METRIC:
+                        cls._house_dcs[address_1][address_2] = distance
+                    else:
+                        cost = 0
+                        if info_1['side'] != info_2['side']:
+                            cost += crossing_penalty(b1)
 
-                    cls._house_dcs[address_1][address_2] = store(round(distance), cost)
+                        cls._house_dcs[address_1][address_2] = store(round(distance), cost)
             return
 
         # Calculate the distances between the segment endpoints
@@ -158,17 +166,20 @@ class HouseDistances():
                  end_dcs[3][0] + info_1['distance_to_end'] + info_2['distance_to_end'] + distances_to_road]
 
             # Add the street crossing penalties
-            cost = mean([crossing_penalty(b1), crossing_penalty(b2)])
-            distance = min(distances)
+            if USE_COST_METRIC:
+                cost = mean([crossing_penalty(b1), crossing_penalty(b2)])
+                distance = min(distances)
 
-            cls._house_dcs[address_1][address_2] = store(round(distance), round(cost))
+                cls._house_dcs[address_1][address_2] = store(round(distance), round(cost))
+            else:
+                cls._house_dcs[address_1][address_2] = round(min(distances))
 
     @classmethod
-    def __init__(cls, blocks: blocks_file_t, depot: Point):
-        if os.path.exists(cls._save_file):
+    def __init__(cls, blocks: blocks_file_t, depot: Optional[Point] = None):
+        if os.path.exists(house_distance_table_file):
             need_regeneration = False
             print('House distance table file found. Loading may take a while...')
-            cls._house_dcs = json.load(open(cls._save_file))
+            cls._house_dcs = json.load(open(house_distance_table_file))
             num_samples = min(len(blocks), 100)
 
             # Sample random segments from the input to check if they are already stored
@@ -182,23 +193,24 @@ class HouseDistances():
                     # This house was not already stored
                     need_regeneration = True
                     break
-            if not need_regeneration and pt_id(depot) in cls._house_dcs:
+            if not need_regeneration and (depot is None or pt_id(depot) in cls._house_dcs):
                 return
             print('The saved distance table did not include all requested segments. Regenerating...')
         else:
-            print('No house distance table file found at {}. Generating now...'.format(cls._save_file))
+            print('No house distance table file found at {}. Generating now...'.format(house_distance_table_file))
 
         cls._house_dcs = {}
         with tqdm(total=len(blocks) ** 2, desc='Generating', unit='pairs', colour='green') as progress:
             for b_id, block in blocks.items():
-                cls._insert_point(depot, block)
+                if depot is not None:
+                    cls._insert_point(depot, block)
                 for other_b_id, other_block in blocks.items():
                     cls._insert_pair(block, b_id, other_block, other_b_id)
                     progress.update()
 
-        print('Saving to {}'.format(cls._save_file))
+        print('Saving to {}'.format(house_distance_table_file))
 
-        json.dump(cls._house_dcs, open(cls._save_file, 'w', encoding='utf-8'), indent=4)
+        json.dump(cls._house_dcs, open(house_distance_table_file, 'w', encoding='utf-8'), indent=4)
 
     @classmethod
     def get_distance(cls, p1: Point, p2: Point) -> Optional[tuple[float, float]]:
@@ -212,6 +224,8 @@ class HouseDistances():
         Returns:
             tuple[float, float] | None: distance, cost between the two points if it exists, None otherwise
         '''
+        if len(cls._house_dcs) == 0:
+            raise ValueError('House distance table has not been initialized')
         try:
             return unstore(cls._house_dcs[pt_id(p1)][pt_id(p2)])
         except KeyError:

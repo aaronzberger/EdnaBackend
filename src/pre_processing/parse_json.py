@@ -3,17 +3,15 @@ Save a json that maps node IDs to their GPS coordinates
 '''
 
 import json
-import os
 
-from src.config import BASE_DIR, Point, node_coords_file
+from src.config import Point, node_coords_file, overpass_file
 
 # Returned from OSM query of all nodes and ways in a region
-read_file = os.path.join(BASE_DIR, 'input', 'squirrel_hill.json')
-loaded = json.load(open(read_file))
+loaded = json.load(open(overpass_file))
 
 node_coords: dict[str, Point] = {}
 
-print('Loading items from {} into a hash table'.format(read_file))
+print('Loading items from {} into a hash table'.format(overpass_file))
 for item in loaded['elements']:
     if item['type'] == 'node':
         # This is the only ID casting from int to str. Forward, IDs are str only

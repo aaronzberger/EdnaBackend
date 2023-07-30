@@ -9,27 +9,31 @@ from typing import Any, Literal, TypedDict
 BASE_DIR = '/home/user/WLC'
 VRP_CLI_PATH = "/home/user/.cargo/bin/vrp-cli"
 
-node_distance_table_file = os.path.join(BASE_DIR, 'store', 'node_distances.json')
-block_distance_matrix_file = os.path.join(BASE_DIR, 'store', 'segment_distance_matrix.json')
-node_coords_file = os.path.join(BASE_DIR, 'store', 'node_coords.json')
-address_pts_file = os.path.join(BASE_DIR, 'input', 'address_pts.csv')
-block_output_file = os.path.join(BASE_DIR, 'input', 'block_output.json')
-adjacency_list_file = os.path.join(BASE_DIR, 'input', 'adjacency_list.json')
-coords_node_file = os.path.join(BASE_DIR, 'input', 'coords_node.json')
-blocks_file = os.path.join(BASE_DIR, 'blocks.json')
-associated_file = os.path.join(BASE_DIR, 'associated.csv')
+AREA_ID = 'squirrel_hill'
+USE_COST_METRIC = False
+
+node_distance_table_file =      os.path.join(BASE_DIR, 'regions', AREA_ID, 'store', 'node_distances.json')
+house_distance_table_file =     os.path.join(BASE_DIR, 'regions', AREA_ID, 'store', 'house_distances.json')
+block_distance_matrix_file =    os.path.join(BASE_DIR, 'regions', AREA_ID, 'store', 'segment_distance_matrix.json')
+node_coords_file =              os.path.join(BASE_DIR, 'regions', AREA_ID, 'store', 'node_coords.json')
+block_output_file =             os.path.join(BASE_DIR, 'regions', AREA_ID, 'input', 'block_output.json')
+adjacency_list_file =           os.path.join(BASE_DIR, 'regions', AREA_ID, 'input', 'adjacency_list.json')
+coords_node_file =              os.path.join(BASE_DIR, 'regions', AREA_ID, 'input', 'coords_node.json')
+overpass_file =                 os.path.join(BASE_DIR, 'regions', AREA_ID, 'input', 'overpass.json')
 
 # Map addresses to block IDs
-houses_file = os.path.join(BASE_DIR, 'houses.json')
+houses_file =                   os.path.join(BASE_DIR, 'regions', AREA_ID, 'houses.json')
+blocks_file =                   os.path.join(BASE_DIR, 'regions', AREA_ID, 'blocks.json')
 
-problem_path = os.path.join(BASE_DIR, 'optimize', 'problem.json')
-solution_path = os.path.join(BASE_DIR, 'optimize', 'solution.json')
+address_pts_file =              os.path.join(BASE_DIR, 'input', 'address_pts.csv')
+problem_path =                  os.path.join(BASE_DIR, 'optimize', 'problem.json')
+solution_path =                 os.path.join(BASE_DIR, 'optimize', 'solution.json')
 
 '----------------------------------------------------------------------------------'
 '                                     Constants                                    '
 '----------------------------------------------------------------------------------'
 
-TURF_SPLIT = False  # Which problem to run
+TURF_SPLIT = True  # Which problem to run
 
 # Maximum distance between two nodes where they should be stored
 ARBITRARY_LARGE_DISTANCE = 10000
@@ -103,7 +107,7 @@ node_list_t = list[Point]
 # DEPOT = Point(lat=40.4310603, lon=-79.9191268, type='node')  # Shady and Nicholson
 # DEPOT = Point(lat=40.4430899, lon=-79.9329246, type='node')  # Maynard and Bennington
 DEPOT = Point(lat=40.4362340, lon=-79.9191103, type='node')
-NUM_LISTS = 10
+NUM_LISTS = 1
 
 
 class HouseInfo(TypedDict):
@@ -284,7 +288,7 @@ class DistanceMatrix(TypedDict):
 '----------------------------------------------------------------------------------'
 '                             Optimization Parameters                              '
 '----------------------------------------------------------------------------------'
-OPTIM_COSTS = Costs(fixed=0, distance=3, time=1)
+OPTIM_COSTS = Costs(fixed=0, distance=2, time=3)
 
 OPTIM_OBJECTIVES = [[Objective(type='maximize-value')],
                     [Objective(type='minimize-cost')]]

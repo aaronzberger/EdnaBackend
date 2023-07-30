@@ -1,17 +1,16 @@
 '''
-Process the data from OSM. Take in area.json and write block_output.json
+Process the data from OSM. Take in overpass.json and write block_output.json
 '''
 # TODO: Clean up and add type hinting
 
 import json
-import os
 import pprint
 
-from src.config import BASE_DIR, block_output_file
+from src.config import block_output_file, overpass_file
 
 pp = pprint.PrettyPrinter(indent=4)
 
-response = json.load(open(os.path.join(BASE_DIR, 'input', 'squirrel_hill.json'), 'r'))
+response = json.load(open(overpass_file))
 
 # Groups the JSON in a more manageable way because I couldn't figure out how to make Overpass nest the data
 

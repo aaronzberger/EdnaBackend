@@ -103,9 +103,15 @@ def cluster_to_houses(cluster: blocks_file_t) -> list[Point]:
     points: list[Point] = []
 
     for block in cluster.values():
+        # Duplicate addresses from apartments may occur. For now, only insert once
+
         for address, house_data in block['addresses'].items():
             # TODO: Move this conditional outward so we can get rid of this whole method
             if not KEEP_APARTMENTS and ' APT ' in address:
+                continue
+
+            if '3245 BEECHWOOD BLVD' in address:
+                # This is the only address where there are multiple houses on multiple blocks
                 continue
 
             # TODO: Maybe do this earlier to get rid of this method
@@ -121,17 +127,12 @@ centers = [c[0] for c in clustered_points]
 display_clustered_blocks(requested_blocks, labels, centers).save(os.path.join(BASE_DIR, 'viz', 'clusters.html'))
 # endregion
 
-# Use a subset of the clusters as potential depot locations
-# area = clustered_points[0] + clustered_points[6]
-area = clustered_points[0] + clustered_points[1] + clustered_points[2] + clustered_points[3] + clustered_points[4] + clustered_points[5] + clustered_points[6]
-area_blocks = deepcopy(clustered_blocks[0])
-area_blocks.update(clustered_blocks[1])
-area_blocks.update(clustered_blocks[2])
-area_blocks.update(clustered_blocks[3])
-area_blocks.update(clustered_blocks[4])
-area_blocks.update(clustered_blocks[5])
-area_blocks.update(clustered_blocks[6])
-
+areas = [0, 4]
+area = clustered_points[areas[0]]
+area_blocks = deepcopy(clustered_blocks[areas[0]])
+for i in range(1, len(areas)):
+    area += clustered_points[areas[i]]
+    area_blocks.update(clustered_blocks[areas[i]])
 
 depot: Point | list[Point] = []
 
@@ -147,6 +148,8 @@ if TURF_SPLIT:
             new_pt = Point(lat=block['nodes'][-1]['lat'], lon=block['nodes'][-1]['lon'], type='node')  # type: ignore
             depot.append(new_pt)
             unique_intersection_ids.add(pt_id(new_pt))
+
+    HouseDistances(area_blocks)
 else:
     # depot = Point(lat=40.4409128, lon=-79.9277741, type='node')  # type: ignore
     depot = DEPOT

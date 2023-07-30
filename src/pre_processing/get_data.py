@@ -1,5 +1,5 @@
 '''
-Generate the area.json file containing all nodes and ways
+Generate the {area}.json file containing all nodes and ways
 '''
 import json
 import os
@@ -7,7 +7,18 @@ import os
 import overpass
 from termcolor import colored
 
-from src.config import BASE_DIR
+from src.config import BASE_DIR, AREA_ID, overpass_file
+
+OVERPASS_AREA = 'Squirrel Hill'
+AREA_KEY = 'squirrel_hill'
+
+OVERPASS_AREAS = 'Bell Acres, Edgeworth'
+
+assert AREA_KEY == AREA_ID, 'AREA_KEY from get_data.py and AREA_ID from config.py must match'
+
+if not os.path.exists(os.path.join(BASE_DIR, 'regions', AREA_KEY, 'input')):
+    print(f'No region found called {AREA_KEY}. Creating the directory...')
+    os.makedirs(os.path.join(BASE_DIR, 'regions', AREA_KEY, 'input'))
 
 print(colored('Please wait. This query takes ~ 2m 30s for Squirrel Hill...', color='yellow'))
 print('Querying Overpass API...', end=' ')
@@ -16,9 +27,10 @@ api = overpass.API(endpoint='https://overpass.kumi.systems/api/interpreter')
 
 # Fetch all ways and nodes in Squirrel Hill
 response = api.get(
-    '''
+    f'''
     [out:json][timeout:600];
-    area[name='Squirrel Hill'];
+    area
+        [name={OVERPASS_AREAS}];
     way(area)
         ['name']
         ['highway']
@@ -39,7 +51,7 @@ response = api.get(
         ['access' != 'no'];
     node(w);
     foreach
-    {
+    {{
         (
             ._;
             way(bn)
@@ -62,9 +74,9 @@ response = api.get(
                 ['access' != 'no'];
         );
         out;
-    }
+    }}
     ''',
     build=False,
 )
 print('Response Received.\nWriting file...')
-json.dump(response, open(os.path.join(BASE_DIR, 'input', 'squirrel_hill.json'), 'w', encoding='utf-8'), indent=4)
+json.dump(response, open(overpass_file, 'w', encoding='utf-8'), indent=4)

@@ -636,8 +636,8 @@ if __name__ == '__main__':
     display_walk_lists(walk_lists).save(os.path.join(BASE_DIR, 'viz', 'walk_lists.html'))
 
     a = display_walk_lists(walk_lists)
-    img = Image.open(io.BytesIO(a._to_png(5)))
-    img.save(os.path.join(BASE_DIR, 'viz', 'walk_lists.png'))
+    # img = Image.open(io.BytesIO(a._to_png(5)))
+    # img.save(os.path.join(BASE_DIR, 'viz', 'walk_lists.png'))
 
     list_visualizations = display_individual_walk_lists(walk_lists)
     for i, walk_list in enumerate(list_visualizations):

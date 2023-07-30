@@ -6,7 +6,7 @@ from typing import Optional
 from termcolor import colored
 
 from src.config import (Point, blocks_file, blocks_file_t, houses_file,
-                        houses_file_t, pt_id)
+                        houses_file_t, pt_id, USE_COST_METRIC)
 from src.distances.houses import HouseDistances
 from src.distances.nodes import NodeDistances
 from src.route import get_distance
@@ -44,7 +44,7 @@ class MixDistances():
         return through_start, through_end
 
     @classmethod
-    def get_distance(cls, p1: Point, p2: Point) -> Optional[tuple[float, float]]:
+    def get_distance(cls, p1: Point, p2: Point) -> Optional[tuple[float, float]] | Optional[float]:
         if 'type' not in p1 or 'type' not in p2:
             raise ValueError('When retrieiving mix distances, both points must have a \'type\'')
 
@@ -53,9 +53,9 @@ class MixDistances():
         elif p1['type'] == p2['type'] == 'node':
             return NodeDistances.get_distance(p1, p2)
         elif p1['type'] == 'node' and p2['type'] == 'house':
-            return min(cls.get_distance_through_ends(node=p1, house=p2)), 0
+            return min(cls.get_distance_through_ends(node=p1, house=p2)), 0 if USE_COST_METRIC else min(cls.get_distance_through_ends(node=p1, house=p2))
         elif p1['type'] == 'house' and p2['type'] == 'node':
-            return min(cls.get_distance_through_ends(node=p2, house=p1)), 0
+            return min(cls.get_distance_through_ends(node=p2, house=p1)), 0 if USE_COST_METRIC else min(cls.get_distance_through_ends(node=p2, house=p1))
         else:
             print(colored('Warning: getting routed distance between points live is not recommended', color='yellow'))
-            return get_distance(p1, p2), 0
+            return get_distance(p1, p2), 0 if USE_COST_METRIC else get_distance(p1, p2)

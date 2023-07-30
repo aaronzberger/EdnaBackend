@@ -8,7 +8,7 @@ from typing import Optional
 
 from tqdm import tqdm
 
-from src.config import Point, blocks_file_t, node_distance_table_file, pt_id
+from src.config import Point, blocks_file_t, node_distance_table_file, pt_id, USE_COST_METRIC
 from src.gps_utils import great_circle_distance
 from src.route import get_distance
 
@@ -71,9 +71,9 @@ class NodeDistances():
             tuple[float, float] | None: distance, cost between the two points if it exists, None otherwise
         '''
         try:
-            return cls._node_distances[pt_id(p1)][pt_id(p2)], 0
+            return cls._node_distances[pt_id(p1)][pt_id(p2)], 0 if USE_COST_METRIC else cls._node_distances[pt_id(p1)][pt_id(p2)]
         except KeyError:
             try:
-                return cls._node_distances[pt_id(p2)][pt_id(p1)], 0
+                return cls._node_distances[pt_id(p2)][pt_id(p1)], 0 if USE_COST_METRIC else cls._node_distances[pt_id(p2)][pt_id(p1)]
             except KeyError:
                 return None
