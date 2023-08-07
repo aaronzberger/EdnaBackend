@@ -34,12 +34,12 @@ class MixDistances():
         block_id = cls.address_to_block_id[pt_id(house)]
         block_start = Point(lat=cls.blocks[block_id]['nodes'][0]['lat'], lon=cls.blocks[block_id]['nodes'][0]['lon'], type='node')  # type: ignore
         through_start = NodeDistances.get_distance(node, block_start)
-        through_start = through_start[0] if through_start is not None else 1600
+        through_start = through_start if through_start is not None else 1600
         through_start += cls.blocks[block_id]['addresses'][pt_id(house)]['distance_to_start']
 
         segment_end = Point(lat=cls.blocks[block_id]['nodes'][-1]['lat'], lon=cls.blocks[block_id]['nodes'][-1]['lon'], type='node')  # type: ignore
         through_end = NodeDistances.get_distance(node, segment_end)
-        through_end = through_end[0] if through_end is not None else 1600
+        through_end = through_end if through_end is not None else 1600
         through_end += cls.blocks[block_id]['addresses'][pt_id(house)]['distance_to_end']
         return through_start, through_end
 
@@ -53,9 +53,9 @@ class MixDistances():
         elif p1['type'] == p2['type'] == 'node':
             return NodeDistances.get_distance(p1, p2)
         elif p1['type'] == 'node' and p2['type'] == 'house':
-            return min(cls.get_distance_through_ends(node=p1, house=p2)), 0 if USE_COST_METRIC else min(cls.get_distance_through_ends(node=p1, house=p2))
+            return min(cls.get_distance_through_ends(node=p1, house=p2))
         elif p1['type'] == 'house' and p2['type'] == 'node':
-            return min(cls.get_distance_through_ends(node=p2, house=p1)), 0 if USE_COST_METRIC else min(cls.get_distance_through_ends(node=p2, house=p1))
+            return min(cls.get_distance_through_ends(node=p2, house=p1))
         else:
             print(colored('Warning: getting routed distance between points live is not recommended', color='yellow'))
-            return get_distance(p1, p2), 0 if USE_COST_METRIC else get_distance(p1, p2)
+            return get_distance(p1, p2)

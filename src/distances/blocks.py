@@ -29,7 +29,7 @@ class BlockDistances():
                 [NodeDistances.get_distance(i, j) for i, j in
                     [(b1['nodes'][0], b2['nodes'][0]), (b1['nodes'][0], b2['nodes'][-1]),
                      (b1['nodes'][-1], b2['nodes'][0]), (b1['nodes'][-1], b2['nodes'][-1])]]
-            existing_distances = [i[0] for i in routed_distances if i is not None]
+            existing_distances = [i for i in routed_distances if i is not None]
             if len(existing_distances) > 0:
                 cls._block_distances[b1_id][b2_id] = min(existing_distances)
 

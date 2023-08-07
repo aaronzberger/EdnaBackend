@@ -10,6 +10,7 @@ from sys import argv
 
 import names
 from PIL import Image
+from src.associate import Associater
 
 from src.config import (BASE_DIR, TURF_SPLIT, HousePeople, Person, Point, Tour,
                         blocks_file, blocks_file_t, houses_file, houses_file_t,
@@ -25,6 +26,7 @@ from src.walkability_scorer import score
 
 class PostProcess():
     def __init__(self, blocks: blocks_file_t, points: list[Point]):
+        self._all_blocks: blocks_file_t = json.load(open(blocks_file))
         self.address_to_segment_id: houses_file_t = json.load(open(houses_file))
 
         self.blocks = blocks
@@ -72,7 +74,7 @@ class PostProcess():
         through_end = self.blocks[destination_block_id]['addresses'][next_house['id']]['distance_to_end']
         try:
             to_end = NodeDistances.get_distance(intersection, destination_block['nodes'][-1])
-            through_end += 1600 if to_end is None else to_end[0]
+            through_end += 1600 if to_end is None else to_end
         except TypeError:
             print('Unable to find distance through end of block in post-processing')
             through_end += 1600
@@ -80,7 +82,7 @@ class PostProcess():
         through_start = self.blocks[destination_block_id]['addresses'][next_house['id']]['distance_to_start']
         try:
             to_start = NodeDistances.get_distance(intersection, destination_block['nodes'][0])
-            through_start += 1600 if to_start is None else to_start[0]
+            through_start += 1600 if to_start is None else to_start
         except TypeError:
             print('Unable to find distance through end of block in post-processing')
             through_start += 1600
@@ -300,11 +302,12 @@ class PostProcess():
 
             # If the end of the first subblock is not the same as the start of the second subblock, add a new subblock
             if pt_id(first.end) != pt_id(second.start):
-                block_ids = RouteMaker.get_route(first.end, second.start)
+                block_ids, distance = RouteMaker.get_route(first.end, second.start)
 
                 running_node = first.end
                 for block_id in block_ids:
-                    block = self.blocks[block_id]
+                    block = self._all_blocks[block_id]
+                    # block = self.blocks[block_id]
 
                     start = Point(lat=block['nodes'][0]['lat'], lon=block['nodes'][0]['lon'])
                     end = Point(lat=block['nodes'][-1]['lat'], lon=block['nodes'][-1]['lon'])
@@ -591,14 +594,20 @@ if __name__ == '__main__':
         requested_blocks: blocks_file_t = {}
         total_houses = failed_houses = 0
 
+        associater = Associater()
+
         # Process each requested house
         for house in reader:
-            formatted_address = house['Address'].upper()
+            if 'Address' not in house and 'House Number' in house and 'Street Name' in house:
+                formatted_address = '{} {}'.format(house['House Number'], house['Street Name']).upper()
+            elif 'Address' in house:
+                formatted_address = house['Address'].upper()
+            else:
+                raise ValueError('The universe file must contain either an \'Address\' column or \'House Number\', \'Street Name\' columns')
             total_houses += 1
-            if formatted_address not in houses_to_id:
-                failed_houses += 1
+            block_id = associater.associate(formatted_address)
+            if block_id is None:
                 continue
-            block_id = houses_to_id[formatted_address]
             house_info = deepcopy(all_blocks[block_id]['addresses'][formatted_address])
 
             if block_id in requested_blocks:
@@ -606,7 +615,7 @@ if __name__ == '__main__':
             else:
                 requested_blocks[block_id] = deepcopy(all_blocks[block_id])
                 requested_blocks[block_id]['addresses'] = {formatted_address: house_info}
-        print('Failed on {} of {} houses'.format(failed_houses, total_houses))
+        print('Failed on {} of {} houses'.format(associater.failed_houses, total_houses))
     else:
         requested_blocks: blocks_file_t = json.load(open(blocks_file))
     # endregion

@@ -9,7 +9,7 @@ import matplotlib
 import matplotlib.cm as cm
 from folium.features import DivIcon
 
-from src.config import DEPOT, blocks_file_t, Point
+from src.config import DEPOT, USE_COST_METRIC, blocks_file_t, Point
 from src.gps_utils import SubBlock
 import humanhash
 
@@ -155,8 +155,22 @@ def display_house_orders(walk_lists: list[list[Point]], cmap: Optional[ColorMap]
             for j, dc in enumerate(dcs[i]):
                 points = [[walk_list[j]['lat'], walk_list[j]['lon']],
                           [walk_list[j + 1]['lat'], walk_list[j + 1]['lon']]]
-                display = "None" if dc is None else "{}, {}".format(dc[0], dc[1])
-                folium.PolyLine(points, color=text_color, weight=10, opacity=0.5, tooltip=display).add_to(m)
+                if USE_COST_METRIC:
+                    display = "None" if dc is None else "{}, {}".format(dc[0], dc[1])
+                else:
+                    display = "None" if dc is None else "{}".format(dc[0])
+                folium.PolyLine(points, color=text_color, weight=5, opacity=0.5, tooltip=display).add_to(m)
+
+                # Display distance, cost text over the line
+                mid_point = [(points[0][0] + points[1][0]) / 2, (points[0][1] + points[1][1]) / 2]
+                folium.Marker(
+                    location=mid_point,
+                    icon=DivIcon(
+                        icon_size=(25, 25),
+                        icon_anchor=(10, 10),  # left-right, up-down
+                        html='<div style="font-size: 15pt; color:{}">{}</div>'.format(text_color, display)
+                    )
+                ).add_to(m)
     return m
 
 

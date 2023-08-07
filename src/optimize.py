@@ -16,7 +16,7 @@ from src.config import (BASE_DIR, MAX_TOURING_DISTANCE, MAX_TOURING_TIME,
                         Job, Location, Place, PlaceTW, Plan, Problem, Profile,
                         Service, Shift, ShiftEnd, ShiftStart, Solution,
                         Statistic, Stop, Time, Tour, Vehicle, VehicleLimits,
-                        VehicleProfile, problem_path, pt_id, solution_path, Point, USE_COST_METRIC)
+                        VehicleProfile, problem_path, pt_id, solution_path, Point)
 from src.distances.houses import HouseDistances
 from src.distances.mix import MixDistances
 from src.viz_utils import display_house_orders
@@ -76,11 +76,10 @@ class Optimizer():
         '''
         start_time = datetime(year=2022, month=1, day=1, hour=0, minute=0, second=0)
 
-        # The length of the time window in which the real depot can be visited
-        starting_location_delta = timedelta(minutes=2)
+        node_duration = timedelta(seconds=1)
+        depot_to_node_duration = MAX_TOURING_TIME - node_duration
 
-        depot_to_node_duration = MAX_TOURING_TIME
-        MAX_ROUTE_TIME = MAX_TOURING_TIME + (2 * depot_to_node_duration)
+        MAX_ROUTE_TIME = MAX_TOURING_TIME + (2 * depot_to_node_duration) + (2 * node_duration)
         end_time = start_time + MAX_ROUTE_TIME
 
         full_time_window = [start_time.strftime(TIME_STRING_FORMAT), end_time.strftime(TIME_STRING_FORMAT)]
@@ -89,14 +88,16 @@ class Optimizer():
 
         # Define the times at which a possible starting location can be visited
         node_start_open = (start_time + depot_to_node_duration).strftime(TIME_STRING_FORMAT)
-        node_start_close = (start_time + depot_to_node_duration + starting_location_delta).strftime(TIME_STRING_FORMAT)
+        node_start_close = (start_time + depot_to_node_duration + node_duration).strftime(TIME_STRING_FORMAT)
 
         # Define the times at which a possible ending location can be visited
-        node_end_open = (end_time - depot_to_node_duration - starting_location_delta).strftime(TIME_STRING_FORMAT)
+        node_end_open = (end_time - depot_to_node_duration - node_duration).strftime(TIME_STRING_FORMAT)
         node_end_close = (end_time - depot_to_node_duration).strftime(TIME_STRING_FORMAT)
 
         # Construct the distance matrix file
         distance_matrix = DistanceMatrix(profile='person', travelTimes=[], distances=[])
+
+        print('Building problem ... if this is Killed, either increase the memory limit or decrease the area size')
 
         # Use progress bar
         with tqdm(total=len(self.points) ** 2, desc='Building problem', unit='points', leave=False, colour='green') as pbar:
@@ -109,7 +110,7 @@ class Optimizer():
                         else:
                             if pt['type'] == 'house' or other_pt['type'] == 'house':
                                 # It is impossible to traverse between depots, or from a house to a depot
-                                time = 0
+                                time = MAX_ROUTE_TIME.seconds
                                 cost = MAX_TOURING_DISTANCE
                             else:
                                 # It is possible to travel exactly to one intersection and back
@@ -118,12 +119,13 @@ class Optimizer():
                     else:
                         # Calculate the distance between two nodes, two houses, or a house and a node
                         distance_cost = MixDistances.get_distance(pt, other_pt)
-                        if USE_COST_METRIC:
-                            cost = distance_cost if distance_cost is not None else MAX_TOURING_DISTANCE
-                            time = cost / WALKING_M_PER_S if distance_cost is not None else MAX_ROUTE_TIME.seconds
+
+                        if type(distance_cost) == tuple:
+                            distance, cost = distance_cost
+                            time = distance / WALKING_M_PER_S
                         else:
-                            cost = distance_cost[1] if distance_cost is not None else 0
-                            time = distance_cost[0] / WALKING_M_PER_S if distance_cost is not None else MAX_ROUTE_TIME.seconds
+                            cost = distance_cost if distance_cost is not None else MAX_TOURING_DISTANCE
+                            time = cost / WALKING_M_PER_S
 
                     distance_matrix['travelTimes'].append(round(time))
                     distance_matrix['distances'].append(round(cost))
@@ -137,9 +139,9 @@ class Optimizer():
         for i, location in enumerate(self.points):
             if location['type'] == 'node':
                 service_start = Service(places=[PlaceTW(
-                    location=Location(index=i), duration=60, times=[[node_start_open, node_start_close]])])
+                    location=Location(index=i), duration=node_duration.seconds, times=[[node_start_open, node_start_close]])])
                 service_end = Service(places=[PlaceTW(
-                    location=Location(index=i), duration=60, times=[[node_end_open, node_end_close]])])
+                    location=Location(index=i), duration=node_duration.seconds, times=[[node_end_open, node_end_close]])])
                 jobs.append(Job(id=pt_id(location), services=[service_start, service_end], value=1))
             else:
                 delivery = Service(places=[Place(location=Location(index=i),
@@ -168,9 +170,14 @@ class Optimizer():
         for pt in self.points:
             for other_pt in self.points:
                 distance_cost = HouseDistances.get_distance(pt, other_pt)
-                distance_cost = distance_cost if distance_cost is not None else (10000, 0)
-                distance_matrix['travelTimes'].append(round(distance_cost[0] / WALKING_M_PER_S))
-                distance_matrix['distances'].append(round(distance_cost[1]))
+                if type(distance_cost) == tuple:
+                    distance, cost = distance_cost
+                    time = distance / WALKING_M_PER_S
+                else:
+                    cost = distance_cost if distance_cost is not None else MAX_TOURING_DISTANCE
+                    time = cost / WALKING_M_PER_S
+                distance_matrix['travelTimes'].append(round(time))
+                distance_matrix['distances'].append(round(cost))
 
         json.dump(distance_matrix, open(self.distance_matrix_save, 'w'), indent=2)
         print('Saved distance matrix to {}'.format(self.distance_matrix_save))
@@ -194,8 +201,11 @@ class Optimizer():
         search_deep = False
 
         p = subprocess.run(
+            # [VRP_CLI_PATH, 'solve', 'pragmatic', problem_path, '-m', self.distance_matrix_save,
+            #  '-o', solution_path, '-t', '100', '--min-cv', 'sample,300,0.001,true',
+            #  '--search-mode', 'deep' if search_deep else 'broad', '--log'])
             [VRP_CLI_PATH, 'solve', 'pragmatic', problem_path, '-m', self.distance_matrix_save,
-             '-o', solution_path, '-t', '60', '--min-cv', 'sample,300,0.001,true',
+             '-o', solution_path, '-t', '300', '--min-cv', 'sample,200,0.1,true',
              '--search-mode', 'deep' if search_deep else 'broad', '--log'])
 
         if p.returncode != 0:

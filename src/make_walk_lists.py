@@ -10,7 +10,8 @@ import sys
 from copy import deepcopy
 from sys import argv
 
-from sklearn_extra.cluster import KMedoids
+# from sklearn_extra.cluster import KMedoids
+from sklearn.cluster import DBSCAN
 from termcolor import colored
 
 from gps_utils import SubBlock
@@ -95,8 +96,9 @@ MixDistances()
 # region Cluster
 # Cluster blocks using kmedoids
 distance_matrix = BlockDistances.get_distance_matrix()
-km = KMedoids(metric='precomputed', max_iter=100).fit(distance_matrix)
-labels: list[int] = km.labels_
+db = DBSCAN(metric='precomputed', eps=400, min_samples=10).fit(distance_matrix)
+# km = KMedoids(metric='precomputed', max_iter=100).fit(distance_matrix)
+labels: list[int] = db.labels_
 
 # Expand labels into a list of block groups
 clustered_blocks: list[blocks_file_t] = [
@@ -133,7 +135,7 @@ centers = [c[0] for c in clustered_points]
 display_clustered_blocks(requested_blocks, labels, centers).save(os.path.join(BASE_DIR, 'viz', 'clusters.html'))
 # endregion
 
-areas = [0, 4]
+areas = [1]
 area = clustered_points[areas[0]]
 area_blocks = deepcopy(clustered_blocks[areas[0]])
 for i in range(1, len(areas)):
@@ -158,7 +160,8 @@ if TURF_SPLIT:
     HouseDistances(area_blocks)
 else:
     # depot = Point(lat=40.4409128, lon=-79.9277741, type='node')  # type: ignore
-    depot = DEPOT
+    depot = Point(lat=40.5397171, lon=-80.1763386, type='node')  # Sewickley
+    # depot = DEPOT
 
     # Generate house distance matrix
     HouseDistances(area_blocks, depot)

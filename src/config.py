@@ -33,7 +33,7 @@ solution_path =                 os.path.join(BASE_DIR, 'optimize', 'solution.jso
 '                                     Constants                                    '
 '----------------------------------------------------------------------------------'
 
-TURF_SPLIT = True  # Which problem to run
+TURF_SPLIT = False  # Which problem to run
 
 # Maximum distance between two nodes where they should be stored
 ARBITRARY_LARGE_DISTANCE = 10000
@@ -45,6 +45,7 @@ CLUSTERING_CONNECTED_THRESHOLD = 100  # Meters where blocks are connected
 KEEP_APARTMENTS = False
 DISTANCE_TO_ROAD_MULTIPLIER = 0.5
 ALD_BUFFER = 5   # Meters after a block ends where a house is still on the block
+DIFFERENT_BLOCK_COST = 25
 
 
 # Cost of crossing the street (technically, in meters)
@@ -288,7 +289,7 @@ class DistanceMatrix(TypedDict):
 '----------------------------------------------------------------------------------'
 '                             Optimization Parameters                              '
 '----------------------------------------------------------------------------------'
-OPTIM_COSTS = Costs(fixed=0, distance=2, time=3)
+OPTIM_COSTS = Costs(fixed=0, distance=3, time=1)
 
 OPTIM_OBJECTIVES = [[Objective(type='maximize-value')],
                     [Objective(type='minimize-cost')]]

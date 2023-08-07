@@ -8,7 +8,7 @@ from typing import Optional
 
 from tqdm import tqdm
 
-from src.config import (DIFFERENT_SIDE_COST, DISTANCE_TO_ROAD_MULTIPLIER,
+from src.config import (DIFFERENT_BLOCK_COST, DIFFERENT_SIDE_COST, DISTANCE_TO_ROAD_MULTIPLIER,
                         KEEP_APARTMENTS, USE_COST_METRIC, Block, Point, blocks_file,
                         blocks_file_t, house_distance_table_file, pt_id)
 from src.distances.nodes import NodeDistances
@@ -47,7 +47,7 @@ def unstore(value: int) -> tuple[int, int]:
 
 class HouseDistances():
     MAX_STORAGE_DISTANCE = 1600
-    _house_dcs: dict[str, dict[str, int]] = {}
+    _house_matrix: dict[str, dict[str, int]] = {}
     _blocks: blocks_file_t = json.load(open(blocks_file))
 
     @classmethod
@@ -59,14 +59,16 @@ class HouseDistances():
 
         # Calculate the distances between the segment endpoints
         dc_to_start = NodeDistances.get_distance(pt, b['nodes'][0])
+        # print('DC ', dc_to_start)
         if dc_to_start is None:
-            dc_to_start = get_distance(pt, b['nodes'][0]), 0 if USE_COST_METRIC else get_distance(pt, b['nodes'][0])
+            dc_to_start = (get_distance(pt, b['nodes'][0]), 0) if USE_COST_METRIC else get_distance(pt, b['nodes'][0])
+        # print('DC ', dc_to_start, get_distance(pt, b['nodes'][0]))
         dc_to_end = NodeDistances.get_distance(pt, b['nodes'][-1])
         if dc_to_end is None:
-            dc_to_end = get_distance(pt, b['nodes'][-1]), 0 if USE_COST_METRIC else get_distance(pt, b['nodes'][-1])
+            dc_to_end = (get_distance(pt, b['nodes'][-1]), 0) if USE_COST_METRIC else get_distance(pt, b['nodes'][-1])
 
-        if pt_id(pt) not in cls._house_dcs:
-            cls._house_dcs[pt_id(pt)] = {pt_id(pt): store(0, 0)} if USE_COST_METRIC else {pt_id(pt): 0}
+        if pt_id(pt) not in cls._house_matrix:
+            cls._house_matrix[pt_id(pt)] = {pt_id(pt): store(0, 0)} if USE_COST_METRIC else {pt_id(pt): 0}
 
         for address, info in b_houses.items():
             if not KEEP_APARTMENTS and ' APT ' in address:
@@ -78,12 +80,12 @@ class HouseDistances():
 
                 distance, cost = through_start if through_start[0] < through_end[0] else through_end
 
-                cls._house_dcs[pt_id(pt)][address] = store(round(distance), round(cost))
+                cls._house_matrix[pt_id(pt)][address] = store(round(distance), round(cost))
             else:
                 through_start = dc_to_start + info['distance_to_start']
                 through_end = dc_to_end + info['distance_to_end']
 
-                cls._house_dcs[pt_id(pt)][address] = round(min(through_start, through_end))
+                cls._house_matrix[pt_id(pt)][address] = round(min(through_start, through_end))
 
     @classmethod
     def _insert_pair(cls, b1: Block, b1_id: str, b2: Block, b2_id: str):
@@ -102,7 +104,7 @@ class HouseDistances():
 
         # If any combination of houses on these two segments is inserted, they all are
         try:
-            cls._house_dcs[next(iter(b2_houses.keys()))][next(iter(b1_houses.keys()))]
+            cls._house_matrix[next(iter(b2_houses.keys()))][next(iter(b1_houses.keys()))]
             return
         except KeyError:
             pass
@@ -112,11 +114,11 @@ class HouseDistances():
             for (address_1, info_1), (address_2, info_2) in itertools.product(b1_houses.items(), b2_houses.items()):
                 if not KEEP_APARTMENTS and ' APT ' in address_1:
                     continue
-                if address_1 not in cls._house_dcs:
-                    cls._house_dcs[address_1] = {}
+                if address_1 not in cls._house_matrix:
+                    cls._house_matrix[address_1] = {}
 
                 if address_1 == address_2:
-                    cls._house_dcs[address_1][address_2] = store(0, 0) if USE_COST_METRIC else 0
+                    cls._house_matrix[address_1][address_2] = store(0, 0) if USE_COST_METRIC else 0
                 else:
                     distance_to_road = (info_1['distance_to_road'] + info_2['distance_to_road']) * DISTANCE_TO_ROAD_MULTIPLIER
                     # For primary and secondary roads, crossing in the middle of the block is not possible
@@ -130,62 +132,65 @@ class HouseDistances():
                             abs(info_1['distance_to_start'] - info_2['distance_to_start']) + distance_to_road)
 
                     if not USE_COST_METRIC:
-                        cls._house_dcs[address_1][address_2] = distance
+                        cls._house_matrix[address_1][address_2] = distance
                     else:
                         cost = 0
                         if info_1['side'] != info_2['side']:
                             cost += crossing_penalty(b1)
 
-                        cls._house_dcs[address_1][address_2] = store(round(distance), cost)
+                        cls._house_matrix[address_1][address_2] = store(round(distance), cost)
             return
 
         # Calculate the distances between the segment endpoints
-        end_dcs = [NodeDistances.get_distance(i, j) for i, j in
-                   [(b1['nodes'][0], b2['nodes'][0]), (b1['nodes'][0], b2['nodes'][-1]),
-                    (b1['nodes'][-1], b2['nodes'][0]), (b1['nodes'][-1], b2['nodes'][1])]]
-        end_dcs = [d for d in end_dcs if d is not None]
+        end_distances = [NodeDistances.get_distance(i, j) for i, j in
+                         [(b1['nodes'][0], b2['nodes'][0]), (b1['nodes'][0], b2['nodes'][-1]),
+                          (b1['nodes'][-1], b2['nodes'][0]), (b1['nodes'][-1], b2['nodes'][1])]]
+        end_distances = [d for d in end_distances if d is not None]
 
         # If this pair is too far away, don't add to the table.
-        if len(end_dcs) != 4 or min([d[0] for d in end_dcs]) > cls.MAX_STORAGE_DISTANCE:
+        if len(end_distances) != 4 or min(end_distances) > cls.MAX_STORAGE_DISTANCE:
             return
 
         # Iterate over every possible pair of houses
         for (address_1, info_1), (address_2, info_2) in itertools.product(b1_houses.items(), b2_houses.items()):
             if not KEEP_APARTMENTS and ' APT ' in address_1:
                 continue
-            if address_1 not in cls._house_dcs:
-                cls._house_dcs[address_1] = {}
+            if address_1 not in cls._house_matrix:
+                cls._house_matrix[address_1] = {}
 
             distances_to_road = (info_1['distance_to_road'] + info_2['distance_to_road']) * DISTANCE_TO_ROAD_MULTIPLIER
 
             # The format of the list is: [start_start, start_end, end_start, end_end]
             distances: list[float] = \
-                [end_dcs[0][0] + info_1['distance_to_start'] + info_2['distance_to_start'] + distances_to_road,
-                 end_dcs[1][0] + info_1['distance_to_start'] + info_2['distance_to_end'] + distances_to_road,
-                 end_dcs[2][0] + info_1['distance_to_end'] + info_2['distance_to_start'] + distances_to_road,
-                 end_dcs[3][0] + info_1['distance_to_end'] + info_2['distance_to_end'] + distances_to_road]
+                [end_distances[0] + info_1['distance_to_start'] + info_2['distance_to_start'] + distances_to_road,
+                 end_distances[1] + info_1['distance_to_start'] + info_2['distance_to_end'] + distances_to_road,
+                 end_distances[2] + info_1['distance_to_end'] + info_2['distance_to_start'] + distances_to_road,
+                 end_distances[3] + info_1['distance_to_end'] + info_2['distance_to_end'] + distances_to_road]
 
             # Add the street crossing penalties
             if USE_COST_METRIC:
+                # TODO: This isn't quite right. Need a way to check if two houses on different blocks are on the same side /
+                # how many streets to cross, etc. This will be a large change
                 cost = mean([crossing_penalty(b1), crossing_penalty(b2)])
+                cost += DIFFERENT_BLOCK_COST
                 distance = min(distances)
 
-                cls._house_dcs[address_1][address_2] = store(round(distance), round(cost))
+                cls._house_matrix[address_1][address_2] = store(round(distance), round(cost))
             else:
-                cls._house_dcs[address_1][address_2] = round(min(distances))
+                cls._house_matrix[address_1][address_2] = round(min(distances))
 
     @classmethod
     def __init__(cls, blocks: blocks_file_t, depot: Optional[Point] = None):
         if os.path.exists(house_distance_table_file):
             need_regeneration = False
             print('House distance table file found. Loading may take a while...')
-            cls._house_dcs = json.load(open(house_distance_table_file))
+            cls._house_matrix = json.load(open(house_distance_table_file))
             num_samples = min(len(blocks), 100)
 
             # Sample random segments from the input to check if they are already stored
             for block in random.sample(list(blocks.values()), num_samples):
                 try:
-                    cls._house_dcs[next(iter(block['addresses'].keys()))]
+                    cls._house_matrix[next(iter(block['addresses'].keys()))]
                 except StopIteration:
                     # There are no houses in this segment
                     continue
@@ -193,13 +198,13 @@ class HouseDistances():
                     # This house was not already stored
                     need_regeneration = True
                     break
-            if not need_regeneration and (depot is None or pt_id(depot) in cls._house_dcs):
+            if not need_regeneration and (depot is None or pt_id(depot) in cls._house_matrix):
                 return
             print('The saved distance table did not include all requested segments. Regenerating...')
         else:
             print('No house distance table file found at {}. Generating now...'.format(house_distance_table_file))
 
-        cls._house_dcs = {}
+        cls._house_matrix = {}
         with tqdm(total=len(blocks) ** 2, desc='Generating', unit='pairs', colour='green') as progress:
             for b_id, block in blocks.items():
                 if depot is not None:
@@ -210,10 +215,10 @@ class HouseDistances():
 
         print('Saving to {}'.format(house_distance_table_file))
 
-        json.dump(cls._house_dcs, open(house_distance_table_file, 'w', encoding='utf-8'), indent=4)
+        json.dump(cls._house_matrix, open(house_distance_table_file, 'w', encoding='utf-8'), indent=4)
 
     @classmethod
-    def get_distance(cls, p1: Point, p2: Point) -> Optional[tuple[float, float]]:
+    def get_distance(cls, p1: Point, p2: Point) -> Optional[tuple[float, float]] | Optional[float]:
         '''
         Get the distance between two houses by their coordinates
 
@@ -222,14 +227,15 @@ class HouseDistances():
             p2 (Point): the second point
 
         Returns:
-            tuple[float, float] | None: distance, cost between the two points if it exists, None otherwise
+            tuple[float, float] | float | None: distance, cost between the two points (if using the cost metric)
+                or just the distance (if not using the cost metric), or None if the distance is too far
         '''
-        if len(cls._house_dcs) == 0:
+        if len(cls._house_matrix) == 0:
             raise ValueError('House distance table has not been initialized')
         try:
-            return unstore(cls._house_dcs[pt_id(p1)][pt_id(p2)])
+            return cls._house_matrix[pt_id(p1)][pt_id(p2)] if not USE_COST_METRIC else unstore(cls._house_matrix[pt_id(p1)][pt_id(p2)])
         except KeyError:
             try:
-                return unstore(cls._house_dcs[pt_id(p2)][pt_id(p1)])
+                return cls._house_matrix[pt_id(p2)][pt_id(p1)] if not USE_COST_METRIC else unstore(cls._house_matrix[pt_id(p2)][pt_id(p1)])
             except KeyError:
                 return None
