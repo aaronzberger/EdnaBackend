@@ -48,6 +48,13 @@ address_pts_file = os.path.join(BASE_DIR, "input", "address_pts.csv")
 problem_path = os.path.join(BASE_DIR, "optimize", "problem.json")
 solution_path = os.path.join(BASE_DIR, "optimize", "solution.json")
 
+'----------------------------------------------------------------------------------'
+'                                  Optimization                                    '
+'----------------------------------------------------------------------------------'
+SEARCH_MODE_DEEP = False
+TIMEOUT = timedelta(seconds=100)
+
+
 "----------------------------------------------------------------------------------"
 "                                     Constants                                    "
 "----------------------------------------------------------------------------------"
@@ -63,7 +70,7 @@ MINS_PER_HOUSE = 1.65
 CLUSTERING_CONNECTED_THRESHOLD = 100  # Meters where blocks are connected
 KEEP_APARTMENTS = False
 DISTANCE_TO_ROAD_MULTIPLIER = 0.5
-ALD_BUFFER = 5  # Meters after a block ends where a house is still on the block
+ALD_BUFFER = 150  # Meters after a block ends where a house is still on the block
 DIFFERENT_BLOCK_COST = 25
 
 

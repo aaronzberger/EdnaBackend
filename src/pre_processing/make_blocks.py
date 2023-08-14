@@ -46,9 +46,11 @@ MAX_DISTANCE = 500  # meters from house to segment
 CHUNK_SIZE = 500  # in meters
 DEBUG = True
 
+
+# Create a buffer using StringIO
+buffer = io.StringIO()
+
 if DEBUG:
-    # Create a buffer using StringIO
-    buffer = io.StringIO()
     with open("debug.txt", "w") as f:
         f.write("DEBUG START")
 
@@ -75,7 +77,7 @@ blocks: dict[str, Any] = json.load(open(block_output_file))
 # endregion
 
 print("Loading list of street suffixes")
-street_suffixes: list[str] = json.load(open(street_suffixes_file))
+street_suffixes: dict[str, str] = json.load(open(street_suffixes_file))
 
 # Map segment IDs to a dict containting the addresses and node IDs
 segments_by_id: blocks_file_t = {}
@@ -218,14 +220,17 @@ with tqdm(
         progress.update(1)
 
 
-def sanitize_street_name(street_name):
+def sanitize_street_name(street_name: str):
     # Split the street name by spaces
     words = street_name.casefold().split()
 
-    # Check if the last word is in the list of suffixes
-    if words[-1] in street_suffixes and len(words) > 1:
-        # Remove the last word
-        words = words[:-1]
+    if len(words) > 1:
+        last_word = words[-1]
+
+        # Check if the last word is in the lookup dictionary
+        if last_word in street_suffixes:
+            # If it is, replace it
+            words[-1] = street_suffixes[last_word]
 
     # Join the words back together and return
     return " ".join(words).rstrip()
@@ -257,6 +262,7 @@ def keys_with_value(d: dict[str, list[str]], target: str) -> list[str]:
 
 
 def address_match_score(s1: str, s2: str, threshold=90, score_cutoff=0.0):
+    # TODO: add heuristic to match w/o last word being truncated
     """
     Computes a custom score based on the Jaro distance between words in the two strings.
 
@@ -269,9 +275,18 @@ def address_match_score(s1: str, s2: str, threshold=90, score_cutoff=0.0):
     - A score representing the ratio of matched words to the total number of words.
       Returns 0.0 immediately if the computed score is below score_cutoff.
     """
+    whole_str_ratio = fuzz.ratio(s1, s2)
+    if whole_str_ratio > threshold and whole_str_ratio > score_cutoff:
+        return whole_str_ratio
 
     s1_words = s1.split()
     s2_words = s2.split()
+
+    if len(s1_words) > 1:
+        s1_words.pop()
+
+    if len(s2_words) > 1:
+        s2_words.pop()
 
     matched_words = 0
 
@@ -283,6 +298,7 @@ def address_match_score(s1: str, s2: str, threshold=90, score_cutoff=0.0):
                 matched_words += 1
 
     total_words = max(len(s1_words), len(s2_words))
+
     score = (matched_words / total_words) * 100
 
     return score if score >= score_cutoff else 0.0
@@ -388,7 +404,18 @@ with tqdm(
 
         house_pt = Point(lat=float(item["latitude"]), lon=float(item["longitude"]), type="house")  # type: ignore
 
-        street_name = sanitize_street_name(item["st_name"])
+        address_parts = (
+            item["st_premodifier"],
+            item["st_prefix"],
+            item["st_pretype"],
+            item["st_name"],
+            item["st_type"],
+            item["st_postmodifier"],
+        )
+
+        raw_street_name = " ".join(part for part in address_parts if part)
+
+        sanitized_street_name = sanitize_street_name(raw_street_name)
 
         best_segment: Optional[
             Segment
@@ -404,16 +431,21 @@ with tqdm(
                 file=buffer,
             )
 
+            print(
+                f"Address: {item['full_address']}",
+                file=buffer,
+            )
+
             print("Filtered segment IDs in adjacent matrix locations", file=buffer)
             print(filtered_segment_ids, file=buffer)
 
             print(
-                f"Street name to match: {street_name} (raw: {item['st_name']})",
+                f"Street name to match: {sanitized_street_name} (raw: {raw_street_name})",
                 file=buffer,
             )
 
         for segment_id in filtered_segment_ids:
-            if street_name in block_to_street_names[segment_id]:
+            if sanitized_street_name in block_to_street_names[segment_id]:
                 if DEBUG:
                     print(f"Found exact match for street name", file=buffer)
                 closest_block = segments_by_id[segment_id]
@@ -437,7 +469,7 @@ with tqdm(
                     file=buffer,
                 )
                 print(
-                    f"Choices from fuzzy find for street name {street_name}:",
+                    f"Choices from fuzzy find for street name {sanitized_street_name}:",
                     file=buffer,
                 )
 
@@ -445,10 +477,10 @@ with tqdm(
                 print(block_names_set, file=buffer)
 
             for choice in process.extract_iter(
-                query=street_name,
+                query=sanitized_street_name,
                 choices=block_names_set,
                 scorer=address_match_score,
-                score_cutoff=30,
+                score_cutoff=45,
             ):
                 if DEBUG:
                     print("Choice ---------", file=buffer)
@@ -517,7 +549,7 @@ with tqdm(
             if DEBUG:
                 print(f"Failed to associate house with point: {house_pt}", file=buffer)
                 print(f'Raw street name {item["st_name"]}', file=buffer)
-                print(f"Street name: {street_name}", file=buffer)
+                print(f"Street name: {sanitized_street_name}", file=buffer)
                 if best_segment is not None:
                     print(
                         f"matched against: {block_to_street_names[best_segment.id]}",
@@ -529,10 +561,9 @@ with tqdm(
                 if best_segment is not None:
                     print(f"Best segment CTD: {best_segment.ctd}", file=buffer)
                 print(f"MAX_DISTANCE: {MAX_DISTANCE}", file=buffer)
-                with open("debug.txt", "a") as f:
-                    f.write(buffer.getvalue())
-
         if DEBUG:
+            with open("debug.txt", "a") as f:
+                f.write(buffer.getvalue())
             buffer.seek(0)  # set position to the start
             buffer.truncate()  # truncate the buffer from the current position
 
