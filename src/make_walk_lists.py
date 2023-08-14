@@ -66,9 +66,16 @@ if len(argv) == 2:
             and "House Number" in house
             and "Street Name" in house
         ):
-            formatted_address = "{} {}".format(
-                house["House Number"], house["Street Name"]
-            ).upper()
+            address_parts = (
+                house["House Number"],
+                house["House Number Suffix"],
+                house["Street Name"],
+                house["Apartment Number"],
+                house["Address Line 2"],
+            )
+
+            formatted_address = " ".join(part for part in address_parts if part)
+
         elif "Address" in house:
             formatted_address = house["Address"].upper()
         else:
@@ -76,16 +83,17 @@ if len(argv) == 2:
                 "The universe file must contain either an 'Address' column or 'House Number' and 'Street Name' columns"
             )
         total_houses += 1
-        block_id = associater.associate(formatted_address)
-        if block_id is None:
-            continue
-        house_info = deepcopy(all_blocks[block_id]["addresses"][formatted_address])
+        result = associater.associate(formatted_address)
+        if result is not None:
+            block_id, house_info = result
 
-        if block_id in requested_blocks:
-            requested_blocks[block_id]["addresses"][formatted_address] = house_info
-        else:
-            requested_blocks[block_id] = deepcopy(all_blocks[block_id])
-            requested_blocks[block_id]["addresses"] = {formatted_address: house_info}
+            if block_id in requested_blocks:
+                requested_blocks[block_id]["addresses"][formatted_address] = house_info
+            else:
+                requested_blocks[block_id] = deepcopy(all_blocks[block_id])
+                requested_blocks[block_id]["addresses"] = {
+                    formatted_address: house_info
+                }
     print("Failed on {} of {} houses".format(associater.failed_houses, total_houses))
 else:
     requested_blocks: blocks_file_t = json.load(open(blocks_file))

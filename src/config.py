@@ -13,9 +13,7 @@ VRP_CLI_PATH = "/home/user/.cargo/bin/vrp-cli"
 AREA_ID = "rosselli"
 USE_COST_METRIC = False
 
-street_suffixes_file = os.path.join(
-    BASE_DIR, "src", "pre_processing", "street_suffixes.json"
-)
+street_suffixes_file = os.path.join(BASE_DIR, "src", "street_suffixes.json")
 
 node_distance_table_file = os.path.join(
     BASE_DIR, "regions", AREA_ID, "store", "node_distances.json"
@@ -48,9 +46,9 @@ address_pts_file = os.path.join(BASE_DIR, "input", "address_pts.csv")
 problem_path = os.path.join(BASE_DIR, "optimize", "problem.json")
 solution_path = os.path.join(BASE_DIR, "optimize", "solution.json")
 
-'----------------------------------------------------------------------------------'
-'                                  Optimization                                    '
-'----------------------------------------------------------------------------------'
+"----------------------------------------------------------------------------------"
+"                                  Optimization                                    "
+"----------------------------------------------------------------------------------"
 SEARCH_MODE_DEEP = False
 TIMEOUT = timedelta(seconds=100)
 

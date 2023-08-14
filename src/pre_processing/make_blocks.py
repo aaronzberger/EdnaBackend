@@ -535,12 +535,12 @@ with tqdm(
                 distance_to_road=round(best_segment.ctd),
                 subsegment=(min(sub_nodes), max(sub_nodes)),
             )
-            # endregion
 
             # Add the house to the segments output
             segments_by_id[best_segment.id]["addresses"][
                 item["full_address"]
             ] = output_house
+            # addr_num_prefix,addr_num,addr_num_suffix,st_premodifier,st_prefix,st_pretype,st_name,st_type,st_postmodifier,unit_type,unit,floor,municipality,county,state,zip_code
 
             # Add this association to the houses file
             houses_to_id[item["full_address"]] = best_segment.id
