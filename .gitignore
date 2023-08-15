@@ -27,3 +27,4 @@ input/example_universe.csv
 debug.txt
 
 *.osrm
+*.osm.pbf
