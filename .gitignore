@@ -25,3 +25,5 @@ optimize/
 # For privacy. Contact for access
 input/example_universe.csv
 debug.txt
+
+*.osrm
