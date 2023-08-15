@@ -9,7 +9,7 @@ import uuid
 "                                     File Paths                                   "
 "----------------------------------------------------------------------------------"
 
-BASE_DIR = "/home/user/WLC"
+BASE_DIR = "../../"
 VRP_CLI_PATH = "/home/user/.cargo/bin/vrp-cli"
 
 AREA_ID = "rosselli"
