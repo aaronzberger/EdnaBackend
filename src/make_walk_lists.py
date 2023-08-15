@@ -26,6 +26,7 @@ from src.config import (
     blocks_file_t,
     pt_id,
 )
+
 from src.distances.blocks import BlockDistances
 from src.distances.houses import HouseDistances
 from src.distances.mix import MixDistances

@@ -1,5 +1,6 @@
 from collections import namedtuple
 import os
+import sys
 from datetime import timedelta
 from typing import Any, Literal, NamedTuple, TypedDict
 from dataclasses import dataclass
@@ -9,7 +10,8 @@ import uuid
 "                                     File Paths                                   "
 "----------------------------------------------------------------------------------"
 
-BASE_DIR = "../../"
+
+BASE_DIR = os.path.abspath(os.path.join(__file__, "../../"))
 VRP_CLI_PATH = "/home/user/.cargo/bin/vrp-cli"
 
 AREA_ID = "rosselli"

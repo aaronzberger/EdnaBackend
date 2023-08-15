@@ -50,7 +50,6 @@ MAX_DISTANCE = 500  # meters from house to segment
 CHUNK_SIZE = 500  # in meters
 DEBUG = False
 
-
 # Create a buffer using StringIO
 buffer = io.StringIO()
 
@@ -162,10 +161,10 @@ def get_matrix_index(node: Point, origin: Point, chunk_size: float) -> tuple[int
 print("Created empty matrix, starting to place blocks into matrix")
 
 with tqdm(
-    total=len(blocks),
-    desc="Creating block location matrix",
-    unit="rows",
-    colour="green",
+        total=len(blocks),
+        desc="Creating block location matrix",
+        unit="rows",
+        colour="green",
 ) as progress:
     for start_node in blocks:
         for block in blocks[start_node]:
@@ -191,7 +190,6 @@ with tqdm(
                         block_matrix[i][j].append(segment_id)
         progress.update(1)
 
-
 data_as_list = [
     [list(inner_set) for inner_set in inner_list] for inner_list in block_matrix
 ]
@@ -199,10 +197,9 @@ data_as_list = [
 with open("block_matrix.json", "w") as outfile:
     json.dump(data_as_list, outfile)
 
-
 # First, load every block, find subsegments, and save all data besides actual addresses to segments_by_id
 with tqdm(
-    total=len(blocks), desc="Reading blocks", unit="rows", colour="green"
+        total=len(blocks), desc="Reading blocks", unit="rows", colour="green"
 ) as progress:
     for start_node in blocks:
         for block in blocks[start_node]:
@@ -229,9 +226,8 @@ with tqdm(
             )
         progress.update(1)
 
-
 with tqdm(
-    total=len(blocks), desc="Sanitizing street names", unit="rows", colour="green"
+        total=len(blocks), desc="Sanitizing street names", unit="rows", colour="green"
 ) as progress:
     for start_node in blocks:
         for block in blocks[start_node]:
@@ -317,9 +313,9 @@ def search_for_best_subsegment(segment, segment_id, best_segment, house_pt: Poin
 
         # If this segment is better than the best segment, insert it
         if (
-            best_segment is None
-            or house_offset < best_segment.ald_offset
-            or (house_offset == best_segment.ald_offset and abs(ctd) < best_segment.ctd)
+                best_segment is None
+                or house_offset < best_segment.ald_offset
+                or (house_offset == best_segment.ald_offset and abs(ctd) < best_segment.ctd)
         ):
             if DEBUG:
                 print(
@@ -381,7 +377,7 @@ def filter_segments(house_point):
 
 # Next, add the houses to the blocks
 with tqdm(
-    total=num_houses, desc="Associating houses", unit="rows", colour="green"
+        total=num_houses, desc="Associating houses", unit="rows", colour="green"
 ) as progress:
     for item in house_points_reader:
         progress.update(1)
@@ -391,10 +387,10 @@ with tqdm(
 
         # If this house is not in the area of interest, skip it
         if (
-            float(item["latitude"]) < min_lat
-            or float(item["latitude"]) > max_lat
-            or float(item["longitude"]) < min_lon
-            or float(item["longitude"]) > max_lon
+                float(item["latitude"]) < min_lat
+                or float(item["latitude"]) > max_lat
+                or float(item["longitude"]) < min_lon
+                or float(item["longitude"]) > max_lon
         ):
             continue
 
@@ -473,17 +469,17 @@ with tqdm(
                 print(block_names_set, file=buffer)
 
             for choice in process.extract_iter(
-                query=sanitized_street_name,
-                choices=block_names_set,
-                scorer=address_match_score,
-                score_cutoff=45,
+                    query=sanitized_street_name,
+                    choices=block_names_set,
+                    scorer=address_match_score,
+                    score_cutoff=45,
             ):
                 if DEBUG:
                     print("Choice ---------", file=buffer)
                     print(choice, file=buffer)
                     print("Details of blocks with matching names:", file=buffer)
                 for block_id in keys_with_value(
-                    filtered_block_to_street_names, choice[0]
+                        filtered_block_to_street_names, choice[0]
                 ):
                     if DEBUG:
                         print("---------block---------", file=buffer)
@@ -522,7 +518,7 @@ with tqdm(
             distance_to_end += distances[1]
 
             # Lastly, calculate the distance from the end of this house's sub-segment to the end of the block
-            distance_to_end += distance_along_path(all_points[min(sub_nodes) + 1 :])
+            distance_to_end += distance_along_path(all_points[min(sub_nodes) + 1:])
 
             output_house = HouseInfo(
                 lat=house_pt["lat"],
