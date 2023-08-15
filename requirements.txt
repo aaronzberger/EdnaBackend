@@ -1,5 +1,5 @@
 haversine~=2.8.0
-humanhash~=0.0.1
+humanhash3~=0.0.6
 jsonpickle~=3.0.2
 nptyping~=2.5.0
 numpy~=1.25.1
