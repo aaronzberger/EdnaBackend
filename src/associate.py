@@ -8,16 +8,18 @@ These addresses must be matched with addresses from the PA address points file
 
 from typing import Optional
 from copy import deepcopy
+
+import jsonpickle
+
 from src.config import (
     HouseInfo,
-    houses_file_t,
-    houses_file,
+    addresses_file,
     blocks_file,
     blocks_file_t,
     street_suffixes_file,
 )
 
-import re
+from src.address import Address, addresses_file_t
 
 from rapidfuzz import process, fuzz
 
@@ -26,7 +28,11 @@ import json
 
 class Associater:
     all_blocks: blocks_file_t = json.load(open(blocks_file))
-    houses_to_id: houses_file_t = json.load(open(houses_file))
+
+    with open(addresses_file) as addresses_file_instance:
+        addresses_to_id: addresses_file_t = jsonpickle.decode(
+            addresses_file_instance.read(), keys=True
+        )
     street_suffixes: dict[str, str] = json.load(open(street_suffixes_file))
 
     def sanitize_address(self, address: str):
@@ -47,12 +53,9 @@ class Associater:
     def __init__(self):
         self.failed_houses = self.apartment_houses = 0
 
-        self.sanitized_houses_to_id = {
-            self.sanitize_address(key): value
-            for key, value in self.houses_to_id.items()
-        }
-
-    def address_match_score(self, s1: str, s2: str, threshold=90, score_cutoff=0.0):
+    def address_match_score(
+        self, s1: Address, s2: Address, threshold=90, score_cutoff=0.0
+    ):
         """
         Computes a custom score based on the Jaro distance between words in the two strings.
 
@@ -65,6 +68,14 @@ class Associater:
         - A score representing the ratio of matched words to the total number of words.
         Returns 0.0 immediately if the computed score is below score_cutoff or house numbers don't match.
         """
+
+        if s1.house_number == s2.house_number:
+            if s1.zip_code == s2.zip_code:
+                return 100
+            else:
+                return 0
+        else:
+            return 0
 
         s1_words = s1.split()
         s2_words = s2.split()
@@ -108,7 +119,7 @@ class Associater:
 
         return score if score >= score_cutoff else 0.0
 
-    def associate(self, address: str) -> tuple[str, HouseInfo] | None:
+    def associate(self, address: Address) -> tuple[str, str] | None:
         """
         Associate an address with a house and get the house info
 
@@ -118,13 +129,16 @@ class Associater:
         Returns:
             HouseInfo | None: information on the house, or None if the address could not be associated
         """
-        if address in self.houses_to_id:
-            block_id = self.houses_to_id[address]
+
+        matched_uuid = ""
+
+        if address in self.addresses_to_id:
+            matched_block_id, matched_uuid = self.addresses_to_id[address]
         else:
             print(f"Failed to find exact match for address: {address}")
             for choice in process.extract_iter(
-                query=self.sanitize_address(address),
-                choices=self.sanitized_houses_to_id.keys(),
+                query=address,
+                choices=self.addresses_to_id.keys(),
                 scorer=self.address_match_score,
                 score_cutoff=45,
             ):
@@ -132,4 +146,4 @@ class Associater:
             self.failed_houses += 1
             return None
 
-        return (block_id, deepcopy(self.all_blocks[block_id]["addresses"][address]))
+        return (matched_block_id, matched_uuid)

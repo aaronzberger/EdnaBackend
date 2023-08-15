@@ -28,6 +28,7 @@ RUN apt-get -y install\
     python3-pip
 
 RUN pip install --no-cache-dir\
+    jsonpickle\
     scikit-learn-extra\
     branca\
     certifi\

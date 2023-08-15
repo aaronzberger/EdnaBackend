@@ -38,6 +38,9 @@ from src.viz_utils import (
     display_individual_walk_lists,
     display_walk_lists,
 )
+
+from src.address import Address
+
 from src.walkability_scorer import score
 
 all_blocks: blocks_file_t = json.load(open(blocks_file))
@@ -66,34 +69,40 @@ if len(argv) == 2:
             and "House Number" in house
             and "Street Name" in house
         ):
-            address_parts = (
+            street_name = Address.sanitize_street_name(house["Street Name"])
+
+            formatted_address = Address(
                 house["House Number"],
                 house["House Number Suffix"],
-                house["Street Name"],
+                street_name,
                 house["Apartment Number"],
-                house["Address Line 2"],
+                None,
+                None,
+                house["Zip"],
             )
 
-            formatted_address = " ".join(part for part in address_parts if part)
-
-        elif "Address" in house:
-            formatted_address = house["Address"].upper()
         else:
             raise ValueError(
                 "The universe file must contain either an 'Address' column or 'House Number' and 'Street Name' columns"
             )
+
         total_houses += 1
+
         result = associater.associate(formatted_address)
         if result is not None:
-            block_id, house_info = result
+            block_id, uuid = result
 
             if block_id in requested_blocks:
-                requested_blocks[block_id]["addresses"][formatted_address] = house_info
+                requested_blocks[block_id]["addresses"][uuid] = all_blocks[block_id][
+                    "addresses"
+                ][uuid]
+
             else:
                 requested_blocks[block_id] = deepcopy(all_blocks[block_id])
                 requested_blocks[block_id]["addresses"] = {
-                    formatted_address: house_info
+                    uuid: all_blocks[block_id]["addresses"][uuid]
                 }
+
     print("Failed on {} of {} houses".format(associater.failed_houses, total_houses))
 else:
     requested_blocks: blocks_file_t = json.load(open(blocks_file))
@@ -200,7 +209,7 @@ if TURF_SPLIT:
     HouseDistances(area_blocks)
 else:
     # depot = Point(lat=40.4409128, lon=-79.9277741, type='node')  # type: ignore
-    depot = Point(lat=40.5397171, lon=-80.1763386, type="node")  # Sewickley
+    depot = Point(lat=40.5397171, lon=-80.1763386, type="node", id=None)  # Sewickley
     # depot = DEPOT
 
     # Generate house distance matrix, and distances to the depot

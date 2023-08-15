@@ -1,7 +1,9 @@
+from collections import namedtuple
 import os
 from datetime import timedelta
-from typing import Any, Literal, TypedDict
+from typing import Any, Literal, NamedTuple, TypedDict
 from dataclasses import dataclass
+import uuid
 
 "----------------------------------------------------------------------------------"
 "                                     File Paths                                   "
@@ -39,7 +41,12 @@ coords_node_file = os.path.join(
 overpass_file = os.path.join(BASE_DIR, "regions", AREA_ID, "input", "overpass.json")
 
 # Map addresses to block IDs
-houses_file = os.path.join(BASE_DIR, "regions", AREA_ID, "houses.json")
+addresses_file = os.path.join(BASE_DIR, "regions", AREA_ID, "addresses.json")
+
+universe_association = os.path.join(
+    BASE_DIR, "regions", AREA_ID, "universe_association.json"
+)
+
 blocks_file = os.path.join(BASE_DIR, "regions", AREA_ID, "blocks.json")
 
 address_pts_file = os.path.join(BASE_DIR, "input", "address_pts.csv")
@@ -56,6 +63,9 @@ TIMEOUT = timedelta(seconds=100)
 "----------------------------------------------------------------------------------"
 "                                     Constants                                    "
 "----------------------------------------------------------------------------------"
+
+
+UUID_NAMESPACE = uuid.UUID("ccf207c6-3b15-11ee-be56-0242ac120002")
 
 TURF_SPLIT = False  # Which problem to run
 
@@ -108,8 +118,8 @@ ROAD_WIDTH = {
 class Point(TypedDict):
     lat: float
     lon: float
-    type: Literal["house", "node", "other"]
-    id: str
+    type: Literal["house", "node", "other"] | None
+    id: str | None
 
 
 def pt_id(p: Point) -> str:
@@ -135,7 +145,7 @@ node_list_t = list[Point]
 # DEPOT = Point(lat=40.4471477, lon=-79.9311578, type='node')  # Kipling and Dunmoyle
 # DEPOT = Point(lat=40.4310603, lon=-79.9191268, type='node')  # Shady and Nicholson
 # DEPOT = Point(lat=40.4430899, lon=-79.9329246, type='node')  # Maynard and Bennington
-DEPOT = Point(lat=40.4362340, lon=-79.9191103, type="node")
+DEPOT = Point(lat=40.4362340, lon=-79.9191103, type="node", id=None)
 NUM_LISTS = 1
 
 
@@ -157,7 +167,6 @@ class Block(TypedDict):
 
 
 blocks_file_t = dict[str, Block]
-houses_file_t = dict[str, str]
 
 
 "----------------------------------------------------------------------------------"
