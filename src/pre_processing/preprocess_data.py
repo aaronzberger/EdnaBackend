@@ -1,206 +1,274 @@
-'''
+"""
 Process the data from OSM. Take in overpass.json and write block_output.json
-'''
-# TODO: Clean up and add type hinting
+"""
 
 import json
 import pprint
+from collections import defaultdict
+from typing import TypedDict, TypeGuard, Literal, Optional, Tuple, NewType, cast, Self
 
 from src.config import block_output_file, overpass_file
 
 pp = pprint.PrettyPrinter(indent=4)
 
-response = json.load(open(overpass_file))
+NodeId = NewType("NodeId", int)
 
-# Groups the JSON in a more manageable way because I couldn't figure out how to make Overpass nest the data
 
-grouped_response = {}
+class Node(TypedDict):
+    type: Literal["node"] | Literal["way"]
+    id: NodeId
+    lat: float
+    lon: float
 
-for element in response['elements']:
-    if element['type'] == 'node':
-        grouped_response[element['id']] = (element, [])
 
-for element in response['elements']:
-    if element['type'] == 'node':
-        lastNode = element['id']
-    if element['type'] == 'way':
-        grouped_response[lastNode][1].append(element)
+Tags = NewType("Tags", dict[str, str])
 
-# # Writing cleaned data to a file
-# clean_data = json.dumps(grouped_response)
-# file = open('Output/clean_data.json', 'w')
-# file.write(clean_data)
-# file.close()
 
-# Find the intersections based on how many directions a node branches off in
-# (1 means dead end, 3+ means intersection, 2 is just a regular road)
+class Way(TypedDict):
+    type: str
+    id: NodeId
+    nodes: list[NodeId]
+    tags: Tags
 
-intersection_nodes = {}
 
-for key in grouped_response:
-    branches = 0
-    for way in grouped_response[key][1]:
-        try:
-            index = way['nodes'].index(key)
-        except:
-            print("whoopsie (´・ω・｀)")
-            continue
-        count = len(way['nodes'])
-        if count > 1:
-            if index == 0:
-                branches += 1
-            elif index == count - 1:
-                branches += 1
+Element = Node | Way
+
+
+class Model(TypedDict):
+    elements: list[Element]
+
+
+BlockWay = tuple[NodeId, Tags]
+
+
+class Block(TypedDict):
+    nodes: list[NodeId]
+    ways: list[BlockWay]
+
+
+BlockDef = Tuple[NodeId, int, Optional[Block]]
+
+NodeInfo = Tuple[Node, list[Way]]
+
+
+def is_node(elem: Element) -> TypeGuard[Node]:
+    return elem["type"] == "node"
+
+
+def is_way(elem: Element) -> TypeGuard[Way]:
+    return elem["type"] == "way"
+
+
+class Preprocessor:
+    def __init__(
+        self,
+        grouped_response: dict[NodeId, NodeInfo],
+        intersection_nodes: dict[NodeId, NodeInfo],
+    ):
+        self.grouped_response = grouped_response
+        self.intersection_nodes = intersection_nodes
+        self.blocks: dict[NodeId, list[BlockDef]] = defaultdict(list)
+        self.explored_space: dict[NodeId, list[list[NodeId]]] = defaultdict(list)
+
+    @staticmethod
+    def group_response(response: Model) -> dict[NodeId, NodeInfo]:
+        grouped_response: dict[NodeId, NodeInfo] = {}
+
+        for element in response["elements"]:
+            if is_node(element):
+                grouped_response[element["id"]] = (element, [])
+
+        last_node: Optional[NodeId] = None
+        for element in response["elements"]:
+            if is_node(element):
+                last_node = element["id"]
+            elif is_way(element):
+                assert isinstance(last_node, int)
+                grouped_response[cast(NodeId, last_node)][1].append(element)
             else:
-                branches += 2
-    if branches == 1 or branches >= 3:
-        intersection_nodes[key] = grouped_response[key]
+                raise ValueError(element["type"])
 
-# # Writing instersection nodes to a file
-# intersection_json = json.dumps(intersection_nodes)
-# file = open('Output/intersectionnodes.json', 'w')
-# file.write(intersection_json)
-# file.close()
+        return grouped_response
 
-blocks = {}
-explored_space = {}
+    @classmethod
+    def from_response(cls, response) -> Self:
+        # Groups the JSON in a more manageable way because I couldn't figure out how to make Overpass nest the data
+        grouped_response = cls.group_response(response)
 
-for key in intersection_nodes:
+        # Find the intersections based on how many directions a node branches off in
+        # (1 means dead end, 3+ means intersection, 2 is just a regular road)
+        intersection_nodes: dict[NodeId, NodeInfo] = {}
 
-    if key in explored_space:
-        explored_direction_nodes = [x[-2] for x in explored_space[key]]
-    else:
-        explored_direction_nodes = None
+        # json.dump(grouped_response, open("grouped_response.json", "w"))
 
-    for way in intersection_nodes[key][1]:
-        index = way['nodes'].index(key)
-        node_count = len(way['nodes'])
+        for key in grouped_response:
+            branches = 0
+            for way in grouped_response[key][1]:
+                if key == 9768363077:
+                    print("among us")
+                    print(way["nodes"])
+                    print(key)
+                index = way["nodes"].index(key)
+                count = len(way["nodes"])
 
-        # look forwards
-        if index < node_count - 1:
-            next_node = way['nodes'][index + 1]
-            if (
-                explored_direction_nodes is None
-                or next_node not in explored_direction_nodes
-            ):
-                end_found = False
-                current_node = key
-                block_nodes = [key]
-                current_way = way
-                block_ways = [(way['id'], way['tags'])]
-                local_index = index
-                flipped = False
-                while not end_found:
-                    local_index += 1 if not flipped else -1
-                    if local_index >= node_count or local_index < 0:
-                        if current_node in grouped_response:
-                            otherWays = [
-                                x
-                                for x in grouped_response[current_node][1]
-                                if x['id'] != current_way['id']
-                            ]
-                            if len(otherWays) > 0:
-                                current_way = otherWays[0]
-                                block_ways.append((current_way['id'], current_way['tags']))
-                                node_count = len(current_way['nodes'])
-                            else:
-                                break
-                        else:
-                            break
-                        flipped = current_way['nodes'].index(current_node) != 0
-                        local_index = (
-                            current_way['nodes'].index(current_node) if flipped else 1
-                        )
-                    current_node = current_way['nodes'][local_index]
-                    block_nodes.append(current_node)
-                    if current_node in intersection_nodes:
-                        # save block
-                        if block_nodes[0] in blocks:
-                            similar_blocks = len([x[0] for x in blocks[block_nodes[0]] if x[0] == current_node])
+                if count <= 1:
+                    continue
 
-                            blocks[block_nodes[0]].append(
-                                (current_node, similar_blocks, {'nodes': block_nodes, 'ways': block_ways})
-                            )
-                        else:
-                            blocks[block_nodes[0]] = [
-                                (current_node, 0, {'nodes': block_nodes, 'ways': block_ways})
-                            ]
+                if index == 0:
+                    branches += 1
+                elif index == count - 1:
+                    branches += 1
+                else:
+                    branches += 2
+            if branches == 1 or branches >= 3:
+                intersection_nodes[key] = grouped_response[key]
 
-                        if current_node in blocks:
-                            blocks[current_node].append((block_nodes[0], 0, None))
-                        else:
-                            blocks[current_node] = [(block_nodes[0], 0, None)]
+        return cls(grouped_response, intersection_nodes)
 
-                        if current_node in explored_space:
-                            explored_space[current_node].append(block_nodes)
-                        else:
-                            explored_space[current_node] = [block_nodes]
-                        end_found = True
-        # look backwards
-        if index > 0:
-            previous_node = way['nodes'][index - 1]
-            if (
-                explored_direction_nodes is None
-                or previous_node not in explored_direction_nodes
-            ):
-                end_found = False
-                current_node = key
-                block_nodes = [key]
-                current_way = way
-                block_ways = [(way['id'], way['tags'])]
-                local_index = index
-                flipped = False
-                while not end_found:
-                    local_index -= 1 if not flipped else -1
-                    if local_index >= node_count or local_index < 0:
-                        if current_node in grouped_response:
-                            otherWays = [
-                                x
-                                for x in grouped_response[current_node][1]
-                                if x['id'] != current_way['id']
-                            ]
-                            if len(otherWays) > 0:
-                                current_way = otherWays[0]
-                                block_ways.append((current_way['id'], current_way['tags']))
-                                node_count = len(current_way['nodes'])
-                            else:
-                                break
-                        else:
-                            break
-                        flipped = current_way['nodes'].index(current_node) == 0
-                        local_index = (
-                            current_way['nodes'].index(current_node)
-                            if not flipped
-                            else 1
-                        )
-                    current_node = current_way['nodes'][local_index]
-                    block_nodes.append(current_node)
-                    if current_node in intersection_nodes:
-                        # save block
-                        if block_nodes[0] in blocks:
-                            similar_blocks = len([x[0] for x in blocks[block_nodes[0]] if x[0] == current_node])
+    def bidirectional_search(self):
+        for key in self.intersection_nodes:
+            if key in self.explored_space:
+                explored_direction_nodes = [x[-2] for x in self.explored_space[key]]
+            else:
+                explored_direction_nodes = None
 
-                            blocks[block_nodes[0]].append(
-                                (current_node, similar_blocks, {'nodes': block_nodes, 'ways': block_ways})
-                            )
-                        else:
-                            blocks[block_nodes[0]] = [
-                                (current_node, 0, {'nodes': block_nodes, 'ways': block_ways})
-                            ]
+            for way in self.intersection_nodes[key][1]:
+                index = way["nodes"].index(key)
+                node_count = len(way["nodes"])
 
-                        if current_node in blocks:
-                            blocks[current_node].append((block_nodes[0], 0, None))
-                        else:
-                            blocks[current_node] = [(block_nodes[0], 0, None)]
+                # If we're not at the end, look forwards
+                if index < node_count - 1:
+                    node_count = self.search(
+                        explored_direction_nodes,
+                        index,
+                        key,
+                        node_count,
+                        way,
+                        to_explore=way["nodes"][index + 1],
+                    )
 
-                        if current_node in explored_space:
-                            explored_space[current_node].append(block_nodes)
-                        else:
-                            explored_space[current_node] = [block_nodes]
-                        end_found = True
+                # Similarly, if we're not at the start, look backwards
+                if index > 0:
+                    self.search(
+                        explored_direction_nodes,
+                        index,
+                        key,
+                        node_count,
+                        way,
+                        to_explore=way["nodes"][index - 1],
+                        forwards=False,
+                    )
+
+    def try_advance(
+        self,
+        current_node: NodeId,
+        current_way: Way,
+        block_ways: list[BlockWay],
+    ):
+        # If we haven't grouped it, disregard it
+        if current_node not in self.grouped_response:
+            return None
+
+        # Otherwise, take the neighbors
+        other_ways = [
+            x
+            for x in self.grouped_response[current_node][1]
+            if x["id"] != current_way["id"]
+        ]
+
+        if len(other_ways) <= 0:
+            return None
+
+        # If we have any neighbors, advance to it
+        current_way = other_ways[0]
+        block_ways.append((current_way["id"], current_way["tags"]))
+
+        return current_way, len(current_way["nodes"])
+
+    def search(
+        self,
+        explored_direction_nodes: Optional[list[NodeId]],
+        index: int,
+        node: NodeId,
+        node_count: int,
+        way: Way,
+        to_explore: NodeId,
+        forwards=True,
+    ) -> int:
+        if (
+            explored_direction_nodes is not None
+            and to_explore in explored_direction_nodes
+        ):
+            return node_count
+
+        block_nodes: list[NodeId] = [node]
+        block_ways: list[BlockWay] = [(way["id"], way["tags"])]
+
+        end_found = False
+        flipped = False
+        index_modifier = 1 if forwards else -1
+
+        while not end_found:
+            index += index_modifier * (1 if not flipped else -1)
+
+            if index >= node_count or index < 0:
+                if (res := self.try_advance(node, way, block_ways)) is None:
+                    break
+
+                (way, node_count) = res
+
+                flipped = way["nodes"][0] != node
+                index = way["nodes"].index(node) if flipped else 1
+
+                if not forwards:
+                    flipped = not flipped
+
+            node = way["nodes"][index]
+            block_nodes.append(node)
+            end_found = self.try_save_block(
+                block_nodes,
+                block_ways,
+                node,
+            )
+
+        return node_count
+
+    def try_save_block(
+        self,
+        block_nodes: list[NodeId],
+        block_ways: list[BlockWay],
+        current_node: NodeId,
+    ) -> bool:
+        if current_node not in self.intersection_nodes:
+            return False
+
+        similar_blocks = len(
+            [x[0] for x in self.blocks[block_nodes[0]] if x[0] == current_node]
+        )
+
+        self.blocks[block_nodes[0]].append(
+            (
+                current_node,
+                similar_blocks,
+                {"nodes": block_nodes, "ways": block_ways},
+            )
+        )
+
+        self.blocks[current_node].append((block_nodes[0], 0, None))
+        self.explored_space[current_node].append(block_nodes)
+
+        return True
 
 
-# # Print the JSON to the console in a readable way
-# pp.pprint(blocks)
+def main() -> None:
+    response: Model = json.load(open(overpass_file))
 
-json.dump(blocks, open(block_output_file, 'w', encoding='utf-8'), indent=4)
+    p = Preprocessor.from_response(response)
+
+    p.bidirectional_search()
+
+    json.dump(p.blocks, open(block_output_file, "w", encoding="utf-8"), indent=4)
+
+
+if __name__ == "__main__":
+    main()

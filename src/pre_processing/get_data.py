@@ -28,8 +28,30 @@ api = overpass.API(endpoint='https://overpass-api.de/api/interpreter')
 # Fetch all ways and nodes in designated area
 response = api.get(
     f'''
-    [out:json][timeout:600];
-    way( 40.5147085, -80.2215597, 40.6199697, -80.0632736)
+        [out:json][timeout:600];
+        way( 40.5147085, -80.2215597, 40.6199697, -80.0632736)
+          ['name']
+          ['highway']
+          ['highway' != 'path']
+          ['highway' != 'steps']
+          ['highway' != 'motorway']
+          ['highway' != 'motorway_link']
+          ['highway' != 'raceway']
+          ['highway' != 'bridleway']
+          ['highway' != 'proposed']
+          ['highway' != 'construction']
+          ['highway' != 'elevator']
+          ['highway' != 'bus_guideway']
+          ['highway' != 'footway']
+          ['highway' != 'cycleway']
+          ['foot' != 'no']
+          ['access' != 'no'];
+        node(w);
+        foreach
+        {{
+        (
+        ._;
+        way(bn)
         ['name']
         ['highway']
         ['highway' != 'path']
@@ -46,32 +68,9 @@ response = api.get(
         ['highway' != 'cycleway']
         ['foot' != 'no']
         ['access' != 'no'];
-    node(w);
-    foreach
-    {{
-        way(bn)
-            ['name']
-            ['highway']
-            ['highway' != 'path']
-            ['highway' != 'steps']
-            ['highway' != 'motorway']
-            ['highway' != 'motorway_link']
-            ['highway' != 'raceway']
-            ['highway' != 'bridleway']
-            ['highway' != 'proposed']
-            ['highway' != 'construction']
-            ['highway' != 'elevator']
-            ['highway' != 'bus_guideway']
-            ['highway' != 'footway']
-            ['highway' != 'cycleway']
-            ['foot' != 'no']
-            ['access' != 'no']->.a;
-        (
-            node(w.a);
-            .a;
         );
         out;
-    }}
+        }}
     ''',
     build=False,
 )
