@@ -26,6 +26,7 @@ from src.config import (
     Block,
     street_suffixes_file,
     address_pts_file,
+    house_id_to_block_id_file,
     block_output_file,
     blocks_file,
     blocks_file_t,
@@ -85,6 +86,7 @@ street_suffixes: dict[str, str] = json.load(open(street_suffixes_file))
 # Map segment IDs to a dict containting the addresses and node IDs
 segments_by_id: blocks_file_t = {}
 addresses_to_id: addresses_file_t = {}
+house_id_to_block_id: dict[str, str] = {}
 
 
 @dataclass
@@ -521,6 +523,7 @@ with tqdm(
             distance_to_end += distance_along_path(all_points[min(sub_nodes) + 1:])
 
             output_house = HouseInfo(
+                display_address=item["full_address"],
                 lat=house_pt["lat"],
                 lon=house_pt["lon"],
                 distance_to_start=round(distance_to_start),
@@ -552,6 +555,8 @@ with tqdm(
             segments_by_id[str(best_segment.id)]["addresses"][
                 str(house_uuid)
             ] = output_house
+
+            house_id_to_block_id[str(house_uuid)] = str(best_segment.id)
 
         else:
             num_failed_houses += 1
@@ -588,5 +593,7 @@ json.dump(segments_by_id, open(blocks_file, "w"), indent=4)
 
 with open(addresses_file, "w") as outfile:
     outfile.write(jsonpickle.encode(addresses_to_id, keys=True))
+
+json.dump(house_id_to_block_id, open(house_id_to_block_id_file, "w"))
 
 display_blocks(segments_by_id).save(os.path.join(BASE_DIR, "viz", "segments.html"))

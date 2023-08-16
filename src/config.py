@@ -45,6 +45,8 @@ overpass_file = os.path.join(BASE_DIR, "regions", AREA_ID, "input", "overpass.js
 # Map addresses to block IDs
 addresses_file = os.path.join(BASE_DIR, "regions", AREA_ID, "addresses.json")
 
+house_id_to_block_id_file = os.path.join(BASE_DIR, "regions", AREA_ID, "house_id_to_block_id.json")
+
 universe_association = os.path.join(
     BASE_DIR, "regions", AREA_ID, "universe_association.json"
 )
@@ -152,6 +154,7 @@ NUM_LISTS = 1
 
 
 class HouseInfo(TypedDict):
+    display_address: str  # VERY IMPORTANT!!! NEVER USE THIS TO INDEX INTO HOUSES, USE HOUSE UUID INSTEAD
     lat: float
     lon: float
     distance_to_start: int

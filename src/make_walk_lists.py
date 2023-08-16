@@ -105,8 +105,13 @@ if len(argv) == 2:
                 }
 
     print("Failed on {} of {} houses".format(associater.failed_houses, total_houses))
+    with open("need_manual_match.json", "w") as manual_match_file:
+        json.dump(associater.need_manual_review, manual_match_file)
 else:
     requested_blocks: blocks_file_t = json.load(open(blocks_file))
+
+exit()
+
 
 # After this point, the original blocks variable should never be used, so delete it
 all_blocks.clear()
