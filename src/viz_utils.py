@@ -11,7 +11,6 @@ from typing import Optional
 import folium
 import humanhash
 import matplotlib
-import matplotlib.cm as cm
 from folium.features import DivIcon
 from termcolor import colored
 from tqdm import tqdm
@@ -20,6 +19,7 @@ from src.config import (
     BASE_DIR,
     DEPOT,
     USE_COST_METRIC,
+    NodeType,
     Point,
     address_pts_file,
     blocks_file,
@@ -35,18 +35,11 @@ def generate_starter_map(
 ) -> folium.Map:
     # Store all the latitudes and longitudes
     if lats is None and lons is None and blocks is not None:
-        for (key, value) in blocks.items():
-            if len(value["nodes"]) < 1:
-                print(key, value)
-        try:
-            lats = list(
-                itertools.chain.from_iterable(
-                    (i["nodes"][0]["lat"], i["nodes"][-1]["lat"]) for i in blocks.values()
-                )
+        lats = list(
+            itertools.chain.from_iterable(
+                (i["nodes"][0]["lat"], i["nodes"][-1]["lat"]) for i in blocks.values()
             )
-        except:
-            print("wtf")
-
+        )
         lons = list(
             itertools.chain.from_iterable(
                 (i["nodes"][0]["lon"], i["nodes"][-1]["lon"]) for i in blocks.values()
@@ -72,10 +65,10 @@ def generate_starter_map(
 class ColorMap:
     def __init__(self, min: float, max: float, cmap: str = "hsv"):
         self.norm = matplotlib.colors.Normalize(vmin=min, vmax=max)
-        self.cmap = cm.get_cmap(cmap)
+        self.cmap = matplotlib.colormaps[cmap]
 
     def get(self, value: float) -> str:
-        """Get the hex code as a string from the value"""
+        """Get the hex code as a string from the value."""
         return matplotlib.colors.rgb2hex(self.cmap(self.norm(value))[:3])
 
     def get_reverse(self, value: float) -> str:
@@ -84,9 +77,7 @@ class ColorMap:
         return matplotlib.colors.rgb2hex((1 - rgb[0], 1 - rgb[1], 1 - rgb[2]))
 
 
-def display_blocks(
-    blocks: blocks_file_t, track_added: bool = False
-) -> folium.Map | tuple[folium.Map, set[tuple[float, float]]]:
+def display_blocks(blocks: blocks_file_t) -> tuple[folium.Map, set[tuple[float, float]]]:
     # Seed the hash consistently for better visualization
     os.environ["PYTHONHASHSEED"] = "0"
 
@@ -95,6 +86,7 @@ def display_blocks(
 
     num_houses_per_block = [len(b["addresses"]) for b in blocks.values()]
     min_houses, max_houses = min(num_houses_per_block), max(num_houses_per_block)
+    num_duplicate_coords = 0
 
     added_houses: set[tuple[float, float]] = set()
 
@@ -112,36 +104,42 @@ def display_blocks(
             tooltip=word,
         ).add_to(m)
 
-        for address, house in block["addresses"].items():
-            lat = float(Decimal(house["lat"]).quantize(Decimal("0.00001")))
-            lon = float(Decimal(house["lon"]).quantize(Decimal("0.00001")))
+        for house_info in block["addresses"].values():
+            lat = float(Decimal(house_info["lat"]).quantize(Decimal("0.000001")))
+            lon = float(Decimal(house_info["lon"]).quantize(Decimal("0.000001")))
+
             if (lat, lon) in added_houses:
-                print(colored("Duplicate house found: {}".format((lat, lon)), "red"))
+                num_duplicate_coords += 1
             else:
                 added_houses.add((lat, lon))
 
             folium.Circle(
-                [house["lat"], house["lon"]],
+                [house_info["lat"], house_info["lon"]],
                 weight=10,
                 color=cmap.get(index),
                 opacity=1.0,
                 radius=1,
-                tooltip="{}: {}".format(address, word),
+                tooltip="{}: {}".format(house_info["display_address"], word),
             ).add_to(m)
 
-    return m if not track_added else (m, added_houses)
+    print(colored("Of {} addresses, {} were duplicates (too close to render both).".format(
+        sum(num_houses_per_block), num_duplicate_coords
+    ), "yellow"))
+    print('This is likely fine, since storefronts or other close buildings may be in the same location. Debug if necessary.')
+
+    return m, added_houses
 
 
 def display_blocks_and_unassociated(
     blocks: blocks_file_t, all_houses: list[Point]
 ) -> folium.Map:
     # Get the map with all the blocks
-    m, added_pts = display_blocks(blocks, track_added=True)
+    m, added_pts = display_blocks(blocks)
 
     # Read the universe file and find the unassociated houses
     for pt in all_houses:
-        lat = float(Decimal(pt["lat"]).quantize(Decimal("0.00001")))
-        lon = float(Decimal(pt["lon"]).quantize(Decimal("0.00001")))
+        lat = float(Decimal(pt["lat"]).quantize(Decimal("0.000001")))
+        lon = float(Decimal(pt["lon"]).quantize(Decimal("0.000001")))
         if (lat, lon) not in added_pts:
             folium.Marker(
                 location=[pt["lat"], pt["lon"]],
@@ -395,7 +393,6 @@ def display_walk_lists(walk_lists: list[list[SubBlock]]) -> folium.Map:
 
 if __name__ == "__main__":
     # Load the file (unorganized) containing house coordinates (and info)
-    print("Loading coordinates of houses...")
     house_points_file = open(address_pts_file)
     num_houses = -1
     for _ in house_points_file:
@@ -411,15 +408,16 @@ if __name__ == "__main__":
     )
 
     all_houses: list[Point] = []
-    for row in tqdm(house_points_reader, total=num_houses):
+    for row in tqdm(house_points_reader, total=num_houses, colour="green", desc="Loading houses"):
         lat, lon = float(row["latitude"]), float(row["longitude"])
         if lat < min_lat or lat > max_lat or lon < min_lon or lon > max_lon:
             continue
         all_houses.append(
             Point(
-                lat=float(Decimal(lat).quantize(Decimal("0.00001"))),
-                lon=float(Decimal(lon).quantize(Decimal("0.00001"))),
+                lat=float(Decimal(lat).quantize(Decimal("0.000001"))),
+                lon=float(Decimal(lon).quantize(Decimal("0.000001"))),
                 id=row["full_address"],
+                type=NodeType.house
             )
         )
 

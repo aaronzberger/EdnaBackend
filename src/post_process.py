@@ -4,15 +4,17 @@ from copy import deepcopy
 from random import randint
 
 import names
+from termcolor import colored
 
 from src.config import (
     HousePeople,
+    NodeType,
     Person,
     Point,
     Tour,
     blocks_file,
     blocks_file_t,
-    addresses_file,
+    house_id_to_block_id_file,
     pt_id,
 )
 from src.distances.mix import MixDistances
@@ -24,7 +26,10 @@ from src.route import RouteMaker
 class PostProcess:
     def __init__(self, blocks: blocks_file_t, points: list[Point]):
         self._all_blocks: blocks_file_t = json.load(open(blocks_file))
-        self.address_to_segment_id: houses_file_t = json.load(open(addresses_file))
+        self.house_id_to_block_id: dict[str, str] = json.load(
+            open(house_id_to_block_id_file)
+        )
+        # self.address_to_segment_id: houses_file_t = json.load(open(addresses_file))
 
         self.blocks = blocks
         self.points = points
@@ -44,7 +49,7 @@ class PostProcess:
             Point: the exit point of this segment, which is either the start or endpoint of final_house's segment
         """
         # Determine the exit direction, which will either be the start or end of the segment
-        origin_block_id = self.address_to_segment_id[final_house["id"]]
+        origin_block_id = self.house_id_to_block_id[final_house["id"]]
         origin_block = self.blocks[origin_block_id]
 
         through_end = self.blocks[origin_block_id]["addresses"][final_house["id"]][
@@ -85,7 +90,7 @@ class PostProcess:
             Point: the entrance point of the next segment, which is either the start or endpoint of next_house's segment
         """
         # Determine the exit direction, which will either be the start or end of the segment
-        destination_block_id = self.address_to_segment_id[next_house["id"]]
+        destination_block_id = self.house_id_to_block_id[next_house["id"]]
         destination_block = self.blocks[destination_block_id]
 
         through_end = self.blocks[destination_block_id]["addresses"][next_house["id"]][
@@ -195,7 +200,12 @@ class PostProcess:
                 if i["subsegment"] == last_subsegment
             ]
             closest_to_end = max(houses_on_last, key=lambda d: d["distance_to_start"])
-            closest_to_end = Point(lat=closest_to_end["lat"], lon=closest_to_end["lon"])  # type: ignore
+            closest_to_end = Point(
+                lat=closest_to_end["lat"],
+                lon=closest_to_end["lon"],
+                type=NodeType.house,
+                id=closest_to_end["display_address"],
+            )
 
             # Project that house onto the segment
             end_extremum = project_to_line(
@@ -226,7 +236,12 @@ class PostProcess:
             closest_to_start = min(
                 houses_on_first, key=lambda d: d["distance_to_start"]
             )
-            closest_to_start = Point(lat=closest_to_start["lat"], lon=closest_to_start["lon"])  # type: ignore
+            closest_to_start = Point(
+                lat=closest_to_start["lat"],
+                lon=closest_to_start["lon"],
+                type=NodeType.house,
+                id=closest_to_start["display_address"],
+            )
 
             # Project that house onto the segment
             start_extremum = project_to_line(
@@ -241,6 +256,9 @@ class PostProcess:
                 + [start_extremum]
                 + list(reversed(block["nodes"][first_subsegment[1] :]))
             )
+
+        else:
+            print(colored('Error: "entrance" and "exit" were not valid for this block', "red"))
         # endregion
 
         # region: Order the houses
@@ -403,15 +421,7 @@ class PostProcess:
         )
 
         if pt_id(entrance) == pt_id(exit):
-            print("------------")
-            print("Splitting subblock", sub_block.navigation_points, flush=True)
             new_dual = self._split_sub_block(sub_block, entrance, exit)
-            print(
-                "New dual",
-                new_dual[0].navigation_points,
-                new_dual[1].navigation_points,
-                flush=True,
-            )
             return new_dual
 
         return sub_block
@@ -449,10 +459,16 @@ class PostProcess:
                     block = self._all_blocks[block_id]
 
                     start = Point(
-                        lat=block["nodes"][0]["lat"], lon=block["nodes"][0]["lon"]
+                        lat=block["nodes"][0]["lat"],
+                        lon=block["nodes"][0]["lon"],
+                        type=NodeType.node,
+                        id=block["nodes"][0]["id"],
                     )
                     end = Point(
-                        lat=block["nodes"][-1]["lat"], lon=block["nodes"][-1]["lon"]
+                        lat=block["nodes"][-1]["lat"],
+                        lon=block["nodes"][-1]["lon"],
+                        type=NodeType.node,
+                        id=block["nodes"][-1]["id"],
                     )
 
                     reverse = pt_id(start) != pt_id(running_node)
@@ -658,7 +674,10 @@ class PostProcess:
         # Iterate through the solution and add subsegments
         walk_list: list[SubBlock] = []
 
-        tour_stops = [self.points[h["location"]["index"]] for h in tour["stops"]]
+        # From the index of each stop, get the points for those stops
+        tour_stops: list[Point] = [
+            self.points[h["location"]["index"]] for h in tour["stops"]
+        ]
         depot, houses = tour_stops[0], tour_stops[1:-1]
         self.depot = depot
 
@@ -666,11 +685,11 @@ class PostProcess:
 
         # Take the side closest to the first house (likely where a canvasser would park)
         running_intersection = depot
-        running_block_id = self.address_to_segment_id[houses[0]["id"]]
+        running_block_id = self.house_id_to_block_id[houses[0]["id"]]
 
         # Process the list
         for house, next_house in itertools.pairwise(houses):
-            next_block_id = self.address_to_segment_id[next_house["id"]]
+            next_block_id = self.house_id_to_block_id[next_house["id"]]
             current_sub_block_points.append(house)
 
             if next_block_id != running_block_id:

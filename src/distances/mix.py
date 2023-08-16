@@ -6,15 +6,13 @@ from typing import Optional
 from termcolor import colored
 
 from src.config import (
+    NodeType,
     Point,
     blocks_file,
     blocks_file_t,
-    addresses_file,
+    house_id_to_block_id_file,
     pt_id,
-    USE_COST_METRIC,
 )
-
-from src.address import addresses_file_t
 
 from src.distances.houses import HouseDistances
 from src.distances.nodes import NodeDistances
@@ -25,33 +23,35 @@ class MixDistances:
     @classmethod
     def __init__(cls):
         cls.blocks: blocks_file_t = json.load(open(blocks_file))
-        cls.address_to_block_id: addresses_file_t = json.load(open(addresses_file))
+        cls.house_id_to_block_id: dict[str, str] = json.load(open(house_id_to_block_id_file))
 
     @classmethod
     def get_distance_through_ends(
         cls, node: Point, house: Point
     ) -> tuple[float, float]:
         """
-        Determine the distances from an intersection point to a house through the two ends of the house's segments
+        Determine the distances from an intersection point to a house through the two ends of the house's segments.
 
-        Parameters:
+        Parameters
+        ----------
             node (Point): an intersection point
             house (Point): a house point
 
-        Returns:
+        Returns
+        -------
             float: the distance from the intersection to the house through the start of the segment
             float: the distance from the intersection to the house through the end of the segment
         """
-        block_id = cls.address_to_block_id[pt_id(house)]
-        block_start = Point(lat=cls.blocks[block_id]["nodes"][0]["lat"], lon=cls.blocks[block_id]["nodes"][0]["lon"], type="node")  # type: ignore
+        block_id = cls.house_id_to_block_id[house["id"]]
+        block_start = Point(lat=cls.blocks[block_id]["nodes"][0]["lat"], lon=cls.blocks[block_id]["nodes"][0]["lon"], type=NodeType.node, id="block_start")
         through_start = NodeDistances.get_distance(node, block_start)
         through_start = through_start if through_start is not None else 1600
         through_start += cls.blocks[block_id]["addresses"][pt_id(house)][
             "distance_to_start"
         ]
 
-        segment_end = Point(lat=cls.blocks[block_id]["nodes"][-1]["lat"], lon=cls.blocks[block_id]["nodes"][-1]["lon"], type="node")  # type: ignore
-        through_end = NodeDistances.get_distance(node, segment_end)
+        block_end = Point(lat=cls.blocks[block_id]["nodes"][-1]["lat"], lon=cls.blocks[block_id]["nodes"][-1]["lon"], type=NodeType.node, id="block_end")
+        through_end = NodeDistances.get_distance(node, block_end)
         through_end = through_end if through_end is not None else 1600
         through_end += cls.blocks[block_id]["addresses"][pt_id(house)][
             "distance_to_end"

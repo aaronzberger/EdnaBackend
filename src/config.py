@@ -1,10 +1,8 @@
-from collections import namedtuple
 import os
-import sys
-from datetime import timedelta
-from typing import Any, Literal, NamedTuple, TypedDict
-from dataclasses import dataclass
 import uuid
+from datetime import timedelta
+from enum import Enum
+from typing import Any, TypedDict
 
 "----------------------------------------------------------------------------------"
 "                                     File Paths                                   "
@@ -45,7 +43,9 @@ overpass_file = os.path.join(BASE_DIR, "regions", AREA_ID, "input", "overpass.js
 # Map addresses to block IDs
 addresses_file = os.path.join(BASE_DIR, "regions", AREA_ID, "addresses.json")
 
-house_id_to_block_id_file = os.path.join(BASE_DIR, "regions", AREA_ID, "house_id_to_block_id.json")
+house_id_to_block_id_file = os.path.join(
+    BASE_DIR, "regions", AREA_ID, "house_id_to_block_id.json"
+)
 
 universe_association = os.path.join(
     BASE_DIR, "regions", AREA_ID, "universe_association.json"
@@ -118,22 +118,27 @@ ROAD_WIDTH = {
 # wrap these attributes in the 'typing.NotRequired' hint to eliminate errors on instance creation.
 # On earlier versions, either suppress or ignore these errors: they do not affect json export or reading.
 
+# Define the Nodetypes as an enum
+NodeType = Enum("NodeType", ["house", "node", "other"])
+
 
 class Point(TypedDict):
     lat: float
     lon: float
-    type: Literal["house", "node", "other"] | None
-    id: str | None
+    type: NodeType
+    id: str
 
 
 def pt_id(p: Point) -> str:
     """
-    Get the ID of a point
+    Get the ID of a point.
 
-    Parameters:
+    Parameters
+    ----------
         p (Point): the point
 
-    Returns:
+    Returns
+    -------
         str: the ID, if it was provided upon creation. Otherwise, an ID made up of the rounded coordinates
     """
     return (
@@ -146,10 +151,13 @@ def pt_id(p: Point) -> str:
 house_t = dict[str, Point]
 node_list_t = list[Point]
 
+# DEPOT = Point(lat=40.5397171, lon=-80.1763386, type="node", id=None)  # Sewickley
 # DEPOT = Point(lat=40.4471477, lon=-79.9311578, type='node')  # Kipling and Dunmoyle
 # DEPOT = Point(lat=40.4310603, lon=-79.9191268, type='node')  # Shady and Nicholson
 # DEPOT = Point(lat=40.4430899, lon=-79.9329246, type='node')  # Maynard and Bennington
-DEPOT = Point(lat=40.4362340, lon=-79.9191103, type="node", id=None)
+DEPOT = Point(
+    lat=40.4362340, lon=-79.9191103, type=NodeType.node, id=""
+)  # Forbes and Shady
 NUM_LISTS = 1
 
 
@@ -167,7 +175,6 @@ class HouseInfo(TypedDict):
 class Block(TypedDict):
     addresses: dict[str, HouseInfo]
     nodes: node_list_t
-    bearings: tuple[float, float]  # The bearings at the start and end of the block
     type: str
 
 

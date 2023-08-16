@@ -1,5 +1,5 @@
 """
-Associate houses with blocks. Take in block_output.json and generate blocks.json and houses.json
+Associate houses with blocks. Take in block_output.json and generate blocks.json and houses.json.
 """
 
 # TODO: See Covode Pl and Wendover Pl (both have same-named streets, to which all the houses on pl have been wrongly assigned)
@@ -22,6 +22,7 @@ from src.config import (
     BASE_DIR,
     UUID_NAMESPACE,
     HouseInfo,
+    NodeType,
     Point,
     Block,
     street_suffixes_file,
@@ -70,7 +71,7 @@ node_coords: dict[str, Point] = json.load(open(node_coords_file))
 print("Loading coordinates of houses...")
 house_points_file = open(address_pts_file)
 num_houses = -1
-for line in house_points_file:
+for _ in house_points_file:
     num_houses += 1
 house_points_file.seek(0)
 house_points_reader = csv.DictReader(house_points_file)
@@ -91,7 +92,7 @@ house_id_to_block_id: dict[str, str] = {}
 
 @dataclass
 class Segment:
-    """Define an alternate Block with more geographic information"""
+    """Define an alternate Block with more geographic information."""
 
     sub_node_1: Point
     sub_node_2: Point
@@ -103,19 +104,21 @@ class Segment:
 
 def distance_along_path(path: node_list_t) -> float:
     """
-    Find the distance through a list of Points
+    Find the distance through a list of Points.
 
-    Parameters:
+    Parameters
+    ----------
         path (node_list_t): the navigation path to follow
 
-    Returns:
+    Returns
+    -------
         float: the distance through the path
     """
     distance = 0
     for first, second in itertools.pairwise(path):
         distance += great_circle_distance(
-            Point(lat=first["lat"], lon=first["lon"], type=None, id=None),
-            Point(lat=second["lat"], lon=second["lon"], type=None, id=None),
+            Point(lat=first["lat"], lon=first["lon"], type=NodeType.other, id='first'),
+            Point(lat=second["lat"], lon=second["lon"], type=NodeType.other, id='second')
         )  # type: ignore
     return distance
 
@@ -130,14 +133,14 @@ min_lat, min_lon, max_lat, max_lon = (
     -80.0632736,
 )
 
-origin = Point(lat=min_lat, lon=min_lon, type=None, id=None)
+origin = Point(lat=min_lat, lon=min_lon, type=NodeType.other, id='origin')
 
 # Calculate the number of chunks in each direction
 lat_distance = great_circle_distance(
-    origin, Point(lat=max_lat, lon=min_lon, type=None, id=None)
+    origin, Point(lat=max_lat, lon=min_lon, type=NodeType.other, id='max_lat')
 )
 lon_distance = great_circle_distance(
-    origin, Point(lat=min_lat, lon=max_lon, type=None, id=None)
+    origin, Point(lat=min_lat, lon=max_lon, type=NodeType.other, id='max_lon')
 )
 
 num_lat_chunks = int(math.ceil(lat_distance / CHUNK_SIZE))
@@ -152,10 +155,10 @@ block_matrix: list[list[list[str]]] = [
 # Get matrix indices for a given node
 def get_matrix_index(node: Point, origin: Point, chunk_size: float) -> tuple[int, int]:
     lat_distance = great_circle_distance(
-        Point(lat=origin["lat"], lon=node["lon"], type=None, id=None), node
+        Point(lat=origin["lat"], lon=node["lon"], type=NodeType.other, id=''), node
     )
     lon_distance = great_circle_distance(
-        Point(lat=node["lat"], lon=origin["lon"], type=None, id=None), node
+        Point(lat=node["lat"], lon=origin["lon"], type=NodeType.other, id=''), node
     )
     return int(lat_distance // chunk_size), int(lon_distance // chunk_size)
 
@@ -174,7 +177,6 @@ with tqdm(
             if block[2] is None:
                 continue
             segment_id = str(start_node) + ":" + str(block[0]) + ":" + str(block[1])
-
 
             # Create the list of sub-segments in this block
             all_node_ids = [str(i) for i in block[2]["nodes"]]
@@ -258,14 +260,16 @@ def keys_with_value(d: dict[str, list[str]], target: str) -> list[str]:
 def address_match_score(s1: str, s2: str, threshold=90, score_cutoff=0.0):
     # TODO: add heuristic to match w/o last word being truncated
     """
-    Computes a custom score based on the Jaro distance between words in the two strings.
+    Compute a custom score based on the Jaro distance between words in the two strings.
 
-    Args:
-    - s1, s2: The two strings to compare.
-    - threshold: The minimum allowed Jaro score for two words to be considered a match.
-    - score_cutoff: The minimum overall score for the function to return a non-zero result.
+    Parameters
+    ----------
+        s1, s2: The two strings to compare.
+        threshold: The minimum allowed Jaro score for two words to be considered a match.
+        score_cutoff: The minimum overall score for the function to return a non-zero result.
 
-    Returns:
+    Returns
+    -------
     - A score representing the ratio of matched words to the total number of words.
       Returns 0.0 immediately if the computed score is below score_cutoff.
     """
@@ -441,7 +445,7 @@ with tqdm(
         for segment_id in filtered_segment_ids:
             if sanitized_street_name in block_to_street_names[segment_id]:
                 if DEBUG:
-                    print(f"Found exact match for street name", file=buffer)
+                    print("Found exact match for street name", file=buffer)
                 closest_block = segments_by_id[segment_id]
                 best_segment = search_for_best_subsegment(
                     closest_block, segment_id, best_segment, house_pt
@@ -512,9 +516,8 @@ with tqdm(
             distances = along_track_distance(
                 p1=house_pt,
                 p2=Point(
-                    lat=sub_start["lat"], lon=sub_start["lon"], type=None, id=None
-                ),
-                p3=Point(lat=sub_end["lat"], lon=sub_end["lon"], type=None, id=None),
+                    lat=sub_start["lat"], lon=sub_start["lon"], type=NodeType.node, id=''),
+                p3=Point(lat=sub_end["lat"], lon=sub_end["lon"], type=NodeType.node, id=''),
             )
             distance_to_start += distances[0]
             distance_to_end += distances[1]
@@ -535,7 +538,8 @@ with tqdm(
 
             # TODO: resolve best_segment type issues, these casts should not be needed
 
-            # address_pts: addr_num_prefix,addr_num,addr_num_suffix,st_premodifier,st_prefix,st_pretype,st_name,st_type,st_postmodifier,unit_type,unit,floor,municipality,county,state,zip_code
+            # address_pts: addr_num_prefix,addr_num,addr_num_suffix,st_premodifier,st_prefix,st_pretype,st_name,st_type,st_postmodifier,
+            # unit_type,unit,floor,municipality,county,state,zip_code
             # as far as I can tell, there is never any data in addr_num_prefix
             formatted_address: Address = Address(
                 item["addr_num"],
@@ -570,7 +574,7 @@ with tqdm(
                         file=buffer,
                     )
                 else:
-                    print(f"street name did not find any matches", file=buffer)
+                    print("street name did not find any matches", file=buffer)
                 print(f"Best segment: {best_segment}", file=buffer)
                 if best_segment is not None:
                     print(f"Best segment CTD: {best_segment.ctd}", file=buffer)
@@ -596,4 +600,4 @@ with open(addresses_file, "w") as outfile:
 
 json.dump(house_id_to_block_id, open(house_id_to_block_id_file, "w"))
 
-display_blocks(segments_by_id).save(os.path.join(BASE_DIR, "viz", "segments.html"))
+display_blocks(segments_by_id)[0].save(os.path.join(BASE_DIR, "viz", "segments.html"))

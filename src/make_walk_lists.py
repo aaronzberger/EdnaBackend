@@ -14,6 +14,7 @@ from sklearn.cluster import DBSCAN
 from termcolor import colored
 
 from gps_utils import SubBlock
+from src.address import Address
 from src.associate import Associater
 from src.config import (
     BASE_DIR,
@@ -21,12 +22,12 @@ from src.config import (
     KEEP_APARTMENTS,
     NUM_LISTS,
     TURF_SPLIT,
+    NodeType,
     Point,
     blocks_file,
     blocks_file_t,
     pt_id,
 )
-
 from src.distances.blocks import BlockDistances
 from src.distances.houses import HouseDistances
 from src.distances.mix import MixDistances
@@ -39,10 +40,6 @@ from src.viz_utils import (
     display_individual_walk_lists,
     display_walk_lists,
 )
-
-from src.address import Address
-
-from src.walkability_scorer import score
 
 all_blocks: blocks_file_t = json.load(open(blocks_file))
 
@@ -110,15 +107,13 @@ if len(argv) == 2:
 else:
     requested_blocks: blocks_file_t = json.load(open(blocks_file))
 
-exit()
-
 
 # After this point, the original blocks variable should never be used, so delete it
 all_blocks.clear()
 del all_blocks
 # endregion
 
-display_blocks(requested_blocks).save(os.path.join(BASE_DIR, "viz", "segments.html"))
+display_blocks(requested_blocks)[0].save(os.path.join(BASE_DIR, "viz", "segments.html"))
 
 # Generate node distance matrix
 NodeDistances(requested_blocks)
@@ -138,7 +133,7 @@ MixDistances()
 # Cluster blocks using kmedoids
 distance_matrix = BlockDistances.get_distance_matrix()
 db = DBSCAN(metric="precomputed", eps=400, min_samples=10).fit(distance_matrix)
-labels: list[int] = db.labels_
+labels: list[int] = db.labels_  # type: ignore
 
 # Expand labels into a list of block groups
 clustered_blocks: list[blocks_file_t] = [
@@ -158,12 +153,12 @@ def cluster_to_houses(cluster: blocks_file_t) -> list[Point]:
     for block in cluster.values():
         # Duplicate addresses from apartments may occur. For now, only insert once
 
-        for address, house_data in block["addresses"].items():
+        for house_id, house_data in block["addresses"].items():
             # TODO: Move this conditional outward so we can get rid of this whole method
-            if not KEEP_APARTMENTS and " APT " in address:
+            if not KEEP_APARTMENTS and " APT " in house_data["display_address"]:
                 continue
 
-            if "3245 BEECHWOOD BLVD" in address:
+            if "3245 BEECHWOOD BLVD" in house_data["display_address"]:
                 # This is the only address where there are multiple houses on multiple blocks
                 continue
 
@@ -172,8 +167,8 @@ def cluster_to_houses(cluster: blocks_file_t) -> list[Point]:
                 Point(
                     lat=house_data["lat"],
                     lon=house_data["lon"],
-                    id=address,
-                    type="house",
+                    id=house_id,
+                    type=NodeType.house,
                 )
             )
 
@@ -203,20 +198,28 @@ if TURF_SPLIT:
     unique_intersection_ids: set[str] = set()
     for block in area_blocks.values():
         if pt_id(block["nodes"][0]) not in unique_intersection_ids:
-            new_pt = Point(lat=block["nodes"][0]["lat"], lon=block["nodes"][0]["lon"], type="node")  # type: ignore
+            new_pt = Point(
+                lat=block["nodes"][0]["lat"],
+                lon=block["nodes"][0]["lon"],
+                type=NodeType.node,
+                id=pt_id(block["nodes"][0]),
+            )
             depot.append(new_pt)
             unique_intersection_ids.add(pt_id(new_pt))
         if pt_id(block["nodes"][-1]) not in unique_intersection_ids:
-            new_pt = Point(lat=block["nodes"][-1]["lat"], lon=block["nodes"][-1]["lon"], type="node")  # type: ignore
+            new_pt = Point(
+                lat=block["nodes"][-1]["lat"],
+                lon=block["nodes"][-1]["lon"],
+                type=NodeType.node,
+                id=pt_id(block["nodes"][-1]),
+            )
             depot.append(new_pt)
             unique_intersection_ids.add(pt_id(new_pt))
 
     # Generate the house distance matrix
     HouseDistances(area_blocks)
 else:
-    # depot = Point(lat=40.4409128, lon=-79.9277741, type='node')  # type: ignore
-    depot = Point(lat=40.5397171, lon=-80.1763386, type="node", id=None)  # Sewickley
-    # depot = DEPOT
+    depot = DEPOT
 
     # Generate house distance matrix, and distances to the depot
     HouseDistances(area_blocks, depot)
@@ -271,24 +274,4 @@ for i in range(len(walk_lists)):
         walk_lists[i], os.path.join(BASE_DIR, "viz", "files", f"{i}.json")
     )
 
-# Print the scores for the walk lists
-scores = []
-for walk_list in walk_lists:
-    scores.append(score(walk_list))
-
-items = [
-    str(i["num_houses"])
-    + ","
-    + str(i["distance"])
-    + ","
-    + str(i["road_crossings"]["tertiary"])
-    + ","
-    + str(i["road_crossings"]["secondary"])
-    + ","
-    + str(i["road_crossings"]["residential"])
-    for i in scores
-]
-
-for item in items:
-    print(item)
 # endregion

@@ -16,14 +16,15 @@ from src.config import (
     MINS_PER_HOUSE,
     OPTIM_COSTS,
     OPTIM_OBJECTIVES,
-    VRP_CLI_PATH,
-    WALKING_M_PER_S,
     SEARCH_MODE_DEEP,
     TIMEOUT,
+    VRP_CLI_PATH,
+    WALKING_M_PER_S,
     DistanceMatrix,
     Fleet,
     Job,
     Location,
+    NodeType,
     Place,
     PlaceTW,
     Plan,
@@ -65,7 +66,7 @@ class Optimizer:
 
         # Determine whether to run group canvas or turf split problem
         if isinstance(starting_locations, list):
-            depot = Point(lat=-1, lon=-1, type="other", id="depot")
+            depot = Point(lat=-1, lon=-1, type=NodeType.other, id="depot")
             print(
                 "There are {} houses and {} starting locations".format(
                     len(self.points), len(starting_locations)
@@ -193,7 +194,7 @@ class Optimizer:
                         # Calculate the distance between two nodes, two houses, or a house and a node
                         distance_cost = MixDistances.get_distance(pt, other_pt)
 
-                        if type(distance_cost) == tuple:
+                        if type(distance_cost) is tuple:
                             distance, cost = distance_cost
                             time = distance / WALKING_M_PER_S
                         else:
@@ -243,7 +244,7 @@ class Optimizer:
             else:
                 delivery = Service(
                     places=[
-                        Place(
+                        PlaceTW(
                             location=Location(index=i),
                             duration=round(MINS_PER_HOUSE * 60),
                             times=[full_time_window],

@@ -117,7 +117,7 @@ class Associater:
             precise_match_found = True
             matched_block_id, matched_uuid = self.addresses_to_id[address]
         else:
-            print(f"Failed to find exact match for address: {address}")
+            # print(f"Failed to find exact match for address: {address}")
 
             for choice in process.extract_iter(
                     query=address,
@@ -131,11 +131,11 @@ class Associater:
                         choice[0].zip_code == address.zip_code and
                         choice[0].house_number_suffix == address.house_number_suffix):
                     precise_match_found = True
-                    print(f"Fuzzy matched\n{address} to \n{choice[0]}")
+                    # print(f"Fuzzy matched\n{address} to \n{choice[0]}")
                     # TODO: Handle what happens if there is more than one match here
                 else:
                     choices.append((dataclasses.asdict(choice[0]), choice[1], choice[2], matched_block_id, matched_uuid))
-                    print(f"Choice for fuzzy match: {choice}")
+                    # print(f"Choice for fuzzy match: {choice}")
 
         if not precise_match_found:
             self.need_manual_review.append({"universe": dataclasses.asdict(address), "choices": choices})
