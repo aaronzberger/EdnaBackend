@@ -4,6 +4,8 @@ import itertools
 
 from math import acos, asin, cos, radians, sin
 
+from functools import cache
+
 import utm
 from geographiclib.geodesic import Geodesic
 from haversine import Unit, haversine
@@ -11,6 +13,11 @@ from haversine import Unit, haversine
 from src.config import MINS_PER_HOUSE, WALKING_M_PER_S, Block, Point
 
 converter: Geodesic = Geodesic.WGS84  # type: ignore
+
+
+@cache
+def inverse_line_cached(lat1, lon1, lat2, lon2):
+    return converter.InverseLine(lat1, lon1, lat2, lon2)
 
 
 def along_track_distance(p1: Point, p2: Point, p3: Point) -> tuple[float, float]:
@@ -36,9 +43,9 @@ def along_track_distance(p1: Point, p2: Point, p3: Point) -> tuple[float, float]
     #               ︱                          ︱                                                 ︱
     #               P1                          |                                                 P1
 
-    line_p2_p1 = converter.InverseLine(lat1=p2['lat'], lon1=p2['lon'], lat2=p1['lat'], lon2=p1['lon'])
-    line_p3_p1 = converter.InverseLine(lat1=p3['lat'], lon1=p3['lon'], lat2=p1['lat'], lon2=p1['lon'])
-    line_p2_p3 = converter.InverseLine(lat1=p2['lat'], lon1=p2['lon'], lat2=p3['lat'], lon2=p3['lon'])
+    line_p2_p1 = inverse_line_cached(lat1=p2['lat'], lon1=p2['lon'], lat2=p1['lat'], lon2=p1['lon'])
+    line_p3_p1 = inverse_line_cached(lat1=p3['lat'], lon1=p3['lon'], lat2=p1['lat'], lon2=p1['lon'])
+    line_p2_p3 = inverse_line_cached(lat1=p2['lat'], lon1=p2['lon'], lat2=p3['lat'], lon2=p3['lon'])
     earth_radius = line_p2_p3.a
 
     bearing_p1_p2 = radians(line_p2_p1.azi1)  # P1-P2 bearing
@@ -74,9 +81,9 @@ def cross_track_distance(p1: Point, p2: Point, p3: Point, debug: bool = False) -
     #               ︱ ⎦                        ︱                                               ︱ ⎦
     #               P1                          |                                               P1
 
-    line_p2_p1 = converter.InverseLine(lat1=p2['lat'], lon1=p2['lon'], lat2=p1['lat'], lon2=p1['lon'])
-    line_p3_p1 = converter.InverseLine(lat1=p3['lat'], lon1=p3['lon'], lat2=p1['lat'], lon2=p1['lon'])
-    line_p2_p3 = converter.InverseLine(lat1=p2['lat'], lon1=p2['lon'], lat2=p3['lat'], lon2=p3['lon'])
+    line_p2_p1 = inverse_line_cached(lat1=p2['lat'], lon1=p2['lon'], lat2=p1['lat'], lon2=p1['lon'])
+    line_p3_p1 = inverse_line_cached(lat1=p3['lat'], lon1=p3['lon'], lat2=p1['lat'], lon2=p1['lon'])
+    line_p2_p3 = inverse_line_cached(lat1=p2['lat'], lon1=p2['lon'], lat2=p3['lat'], lon2=p3['lon'])
     earth_radius = line_p2_p3.a
 
     bearing_p1_p2 = radians(line_p2_p1.azi1)  # P1-P2 bearing
@@ -96,16 +103,16 @@ def cross_track_distance(p1: Point, p2: Point, p3: Point, debug: bool = False) -
     if abs(ald_p2) > abs(distance_p2_p3) or abs(ald_p3) > abs(distance_p2_p3):
         if debug:
             print('Point not on line, since along track distance {:.2f} or {:.2f}'.format(
-                    ald_p2, ald_p3) +
+                ald_p2, ald_p3) +
                   ' is greater than the block distance {:.2f}'.format(
-                    distance_p2_p3))
+                      distance_p2_p3))
         return distance_p1_p2 if abs(distance_p1_p2) < abs(distance_p1_p3) else distance_p1_p3
     else:
         if debug:
             print('Point is on line, since along track distance {:.2f} and {:.2f}'.format(
-                    ald_p2, ald_p3) +
+                ald_p2, ald_p3) +
                   'are less than block distance {:.2f}'.format(
-                    distance_p2_p3))
+                      distance_p2_p3))
         return cross_track_distance
 
 
@@ -136,7 +143,7 @@ def middle(p1: Point, p2: Point) -> Point:
     '''
     path_between = converter.InverseLine(lat1=p1['lat'], lon1=p1['lon'], lat2=p2['lat'], lon2=p2['lon'])
     middle = path_between.Position(path_between.s13 / 2.0)
-    return Point(lat=middle['lat2'], lon=middle['lon2'])   # type: ignore
+    return Point(lat=middle['lat2'], lon=middle['lon2'])  # type: ignore
 
 
 def pt_to_utm(pt: Point) -> tuple[float, float, int, str]:
@@ -239,4 +246,4 @@ class SubBlock():
         self.length += great_circle_distance(self.end, self.navigation_points[-1])
 
         # TODO: Time to walk depends on walk_method and should likely be iterated through
-        self.time_to_walk = len(self.houses) * MINS_PER_HOUSE + (self.length / WALKING_M_PER_S * (1/60))
+        self.time_to_walk = len(self.houses) * MINS_PER_HOUSE + (self.length / WALKING_M_PER_S * (1 / 60))

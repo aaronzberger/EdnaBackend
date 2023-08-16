@@ -15,10 +15,12 @@ from typing import Any, Optional
 import math
 from rapidfuzz import process, fuzz
 import io
-
+import uuid
+import jsonpickle
 
 from src.config import (
     BASE_DIR,
+    UUID_NAMESPACE,
     HouseInfo,
     Point,
     Block,
@@ -27,8 +29,7 @@ from src.config import (
     block_output_file,
     blocks_file,
     blocks_file_t,
-    houses_file,
-    houses_file_t,
+    addresses_file,
     node_coords_file,
     node_list_t,
     ALD_BUFFER,
@@ -38,14 +39,16 @@ from src.gps_utils import (
     cross_track_distance,
     great_circle_distance,
 )
+
+from src.address import Address, addresses_file_t
+
 from tqdm import tqdm
 
 from src.viz_utils import display_blocks
 
 MAX_DISTANCE = 500  # meters from house to segment
 CHUNK_SIZE = 500  # in meters
-DEBUG = True
-
+DEBUG = False
 
 # Create a buffer using StringIO
 buffer = io.StringIO()
@@ -81,7 +84,7 @@ street_suffixes: dict[str, str] = json.load(open(street_suffixes_file))
 
 # Map segment IDs to a dict containting the addresses and node IDs
 segments_by_id: blocks_file_t = {}
-houses_to_id: houses_file_t = {}
+addresses_to_id: addresses_file_t = {}
 
 
 @dataclass
@@ -109,8 +112,8 @@ def distance_along_path(path: node_list_t) -> float:
     distance = 0
     for first, second in itertools.pairwise(path):
         distance += great_circle_distance(
-            Point(lat=first["lat"], lon=first["lon"]),  # type: ignore
-            Point(lat=second["lat"], lon=second["lon"]),
+            Point(lat=first["lat"], lon=first["lon"], type=None, id=None),
+            Point(lat=second["lat"], lon=second["lon"], type=None, id=None),
         )  # type: ignore
     return distance
 
@@ -125,11 +128,16 @@ min_lat, min_lon, max_lat, max_lon = (
     -80.0632736,
 )
 
-origin = {"lat": min_lat, "lon": min_lon}
+origin = Point(lat=min_lat, lon=min_lon, type=None, id=None)
 
 # Calculate the number of chunks in each direction
-lat_distance = great_circle_distance(origin, {"lat": max_lat, "lon": min_lon})
-lon_distance = great_circle_distance(origin, {"lat": min_lat, "lon": max_lon})
+lat_distance = great_circle_distance(
+    origin, Point(lat=max_lat, lon=min_lon, type=None, id=None)
+)
+lon_distance = great_circle_distance(
+    origin, Point(lat=min_lat, lon=max_lon, type=None, id=None)
+)
+
 num_lat_chunks = int(math.ceil(lat_distance / CHUNK_SIZE))
 num_lon_chunks = int(math.ceil(lon_distance / CHUNK_SIZE))
 
@@ -142,10 +150,10 @@ block_matrix: list[list[list[str]]] = [
 # Get matrix indices for a given node
 def get_matrix_index(node: Point, origin: Point, chunk_size: float) -> tuple[int, int]:
     lat_distance = great_circle_distance(
-        {"lat": origin["lat"], "lon": node["lon"]}, node
+        Point(lat=origin["lat"], lon=node["lon"], type=None, id=None), node
     )
     lon_distance = great_circle_distance(
-        {"lat": node["lat"], "lon": origin["lon"]}, node
+        Point(lat=node["lat"], lon=origin["lon"], type=None, id=None), node
     )
     return int(lat_distance // chunk_size), int(lon_distance // chunk_size)
 
@@ -153,10 +161,10 @@ def get_matrix_index(node: Point, origin: Point, chunk_size: float) -> tuple[int
 print("Created empty matrix, starting to place blocks into matrix")
 
 with tqdm(
-    total=len(blocks),
-    desc="Creating block location matrix",
-    unit="rows",
-    colour="green",
+        total=len(blocks),
+        desc="Creating block location matrix",
+        unit="rows",
+        colour="green",
 ) as progress:
     for start_node in blocks:
         for block in blocks[start_node]:
@@ -182,7 +190,6 @@ with tqdm(
                         block_matrix[i][j].append(segment_id)
         progress.update(1)
 
-
 data_as_list = [
     [list(inner_set) for inner_set in inner_list] for inner_list in block_matrix
 ]
@@ -190,10 +197,9 @@ data_as_list = [
 with open("block_matrix.json", "w") as outfile:
     json.dump(data_as_list, outfile)
 
-
 # First, load every block, find subsegments, and save all data besides actual addresses to segments_by_id
 with tqdm(
-    total=len(blocks), desc="Reading blocks", unit="rows", colour="green"
+        total=len(blocks), desc="Reading blocks", unit="rows", colour="green"
 ) as progress:
     for start_node in blocks:
         for block in blocks[start_node]:
@@ -215,29 +221,13 @@ with tqdm(
             segments_by_id[segment_id] = Block(
                 addresses={},
                 nodes=all_nodes,
+                bearings=(0, 0),
                 type=block[2]["ways"][0][1]["highway"],
             )
         progress.update(1)
 
-
-def sanitize_street_name(street_name: str):
-    # Split the street name by spaces
-    words = street_name.casefold().split()
-
-    if len(words) > 1:
-        last_word = words[-1]
-
-        # Check if the last word is in the lookup dictionary
-        if last_word in street_suffixes:
-            # If it is, replace it
-            words[-1] = street_suffixes[last_word]
-
-    # Join the words back together and return
-    return " ".join(words).rstrip()
-
-
 with tqdm(
-    total=len(blocks), desc="Sanitizing street names", unit="rows", colour="green"
+        total=len(blocks), desc="Sanitizing street names", unit="rows", colour="green"
 ) as progress:
     for start_node in blocks:
         for block in blocks[start_node]:
@@ -247,7 +237,9 @@ with tqdm(
 
             # Add the street name to the block
             block_to_street_names[segment_id] = list(
-                set(sanitize_street_name(i[1]["name"]) for i in block[2]["ways"])
+                set(
+                    Address.sanitize_street_name(i[1]["name"]) for i in block[2]["ways"]
+                )
             )
         progress.update(1)
 
@@ -321,9 +313,9 @@ def search_for_best_subsegment(segment, segment_id, best_segment, house_pt: Poin
 
         # If this segment is better than the best segment, insert it
         if (
-            best_segment is None
-            or house_offset < best_segment.ald_offset
-            or (house_offset == best_segment.ald_offset and abs(ctd) < best_segment.ctd)
+                best_segment is None
+                or house_offset < best_segment.ald_offset
+                or (house_offset == best_segment.ald_offset and abs(ctd) < best_segment.ctd)
         ):
             if DEBUG:
                 print(
@@ -385,7 +377,7 @@ def filter_segments(house_point):
 
 # Next, add the houses to the blocks
 with tqdm(
-    total=num_houses, desc="Associating houses", unit="rows", colour="green"
+        total=num_houses, desc="Associating houses", unit="rows", colour="green"
 ) as progress:
     for item in house_points_reader:
         progress.update(1)
@@ -395,16 +387,16 @@ with tqdm(
 
         # If this house is not in the area of interest, skip it
         if (
-            float(item["latitude"]) < min_lat
-            or float(item["latitude"]) > max_lat
-            or float(item["longitude"]) < min_lon
-            or float(item["longitude"]) > max_lon
+                float(item["latitude"]) < min_lat
+                or float(item["latitude"]) > max_lat
+                or float(item["longitude"]) < min_lon
+                or float(item["longitude"]) > max_lon
         ):
             continue
 
         house_pt = Point(lat=float(item["latitude"]), lon=float(item["longitude"]), type="house")  # type: ignore
 
-        address_parts = (
+        street_name_parts = (
             item["st_premodifier"],
             item["st_prefix"],
             item["st_pretype"],
@@ -413,9 +405,9 @@ with tqdm(
             item["st_postmodifier"],
         )
 
-        raw_street_name = " ".join(part for part in address_parts if part)
+        raw_street_name = " ".join(part for part in street_name_parts if part)
 
-        sanitized_street_name = sanitize_street_name(raw_street_name)
+        sanitized_street_name = Address.sanitize_street_name(raw_street_name)
 
         best_segment: Optional[
             Segment
@@ -477,17 +469,17 @@ with tqdm(
                 print(block_names_set, file=buffer)
 
             for choice in process.extract_iter(
-                query=sanitized_street_name,
-                choices=block_names_set,
-                scorer=address_match_score,
-                score_cutoff=45,
+                    query=sanitized_street_name,
+                    choices=block_names_set,
+                    scorer=address_match_score,
+                    score_cutoff=45,
             ):
                 if DEBUG:
                     print("Choice ---------", file=buffer)
                     print(choice, file=buffer)
                     print("Details of blocks with matching names:", file=buffer)
                 for block_id in keys_with_value(
-                    filtered_block_to_street_names, choice[0]
+                        filtered_block_to_street_names, choice[0]
                 ):
                     if DEBUG:
                         print("---------block---------", file=buffer)
@@ -498,7 +490,7 @@ with tqdm(
 
         if best_segment is not None and best_segment.ctd <= MAX_DISTANCE:
             # Create house to insert into table
-            all_points = segments_by_id[best_segment.id]["nodes"]
+            all_points = segments_by_id[str(best_segment.id)]["nodes"]
 
             sub_nodes = [
                 all_points.index(best_segment.sub_node_1),
@@ -517,14 +509,16 @@ with tqdm(
             sub_end = all_points[max(sub_nodes)]
             distances = along_track_distance(
                 p1=house_pt,
-                p2=Point(lat=sub_start["lat"], lon=sub_start["lon"]),  # type: ignore
-                p3=Point(lat=sub_end["lat"], lon=sub_end["lon"]),
-            )  # type: ignore
+                p2=Point(
+                    lat=sub_start["lat"], lon=sub_start["lon"], type=None, id=None
+                ),
+                p3=Point(lat=sub_end["lat"], lon=sub_end["lon"], type=None, id=None),
+            )
             distance_to_start += distances[0]
             distance_to_end += distances[1]
 
             # Lastly, calculate the distance from the end of this house's sub-segment to the end of the block
-            distance_to_end += distance_along_path(all_points[min(sub_nodes) + 1 :])
+            distance_to_end += distance_along_path(all_points[min(sub_nodes) + 1:])
 
             output_house = HouseInfo(
                 lat=house_pt["lat"],
@@ -536,14 +530,29 @@ with tqdm(
                 subsegment=(min(sub_nodes), max(sub_nodes)),
             )
 
-            # Add the house to the segments output
-            segments_by_id[best_segment.id]["addresses"][
-                item["full_address"]
-            ] = output_house
-            # addr_num_prefix,addr_num,addr_num_suffix,st_premodifier,st_prefix,st_pretype,st_name,st_type,st_postmodifier,unit_type,unit,floor,municipality,county,state,zip_code
+            # TODO: resolve best_segment type issues, these casts should not be needed
+
+            # address_pts: addr_num_prefix,addr_num,addr_num_suffix,st_premodifier,st_prefix,st_pretype,st_name,st_type,st_postmodifier,unit_type,unit,floor,municipality,county,state,zip_code
+            # as far as I can tell, there is never any data in addr_num_prefix
+            formatted_address: Address = Address(
+                item["addr_num"],
+                item["addr_num_suffix"],
+                sanitized_street_name,
+                item["unit"],
+                None,
+                None,  # TODO: add function to sanitize state names
+                item["zip_code"],
+            )
 
             # Add this association to the houses file
-            houses_to_id[item["full_address"]] = best_segment.id
+            house_uuid = uuid.uuid5(UUID_NAMESPACE, item["full_address"])
+            addresses_to_id[formatted_address] = (str(best_segment.id), str(house_uuid))
+
+            # Add the house to the segments output
+            segments_by_id[str(best_segment.id)]["addresses"][
+                str(house_uuid)
+            ] = output_house
+
         else:
             num_failed_houses += 1
             if DEBUG:
@@ -576,6 +585,8 @@ print(
 # Write the output to files
 print("Writing...")
 json.dump(segments_by_id, open(blocks_file, "w"), indent=4)
-json.dump(houses_to_id, open(houses_file, "w"), indent=4)
+
+with open(addresses_file, "w") as outfile:
+    outfile.write(jsonpickle.encode(addresses_to_id, keys=True))
 
 display_blocks(segments_by_id).save(os.path.join(BASE_DIR, "viz", "segments.html"))

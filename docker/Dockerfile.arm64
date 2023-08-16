@@ -38,6 +38,7 @@ RUN apt-get -y install\
 
 
 RUN pip install --no-cache-dir\
+    jsonpickle\
     scikit-learn-extra\
     branca\
     certifi\

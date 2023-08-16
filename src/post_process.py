@@ -12,8 +12,7 @@ from src.config import (
     Tour,
     blocks_file,
     blocks_file_t,
-    houses_file,
-    houses_file_t,
+    addresses_file,
     pt_id,
 )
 from src.distances.mix import MixDistances
@@ -25,7 +24,7 @@ from src.route import RouteMaker
 class PostProcess:
     def __init__(self, blocks: blocks_file_t, points: list[Point]):
         self._all_blocks: blocks_file_t = json.load(open(blocks_file))
-        self.address_to_segment_id: houses_file_t = json.load(open(houses_file))
+        self.address_to_segment_id: houses_file_t = json.load(open(addresses_file))
 
         self.blocks = blocks
         self.points = points
@@ -141,6 +140,7 @@ class PostProcess:
 
         sub_block_1 = SubBlock(
             navigation_points=nav_pts_1,
+            block_id=sub_block.block_id,
             houses=houses_1,
             start=entrance,
             end=nav_pts_1[-1],
@@ -150,6 +150,7 @@ class PostProcess:
 
         sub_block_2 = SubBlock(
             navigation_points=nav_pts_2,
+            block_id=sub_block.block_id,
             houses=houses_2,
             start=nav_pts_2[0],
             end=exit,
@@ -393,6 +394,7 @@ class PostProcess:
 
         sub_block = SubBlock(
             block=block,
+            block_id=block_id,
             start=entrance,
             end=exit,
             extremum=extremum,
@@ -445,7 +447,6 @@ class PostProcess:
                 running_node = first.end
                 for block_id in block_ids:
                     block = self._all_blocks[block_id]
-                    # block = self.blocks[block_id]
 
                     start = Point(
                         lat=block["nodes"][0]["lat"], lon=block["nodes"][0]["lon"]
@@ -468,6 +469,7 @@ class PostProcess:
                     new_walk_list.append(
                         SubBlock(
                             block=block,
+                            block_id=block_id,
                             start=start,
                             end=end,
                             extremum=(start, end),
@@ -493,7 +495,8 @@ class PostProcess:
                 continue
 
             new_houses = sub_block.houses.copy()
-            block_id = self.address_to_segment_id[sub_block.houses[0]["id"]]
+            block_id = sub_block.block_id
+            # block_id = self.address_to_segment_id[sub_block.houses[0]["id"]]
 
             sub_block_nav_ids = set([pt_id(pt) for pt in sub_block.navigation_points])
             assigned_addresses = [h["id"] for h in sub_block.houses]
