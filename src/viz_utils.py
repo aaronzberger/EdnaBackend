@@ -35,11 +35,18 @@ def generate_starter_map(
 ) -> folium.Map:
     # Store all the latitudes and longitudes
     if lats is None and lons is None and blocks is not None:
-        lats = list(
-            itertools.chain.from_iterable(
-                (i["nodes"][0]["lat"], i["nodes"][-1]["lat"]) for i in blocks.values()
+        for (key, value) in blocks.items():
+            if len(value["nodes"]) < 1:
+                print(key, value)
+        try:
+            lats = list(
+                itertools.chain.from_iterable(
+                    (i["nodes"][0]["lat"], i["nodes"][-1]["lat"]) for i in blocks.values()
+                )
             )
-        )
+        except:
+            print("wtf")
+
         lons = list(
             itertools.chain.from_iterable(
                 (i["nodes"][0]["lon"], i["nodes"][-1]["lon"]) for i in blocks.values()
@@ -58,7 +65,7 @@ def generate_starter_map(
 
     return folium.Map(
         location=[(min(lats) + max(lats)) / 2, (min(lons) + max(lons)) / 2],
-        zoom_start=30, max_zoom=50, min_zoom=20
+        zoom_start=30
     )
 
 

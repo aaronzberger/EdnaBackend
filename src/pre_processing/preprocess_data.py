@@ -40,7 +40,11 @@ intersection_nodes = {}
 for key in grouped_response:
     branches = 0
     for way in grouped_response[key][1]:
-        index = way['nodes'].index(key)
+        try:
+            index = way['nodes'].index(key)
+        except:
+            print("whoopsie (´・ω・｀)")
+            continue
         count = len(way['nodes'])
         if count > 1:
             if index == 0:

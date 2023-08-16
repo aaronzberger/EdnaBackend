@@ -49,7 +49,7 @@ from src.viz_utils import display_blocks
 
 MAX_DISTANCE = 500  # meters from house to segment
 CHUNK_SIZE = 500  # in meters
-DEBUG = False
+DEBUG = True
 
 # Create a buffer using StringIO
 buffer = io.StringIO()
@@ -175,6 +175,7 @@ with tqdm(
                 continue
             segment_id = str(start_node) + ":" + str(block[0]) + ":" + str(block[1])
 
+
             # Create the list of sub-segments in this block
             all_node_ids = [str(i) for i in block[2]["nodes"]]
             all_nodes: list[Point] = []
@@ -223,7 +224,6 @@ with tqdm(
             segments_by_id[segment_id] = Block(
                 addresses={},
                 nodes=all_nodes,
-                bearings=(0, 0),
                 type=block[2]["ways"][0][1]["highway"],
             )
         progress.update(1)
