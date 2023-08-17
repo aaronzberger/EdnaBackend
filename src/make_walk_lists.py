@@ -102,7 +102,7 @@ if len(argv) == 2:
                 requested_blocks[block_id]["addresses"] = {
                     uuid: all_blocks[block_id]["addresses"][uuid]
                 }
-
+    print(f"Manual lookup key errors {associater.manual_key_errors}")
     print("Failed on {} of {} houses".format(associater.failed_houses, total_houses))
     no_choices = len(list(x for x in associater.need_manual_review if len(x["choices"]) == 0))
     print(f"Number of failed houses with no matches at all: {no_choices}")

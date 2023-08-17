@@ -17,6 +17,7 @@ from src.config import (
     blocks_file,
     blocks_file_t,
     street_suffixes_file,
+    manual_match_output_file
 )
 
 from src.address import Address, addresses_file_t
@@ -25,6 +26,48 @@ from rapidfuzz import process, fuzz
 
 import json
 import pprint
+
+
+def address_match_score(
+        s1: Address, s2: Address, threshold=90, score_cutoff=0.0
+):
+    """
+    Computes a custom score based on the Jaro distance between words in the two strings.
+
+    Args:
+    - s1, s2: The two strings to compare.
+    - threshold: The minimum allowed Jaro score for two words to be considered a match.
+    - score_cutoff: The minimum overall score for the function to return a non-zero result.
+
+    Returns:
+    - A score representing the ratio of matched words to the total number of words.
+    Returns 0.0 immediately if the computed score is below score_cutoff or house numbers don't match.
+    """
+
+    if s1.house_number != s2.house_number:
+        return 0
+
+    s1_words = s1.street_name.split()
+    s2_words = s2.street_name.split()
+
+    whole_str_ratio = fuzz.ratio(s1.street_name, s2.street_name)
+    if whole_str_ratio > threshold and whole_str_ratio > score_cutoff:
+        return whole_str_ratio
+
+    matched_words = 0
+
+    for word1 in s1_words:
+        for word2 in s2_words:
+            # Compute the Jaro distance between word1 and word2
+            jaro_score = fuzz.ratio(word1, word2)
+            if jaro_score >= threshold:
+                matched_words += 1
+
+    total_words = max(len(s1_words), len(s2_words))
+
+    score = (matched_words / total_words) * 100
+
+    return score if score >= score_cutoff else 0.0
 
 
 class Associater:
@@ -56,47 +99,31 @@ class Associater:
         with open('houses_pretty.txt', 'w') as f:
             f.write(pprint.pformat(self.addresses_to_id))
         self.need_manual_review = []
+        self.manual_matches = json.load(open(manual_match_output_file))
+        self.manual_key_errors = 0
 
-    def address_match_score(
-            self, s1: Address, s2: Address, threshold=90, score_cutoff=0.0
-    ):
-        """
-        Computes a custom score based on the Jaro distance between words in the two strings.
-
-        Args:
-        - s1, s2: The two strings to compare.
-        - threshold: The minimum allowed Jaro score for two words to be considered a match.
-        - score_cutoff: The minimum overall score for the function to return a non-zero result.
-
-        Returns:
-        - A score representing the ratio of matched words to the total number of words.
-        Returns 0.0 immediately if the computed score is below score_cutoff or house numbers don't match.
-        """
-
-        if s1.house_number != s2.house_number:
-            return 0
-
-        s1_words = s1.street_name.split()
-        s2_words = s2.street_name.split()
-
-        whole_str_ratio = fuzz.ratio(s1.street_name, s2.street_name)
-        if whole_str_ratio > threshold and whole_str_ratio > score_cutoff:
-            return whole_str_ratio
-
-        matched_words = 0
-
-        for word1 in s1_words:
-            for word2 in s2_words:
-                # Compute the Jaro distance between word1 and word2
-                jaro_score = fuzz.ratio(word1, word2)
-                if jaro_score >= threshold:
-                    matched_words += 1
-
-        total_words = max(len(s1_words), len(s2_words))
-
-        score = (matched_words / total_words) * 100
-
-        return score if score >= score_cutoff else 0.0
+    def search_manual_associations(self, address: Address) -> Address | None:
+        for match in self.manual_matches:
+            if match["universe"] == dataclasses.asdict(address):
+                if match["match"] == "DNE":
+                    print("house doesnt exist")
+                    return None
+                elif match["match"] == {}:
+                    print("no match exists for this house in addr_pts")
+                    return None
+                else:
+                    if isinstance(match["match"], dict):
+                        print("found manual match")
+                        matched_dict: dict = match["match"]
+                        as_address = Address(matched_dict["house_number"], matched_dict["house_number_suffix"],
+                                       matched_dict["street_name"], matched_dict["unit_num"], matched_dict["city"],
+                                       matched_dict["state"], matched_dict["zip_code"])
+                        if as_address in self.addresses_to_id:
+                            return as_address
+                        else:
+                            self.manual_key_errors += 1
+                            print("keyerror")
+        return None
 
     def associate(self, address: Address) -> tuple[str, str] | None:
         """
@@ -122,7 +149,7 @@ class Associater:
             for choice in process.extract_iter(
                     query=address,
                     choices=self.addresses_to_id.keys(),
-                    scorer=self.address_match_score,
+                    scorer=address_match_score,
                     score_cutoff=85,
             ):
                 matched_block_id, matched_uuid = self.addresses_to_id[choice[0]]
@@ -134,12 +161,16 @@ class Associater:
                     # print(f"Fuzzy matched\n{address} to \n{choice[0]}")
                     # TODO: Handle what happens if there is more than one match here
                 else:
-                    choices.append((dataclasses.asdict(choice[0]), choice[1], choice[2], matched_block_id, matched_uuid))
+                    choices.append(
+                        (dataclasses.asdict(choice[0]), choice[1], choice[2], matched_block_id, matched_uuid))
                     # print(f"Choice for fuzzy match: {choice}")
 
         if not precise_match_found:
-            self.need_manual_review.append({"universe": dataclasses.asdict(address), "choices": choices})
-            self.failed_houses += 1
-            return None
-        else:
-            return matched_block_id, matched_uuid
+            result = self.search_manual_associations(address)
+            if result:
+                matched_block_id, matched_uuid = self.addresses_to_id[result]
+            else:
+                self.need_manual_review.append({"universe": dataclasses.asdict(address), "choices": choices})
+                self.failed_houses += 1
+                return None
+        return matched_block_id, matched_uuid
