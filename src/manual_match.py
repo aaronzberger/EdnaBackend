@@ -1,6 +1,8 @@
 import json
 import os
 import googlemaps
+from termcolor import cprint
+import termcolor
 from src.config import Point
 from src.gps_utils import great_circle_distance
 
@@ -19,16 +21,18 @@ def get_coordinates_from_google(address_str):
     """
     Fetch coordinates (latitude, longitude) for an address using Google Maps Geocoding API.
     """
-    print("making google maps api call")
+    cprint("Making google maps api call", "green")
 
     geocode_result = gmaps.geocode(address_str)
     if geocode_result:
         location = geocode_result[0]['geometry']['location']
+        if geocode_result[0]['geometry']['location_type'] != "ROOFTOP":
+            print("Geocode request returned low-confidence result")
         return (location['lat'], location['lng'])
     return None
 
 
-def find_closest_houses(coords: tuple, n=5):
+def find_closest_houses(coords: tuple, n=5, limit=100):
     """
     Find the n closest houses to the given coordinates.
     """
@@ -42,6 +46,7 @@ def find_closest_houses(coords: tuple, n=5):
         )) for house in houses
     ]
     distances.sort(key=lambda x: x[1])  # Sort by distance
+    distances = [house for house in distances if house[1] <= limit]
     return [house[0][2] for house in distances[:n]]
 
 
@@ -49,7 +54,8 @@ def display_address(address):
     """
     Formats and displays an address dictionary.
     """
-    return f"{address['house_number']} {address['house_number_suffix']} {address['street_name']} {address['unit_num']} {address['zip_code']}"
+    components = [address['house_number'], address['house_number_suffix'], address['street_name'], address['unit_num'], address['zip_code']]
+    return " ".join([component for component in components if component != ""])
 
 
 def load_matches():
@@ -88,7 +94,7 @@ def match_addresses(data):
 
     for entry in unmatched_addresses:
         print("\nUniverse Address:")
-        print(display_address(entry['universe']))
+        cprint(display_address(entry['universe']), "light_blue")
 
         if not entry['choices']:
             print("No local matching choices available, fetching nearest houses from Google")
@@ -99,9 +105,12 @@ def match_addresses(data):
                 entry['choices'].extend([(house, 0.0, 0, "", "") for house in
                                          closest_houses])  # The additional values in the tuple are placeholders
 
-        print("\nChoices:")
-        for index, choice in enumerate(entry['choices']):
-            print(f"{index + 1}. {display_address(choice[0])}")
+        if entry['choices']:
+            print("\nChoices:")
+            for index, choice in enumerate(entry['choices']):
+                print(f"{index + 1}. {display_address(choice[0])}")
+        else:
+            print("No automated choices found, good luck")
 
         while True:
             selection = input("\nEnter choice number, UUID, 'no exist', 'not found', or 'skip': ")
@@ -111,8 +120,17 @@ def match_addresses(data):
                 chosen_match = uuid_address_mapping[selection]
                 print(f"Matched with UUID: {display_address(chosen_match)}")
 
+                unit_num = ""
+                if entry["universe"]["unit_num"] != "":
+                    while True:
+                        response = input(
+                            f"Do you want to save the unit number from the voter file? ({entry['universe']['unit_num']}) y/n")
+                        if response == "y" or response == "Y":
+                            unit_num = entry["universe"]["unit_num"]
                 # Add the match to the list
-                matched_pairs.append({"universe": entry['universe'], "match": chosen_match})
+
+                # Add the match to the list
+                matched_pairs.append({"universe": entry['universe'], "match": chosen_match, "unit_num": unit_num})
 
                 # Save the matches to the JSON file
                 save_matches(matched_pairs)
@@ -132,9 +150,19 @@ def match_addresses(data):
             elif selection.isdigit() and 0 < int(selection) <= len(entry['choices']):
                 chosen_match = entry['choices'][int(selection) - 1][0]
                 print(f"Matched with: {display_address(chosen_match)}")
-
+                unit_num = ""
+                if entry["universe"]["unit_num"] != "":
+                    while True:
+                        response = input(f"Do you want to save the unit number from the voter file? ({entry['universe']['unit_num']}) y/n: ")
+                        if response == "y" or response == "Y":
+                            unit_num = entry["universe"]["unit_num"]
+                            print("Saving unit number")
+                            break
+                        else:
+                            print("Not saving unit number")
+                            break
                 # Add the match to the list
-                matched_pairs.append({"universe": entry['universe'], "match": chosen_match})
+                matched_pairs.append({"universe": entry['universe'], "match": chosen_match, "unit_num": unit_num})
 
                 # Save the matches to the JSON file
                 save_matches(matched_pairs)
