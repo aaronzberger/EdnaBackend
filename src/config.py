@@ -43,8 +43,18 @@ overpass_file = os.path.join(BASE_DIR, "regions", AREA_ID, "input", "overpass.js
 # Map addresses to block IDs
 addresses_file = os.path.join(BASE_DIR, "regions", AREA_ID, "addresses.json")
 
+manual_match_input_file = os.path.join(BASE_DIR, "regions", AREA_ID, "manual_match_input.json")
+
+manual_match_output_file = os.path.join(BASE_DIR, "regions", AREA_ID, "input", "manual_match_output.json")
+
+reverse_geocode_file = os.path.join(BASE_DIR, "regions", AREA_ID, "reverse_geocode.json")
+
 house_id_to_block_id_file = os.path.join(
     BASE_DIR, "regions", AREA_ID, "house_id_to_block_id.json"
+)
+
+id_to_addresses_file = os.path.join(
+    BASE_DIR, "regions", AREA_ID, "id_to_addresses.json"
 )
 
 universe_association = os.path.join(
@@ -68,6 +78,7 @@ TIMEOUT = timedelta(seconds=100)
 "                                     Constants                                    "
 "----------------------------------------------------------------------------------"
 
+GOOGLE_MAPS_API_KEY = "AIzaSyAPpRP4mPuMlyRP8YiIaEOL_YAms6TpCwM"
 
 UUID_NAMESPACE = uuid.UUID("ccf207c6-3b15-11ee-be56-0242ac120002")
 

@@ -5,6 +5,7 @@ Associate houses with blocks. Take in block_output.json and generate blocks.json
 # TODO: See Covode Pl and Wendover Pl (both have same-named streets, to which all the houses on pl have been wrongly assigned)
 
 import csv
+import dataclasses
 import itertools
 from itertools import chain
 import json
@@ -34,7 +35,7 @@ from src.config import (
     addresses_file,
     node_coords_file,
     node_list_t,
-    ALD_BUFFER,
+    ALD_BUFFER, reverse_geocode_file, id_to_addresses_file,
 )
 from src.gps_utils import (
     along_track_distance,
@@ -87,7 +88,10 @@ street_suffixes: dict[str, str] = json.load(open(street_suffixes_file))
 # Map segment IDs to a dict containting the addresses and node IDs
 segments_by_id: blocks_file_t = {}
 addresses_to_id: addresses_file_t = {}
+id_to_addresses: dict[str, dict[str, str]] = {}
 house_id_to_block_id: dict[str, str] = {}
+
+reverse_geocode: list[tuple[float, float, dict[str, str]]] = []
 
 
 @dataclass
@@ -415,6 +419,20 @@ with tqdm(
 
         sanitized_street_name = Address.sanitize_street_name(raw_street_name)
 
+        # address_pts: addr_num_prefix,addr_num,addr_num_suffix,st_premodifier,st_prefix,st_pretype,st_name,st_type,st_postmodifier,
+        # unit_type,unit,floor,municipality,county,state,zip_code
+        # as far as I can tell, there is never any data in addr_num_prefix
+        formatted_address: Address = Address(
+            item["addr_num"],
+            item["addr_num_suffix"],
+            sanitized_street_name,
+            item["unit"],
+            None,
+            None,  # TODO: add function to sanitize state names
+            item["zip_code"],
+        )
+        reverse_geocode.append((house_pt["lat"], house_pt["lon"], dataclasses.asdict(formatted_address)))
+
         best_segment: Optional[
             Segment
         ] = None  # Store the running closest segment to the house
@@ -538,22 +556,10 @@ with tqdm(
 
             # TODO: resolve best_segment type issues, these casts should not be needed
 
-            # address_pts: addr_num_prefix,addr_num,addr_num_suffix,st_premodifier,st_prefix,st_pretype,st_name,st_type,st_postmodifier,
-            # unit_type,unit,floor,municipality,county,state,zip_code
-            # as far as I can tell, there is never any data in addr_num_prefix
-            formatted_address: Address = Address(
-                item["addr_num"],
-                item["addr_num_suffix"],
-                sanitized_street_name,
-                item["unit"],
-                None,
-                None,  # TODO: add function to sanitize state names
-                item["zip_code"],
-            )
-
             # Add this association to the houses file
             house_uuid = uuid.uuid5(UUID_NAMESPACE, item["full_address"])
             addresses_to_id[formatted_address] = (str(best_segment.id), str(house_uuid))
+            id_to_addresses[str(house_uuid)] = dataclasses.asdict(formatted_address)
 
             # Add the house to the segments output
             segments_by_id[str(best_segment.id)]["addresses"][
@@ -593,6 +599,11 @@ print(
 
 # Write the output to files
 print("Writing...")
+
+json.dump(id_to_addresses, open(id_to_addresses_file, "w"))
+
+json.dump(reverse_geocode, open(reverse_geocode_file, "w"))
+
 json.dump(segments_by_id, open(blocks_file, "w"), indent=4)
 
 with open(addresses_file, "w") as outfile:

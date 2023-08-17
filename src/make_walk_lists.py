@@ -27,6 +27,8 @@ from src.config import (
     blocks_file,
     blocks_file_t,
     pt_id,
+    manual_match_input_file,
+    manual_match_output_file,
 )
 from src.distances.blocks import BlockDistances
 from src.distances.houses import HouseDistances
@@ -102,11 +104,13 @@ if len(argv) == 2:
                 }
 
     print("Failed on {} of {} houses".format(associater.failed_houses, total_houses))
-    with open("need_manual_match.json", "w") as manual_match_file:
+    no_choices = len(list(x for x in associater.need_manual_review if len(x["choices"]) == 0))
+    print(f"Number of failed houses with no matches at all: {no_choices}")
+    with open(manual_match_input_file, "w") as manual_match_file:
         json.dump(associater.need_manual_review, manual_match_file)
 else:
     requested_blocks: blocks_file_t = json.load(open(blocks_file))
-
+exit()
 
 # After this point, the original blocks variable should never be used, so delete it
 all_blocks.clear()
