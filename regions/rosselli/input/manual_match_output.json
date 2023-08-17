@@ -16840,7 +16840,7 @@
         },
         "unit_num": ""
     },
-   {
+    {
         "universe": {
             "house_number": "320",
             "house_number_suffix": "",
@@ -26676,5 +26676,68 @@
             "zip_code": "15237"
         },
         "unit_num": ""
+    },
+    {
+        "universe": {
+            "house_number": "320",
+            "house_number_suffix": "",
+            "street_name": "ohio river boulevard",
+            "unit_num": "G-6",
+            "city": null,
+            "state": null,
+            "zip_code": "15143"
+        },
+        "match": {
+            "house_number": "320",
+            "house_number_suffix": "",
+            "street_name": "ohio river boulevard",
+            "unit_num": "G6",
+            "city": null,
+            "state": null,
+            "zip_code": "15143"
+        },
+        "unit_num": "G-6"
+    },
+    {
+        "universe": {
+            "house_number": "221",
+            "house_number_suffix": "B",
+            "street_name": "chestnut street",
+            "unit_num": "",
+            "city": null,
+            "state": null,
+            "zip_code": "15143"
+        },
+        "match": {
+            "house_number": "221",
+            "house_number_suffix": "",
+            "street_name": "chestnut street",
+            "unit_num": "",
+            "city": null,
+            "state": null,
+            "zip_code": "15143"
+        },
+        "unit_num": "B"
+    },
+    {
+        "universe": {
+            "house_number": "221",
+            "house_number_suffix": "A",
+            "street_name": "chestnut street",
+            "unit_num": "",
+            "city": null,
+            "state": null,
+            "zip_code": "15143"
+        },
+        "match": {
+            "house_number": "221",
+            "house_number_suffix": "",
+            "street_name": "chestnut street",
+            "unit_num": "",
+            "city": null,
+            "state": null,
+            "zip_code": "15143"
+        },
+        "unit_num": "A"
     }
 ]
