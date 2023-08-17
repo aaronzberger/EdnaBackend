@@ -104,7 +104,7 @@ def match_addresses(data):
             print(f"{index + 1}. {display_address(choice[0])}")
 
         while True:
-            selection = input("\nEnter choice number, UUID, or 'skip': ")
+            selection = input("\nEnter choice number, UUID, 'no exist', 'not found', or 'skip': ")
 
             # If user provides a UUID
             if selection in uuid_address_mapping:
@@ -118,6 +118,16 @@ def match_addresses(data):
                 save_matches(matched_pairs)
                 break
             elif selection == "skip":
+                break
+            elif selection == "no exist":
+                # Add with an empty match
+                matched_pairs.append({"universe": entry['universe'], "match": "DNE"})
+                save_matches(matched_pairs)
+                break
+            elif selection == "not found":
+                # Add with a None match
+                matched_pairs.append({"universe": entry['universe'], "match": {}})
+                save_matches(matched_pairs)
                 break
             elif selection.isdigit() and 0 < int(selection) <= len(entry['choices']):
                 chosen_match = entry['choices'][int(selection) - 1][0]
