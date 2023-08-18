@@ -1,8 +1,9 @@
+import math
 import os
 import uuid
 from datetime import timedelta
 from enum import Enum
-from typing import Any, TypedDict
+from typing import Any, Literal, TypedDict
 
 "----------------------------------------------------------------------------------"
 "                                     File Paths                                   "
@@ -69,6 +70,10 @@ house_to_voters_file = os.path.join(
     BASE_DIR, "regions", AREA_ID, "house_to_voters.json"
 )
 
+turnout_predictions_file = os.path.join(
+    BASE_DIR, "input", "2023_general_predictions.json"
+)
+
 blocks_file = os.path.join(BASE_DIR, "regions", AREA_ID, "blocks.json")
 
 address_pts_file = os.path.join(BASE_DIR, "input", "address_pts.csv")
@@ -76,7 +81,53 @@ problem_path = os.path.join(BASE_DIR, "optimize", "problem.json")
 solution_path = os.path.join(BASE_DIR, "optimize", "solution.json")
 
 "----------------------------------------------------------------------------------"
-"                                  Optimization                                    "
+"                               Problem Parameters                                 "
+"----------------------------------------------------------------------------------"
+
+
+def sigmoid(x: float, k: float, a: float) -> float:
+    """Sigmoid function with steepness parameter k and shift parameter a.
+
+    This should be used on voter probabilities when the metric needs to be exaggerated,
+    so low probabilities will map even lower and high probabilities even higher.
+    """
+    return 1 / (1 + math.exp(-k * (x - a)))
+
+
+def normalized_fn(fn):
+    min_value, max_value = fn(0, 1, 0), fn(1, 1, 0)
+
+    def normalized(x: float, k: float, a: float) -> float:
+        return (fn(x, k, a) - min_value) / (max_value - min_value)
+
+    return normalized
+
+
+def exponential(x: float, k: float) -> float:
+    """Exponential function with steepness parameter k, scaled to [0, 1].
+
+    This should be used on voter probabilities when the metric needs to be diminished,
+    so low probabilities will map higher.
+    """
+    return (1 - math.exp(-k * x)) / (1 - math.exp(-k))
+
+
+def voter_value(party: Literal["D", "R", "I"], turnout: float) -> float:
+    # We use the normalized sigmoid function to exaggerate the differences between turnout probabilities.
+    # Here, more steepness (k) means more exaggeration, and the (a) value is at what probability the function
+    # is ambivalent (lower means fewer low-propensity voters are targeted)
+    base_value = normalized_fn(sigmoid)(turnout, 10, 0.4)
+    return base_value if party in ["D", "I"] else 0
+
+
+def house_value(voter_values: list[float]) -> float:
+    """Calculate the value of a house based on the voters in it."""
+    scaling_factor = 1 + (0.2 * len(voter_values))
+    return sum(voter_values) / len(voter_values) * scaling_factor
+
+
+"----------------------------------------------------------------------------------"
+"                             Optimization Parameters                              "
 "----------------------------------------------------------------------------------"
 SEARCH_MODE_DEEP = False
 TIMEOUT = timedelta(seconds=100)
@@ -204,17 +255,53 @@ blocks_file_t = dict[str, Block]
 "                               Output File Type Hints                             "
 "----------------------------------------------------------------------------------"
 
+tracked_elections = Enum("elections", [
+    "primary_2023",
+    "general_2022",
+    "primary_2022",
+    "general_2021",
+    "primary_2021",
+    "general_2020",
+    "primary_2020",
+    "general_2019",
+    "primary_2019"
+])
+
+
+# Mapping from voter file column names to elections
+# This is retreived directly from the "Election Map" file from the county
+voter_file_mapping = {
+    7: tracked_elections.primary_2019,
+    8: tracked_elections.general_2019,
+    9: tracked_elections.primary_2020,
+    10: tracked_elections.general_2020,
+    21: tracked_elections.primary_2021,
+    22: tracked_elections.general_2021,
+    25: tracked_elections.primary_2022,
+    26: tracked_elections.general_2022,
+    30: tracked_elections.primary_2023
+}
+
 
 class Person(TypedDict):
     name: str
     age: int
+    party: Literal["D", "R", "I"]
+    voting_history: dict[str, bool]
+    voter_id: str
+    value: float
 
 
 class HousePeople(TypedDict):
-    address: str
-    coordinates: Point
+    display_address: str
+    latitude: float
+    longitude: float
     voter_info: list[Person]
-    subsegment_start: int
+    value: float
+    # NOTE: This previously had subsegment_start, but this will now only be in the post-processing output
+
+
+voters_file_t = dict[str, HousePeople]
 
 
 "----------------------------------------------------------------------------------"

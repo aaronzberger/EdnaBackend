@@ -456,6 +456,8 @@ class PostProcess:
 
                 running_node = first.end
                 for block_id in block_ids:
+                    # TODO: Check if we can remove this. It is the only reference to all_blocks
+                    # May be able to just refer to block_id in the subblock
                     block = self._all_blocks[block_id]
 
                     start = Point(
