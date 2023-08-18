@@ -1,6 +1,7 @@
 # TODO: Fix arbitrary large distances throughout package
 
 from __future__ import annotations
+import itertools
 
 import json
 import os
@@ -33,6 +34,7 @@ from src.post_process import PostProcess
 from src.viz_utils import (
     display_blocks,
     display_clustered_blocks,
+    display_house_orders,
     display_individual_walk_lists,
     display_walk_lists,
 )
@@ -110,7 +112,8 @@ display_clustered_blocks(requested_blocks, labels, centers).save(
 )
 # endregion
 
-areas = [1]
+# Use all blocks as a single area
+areas = [i for i in range(len(clustered_blocks))]
 area = clustered_points[areas[0]]
 area_blocks = deepcopy(clustered_blocks[areas[0]])
 for i in range(1, len(areas)):
@@ -176,6 +179,17 @@ if solution is None:
 pickle.dump(
     optimizer.points, open(os.path.join(BASE_DIR, "optimize", "points.pkl"), "wb")
 )
+
+point_orders: list[list[Point]] = []
+
+for i, route in enumerate(solution['tours']):
+    point_orders.append([])
+    for stop in route['stops'][1:-1]:
+        point_orders[i].append(optimizer.points[stop['location']['index']])
+
+house_dcs = [[HouseDistances.get_distance(i, j) for (i, j) in itertools.pairwise(list)] for list in point_orders]
+
+display_house_orders(point_orders).save(os.path.join(BASE_DIR, 'viz', 'optimal.html'))
 
 post_processor = PostProcess(requested_blocks, points=optimizer.points)
 walk_lists: list[list[SubBlock]] = []

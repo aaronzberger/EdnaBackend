@@ -67,13 +67,13 @@ class MixDistances:
                 "When retrieiving mix distances, both points must have a 'type'"
             )
 
-        if p1["type"] == p2["type"] == "house":
+        if p1["type"] == p2["type"] == NodeType.house:
             return HouseDistances.get_distance(p1, p2)
-        elif p1["type"] == p2["type"] == "node":
+        elif p1["type"] == p2["type"] == NodeType.node:
             return NodeDistances.get_distance(p1, p2)
-        elif p1["type"] == "node" and p2["type"] == "house":
+        elif p1["type"] == NodeType.node and p2["type"] == NodeType.house:
             return min(cls.get_distance_through_ends(node=p1, house=p2))
-        elif p1["type"] == "house" and p2["type"] == "node":
+        elif p1["type"] == NodeType.house and p2["type"] == NodeType.node:
             return min(cls.get_distance_through_ends(node=p2, house=p1))
         else:
             print(

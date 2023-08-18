@@ -1,6 +1,7 @@
 import json
 import os
 import subprocess
+import sys
 import time
 from copy import deepcopy
 from datetime import datetime, timedelta
@@ -46,6 +47,7 @@ from src.config import (
     problem_path,
     pt_id,
     solution_path,
+    house_to_voters_file
 )
 from src.distances.houses import HouseDistances
 from src.distances.mix import MixDistances
@@ -55,6 +57,7 @@ TIME_STRING_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 class Optimizer:
     distance_matrix_save = os.path.join(BASE_DIR, "optimize", "distances.json")
+    _house_to_voters = json.load(open(house_to_voters_file))
 
     def __init__(
         self,
@@ -182,7 +185,7 @@ class Optimizer:
                         if pt_id(pt) == pt_id(other_pt) == "depot":
                             time = cost = 0
                         else:
-                            if pt["type"] == "house" or other_pt["type"] == "house":
+                            if pt["type"] == NodeType.house or other_pt["type"] == NodeType.house:
                                 # It is impossible to traverse between depots, or from a house to a depot
                                 time = MAX_ROUTE_TIME.seconds
                                 cost = MAX_TOURING_DISTANCE
@@ -215,7 +218,16 @@ class Optimizer:
         # Create the plan
         jobs: list[Job] = []
         for i, location in enumerate(self.points):
-            if location["type"] == "node":
+            if pt_id(location) == "depot":
+                delivery = Service(
+                    places=[
+                        Place(
+                            location=Location(index=i),
+                            duration=1,
+                        )
+                    ]
+                )
+            elif location["type"] == NodeType.node:
                 service_start = Service(
                     places=[
                         PlaceTW(
@@ -251,7 +263,12 @@ class Optimizer:
                         )
                     ]
                 )
-                jobs.append(Job(id=pt_id(location), services=[delivery], value=10))
+                try:
+                    value = self._house_to_voters[pt_id(location)]["value"]
+                except KeyError:
+                    print(colored(f"Unable to find house with ID {pt_id(location)} in voters file. Quitting.", "red"))
+                    sys.exit(1)
+                jobs.append(Job(id=pt_id(location), services=[delivery], value=1))
 
         fleet = self.build_fleet(
             shift_time=(end_time - start_time),

@@ -235,7 +235,29 @@ def handle_universe_file(universe_file: str, blocks: blocks_file_t, turnouts: di
         ----------
             universe_row (dict): the row from the universe file
             uuid (str): the uuid of the voter
+
+        Returns
+        -------
+            bool: whether or not the voter was added
         """
+        party = (
+            "D"
+            if universe_row["Party Code"] == "D"
+            else ("R" if universe_row["Party Code"] == "R" else "I")
+        )
+
+        try:
+            turnout: float = turnouts[universe_row["ID"]]
+        except KeyError:
+            print(colored(f"Could not find turnout prediction for ID {universe_row['ID']}. Quitting.", "red}"))
+            sys.exit()
+
+        value = voter_value(party=party, turnout=turnout)
+
+        if value == 0:
+            # If we do not want to visit this voter at all, do not add them
+            return False
+
         if uuid not in requested_voters:
             house_info: HouseInfo = blocks[block_id]["addresses"][uuid]
             # TODO: When the manual association returns a unit number, create a new entry in requested_blocks with that unit number
@@ -255,12 +277,6 @@ def handle_universe_file(universe_file: str, blocks: blocks_file_t, turnouts: di
             datetime.now() - datetime.strptime(universe_row["DOB"], "%m/%d/%Y")
         ).days // 365
 
-        party = (
-            "D"
-            if universe_row["Party Code"] == "D"
-            else ("R" if universe_row["Party Code"] == "R" else "I")
-        )
-
         voting_history = {}
         for row_key, election_key in voter_file_mapping.items():
             vote_key = universe_row[f"Election {row_key} Vote Method"]
@@ -270,25 +286,18 @@ def handle_universe_file(universe_file: str, blocks: blocks_file_t, turnouts: di
             voting_history[election_key.name] = voted
             voting_history[election_key.name + "_mail"] = by_mail
 
-        try:
-            turnout: float = turnouts[universe_row["ID"]]
-        except KeyError:
-            print(colored(f"Could not find turnout prediction for ID {universe_row['ID']}. Quitting.", "red}"))
-            sys.exit()
-
         person = Person(name=name, age=age, party=party, voting_history=voting_history, voter_id=universe_row["ID"],
-                        value=voter_value(party=party, turnout=turnout))
+                        value=value)
 
         requested_voters[uuid]["voter_info"].append(person)
 
         # Re-calculate the house value with the updated person
         requested_voters[uuid]["value"] = house_value([person["value"] for person in requested_voters[uuid]["voter_info"]])
 
-    # Count the number of entries in the universe file
+        return True
 
     # Process each requested house
-    for entry in tqdm(reader, total=num_voters, desc="Processing universe file", unit="voters"):
-        # TODO: Implement the targeting strategy cutoff (eliminate voters based on criteria)
+    for entry in tqdm(reader, total=num_voters, desc="Processing universe file", unit="voters", colour="green"):
         if (
             "Address" not in entry
             and "House Number" in entry
@@ -318,7 +327,10 @@ def handle_universe_file(universe_file: str, blocks: blocks_file_t, turnouts: di
             # TODO: Currently, this puts everyone whos uuid is the same in the same house,
             # but people can have different apartment numbers. Add a new entry to requested_blocks
             # with a new uuid with the unit number, and use this. Post-processing only uses these two files anyway.
-            add_voter(entry, uuid, block_id)
+            added: bool = add_voter(entry, uuid, block_id)
+
+            if not added:
+                continue
 
             if block_id in requested_blocks:
                 requested_blocks[block_id]["addresses"][uuid] = blocks[block_id][
@@ -330,6 +342,8 @@ def handle_universe_file(universe_file: str, blocks: blocks_file_t, turnouts: di
                 requested_blocks[block_id]["addresses"] = {
                     uuid: blocks[block_id]["addresses"][uuid]
                 }
+
+            requested_blocks[block_id]["addresses"][uuid]["value"] = requested_voters[uuid]["value"]
 
     print(
         colored(

@@ -94,15 +94,6 @@ def sigmoid(x: float, k: float, a: float) -> float:
     return 1 / (1 + math.exp(-k * (x - a)))
 
 
-def normalized_fn(fn):
-    min_value, max_value = fn(0, 1, 0), fn(1, 1, 0)
-
-    def normalized(x: float, k: float, a: float) -> float:
-        return (fn(x, k, a) - min_value) / (max_value - min_value)
-
-    return normalized
-
-
 def exponential(x: float, k: float) -> float:
     """Exponential function with steepness parameter k, scaled to [0, 1].
 
@@ -116,14 +107,21 @@ def voter_value(party: Literal["D", "R", "I"], turnout: float) -> float:
     # We use the normalized sigmoid function to exaggerate the differences between turnout probabilities.
     # Here, more steepness (k) means more exaggeration, and the (a) value is at what probability the function
     # is ambivalent (lower means fewer low-propensity voters are targeted)
-    base_value = normalized_fn(sigmoid)(turnout, 10, 0.4)
+    # base_value = sigmoid(turnout, 10, 0.4)
+    # normalized = (base_value - sigmoid(0, 10, 0.4)) / (
+    #     sigmoid(1, 10, 0.4) - sigmoid(0, 10, 0.4))
+    base_value = exponential(turnout, 5)
+
     return base_value if party in ["D", "I"] else 0
 
 
 def house_value(voter_values: list[float]) -> float:
     """Calculate the value of a house based on the voters in it."""
-    scaling_factor = 1 + (0.2 * len(voter_values))
-    return sum(voter_values) / len(voter_values) * scaling_factor
+    base_value = exponential(sum(voter_values), 1)
+    return round(base_value * 100)
+    # in_order = sorted(voter_values, reverse=True)
+    # total = in_order[0] + (0.2 * sum(in_order[1:]))
+    # return round(total)
 
 
 "----------------------------------------------------------------------------------"
@@ -141,7 +139,7 @@ GOOGLE_MAPS_API_KEY = "AIzaSyAPpRP4mPuMlyRP8YiIaEOL_YAms6TpCwM"
 
 UUID_NAMESPACE = uuid.UUID("ccf207c6-3b15-11ee-be56-0242ac120002")
 
-TURF_SPLIT = False  # Which problem to run
+TURF_SPLIT = True  # Which problem to run
 
 # Maximum distance between two nodes where they should be stored
 ARBITRARY_LARGE_DISTANCE = 10000
@@ -240,6 +238,7 @@ class HouseInfo(TypedDict):
     side: bool
     distance_to_road: int
     subsegment: tuple[int, int]
+    value: float
 
 
 class Block(TypedDict):
