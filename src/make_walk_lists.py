@@ -2,20 +2,16 @@
 
 from __future__ import annotations
 
-import csv
 import json
 import os
 import pickle
 import sys
 from copy import deepcopy
-from sys import argv
 
 from sklearn.cluster import DBSCAN
 from termcolor import colored
 
 from gps_utils import SubBlock
-from src.address import Address
-from src.associate import Associater
 from src.config import (
     BASE_DIR,
     DEPOT,
@@ -24,11 +20,9 @@ from src.config import (
     TURF_SPLIT,
     NodeType,
     Point,
-    blocks_file,
     blocks_file_t,
     pt_id,
-    manual_match_input_file,
-    manual_match_output_file,
+    requested_blocks_file
 )
 from src.distances.blocks import BlockDistances
 from src.distances.houses import HouseDistances
@@ -43,79 +37,8 @@ from src.viz_utils import (
     display_walk_lists,
 )
 
-all_blocks: blocks_file_t = json.load(open(blocks_file))
-
-"-----------------------------------------------------------------------------------------"
-"                                Handle universe file                                     "
-" The universe file is the list of voters to target for these routes. It should be a CSV  "
-" file with the columns [Voter ID, Address, City, Zip]                                     "
-"-----------------------------------------------------------------------------------------"
-# region Handle universe file
-if len(argv) == 2:
-    # Ensure the provided file exists
-    if not os.path.exists(argv[1]):
-        raise FileExistsError("Usage: make_walk_lists.py [UNIVERSE FILE]")
-
-    reader = csv.DictReader(open(argv[1]))
-    associater = Associater()
-
-    requested_blocks: blocks_file_t = {}
-    total_houses = 0
-
-    # Process each requested house
-    for house in reader:
-        if (
-            "Address" not in house
-            and "House Number" in house
-            and "Street Name" in house
-        ):
-            street_name = Address.sanitize_street_name(house["Street Name"])
-
-            formatted_address = Address(
-                house["House Number"],
-                house["House Number Suffix"],
-                street_name,
-                house["Apartment Number"],
-                None,
-                None,
-                house["Zip"],
-            )
-
-        else:
-            raise ValueError(
-                "The universe file must contain either an 'Address' column or 'House Number' and 'Street Name' columns"
-            )
-
-        total_houses += 1
-
-        result = associater.associate(formatted_address)
-        if result is not None:
-            block_id, uuid = result
-
-            if block_id in requested_blocks:
-                requested_blocks[block_id]["addresses"][uuid] = all_blocks[block_id][
-                    "addresses"
-                ][uuid]
-
-            else:
-                requested_blocks[block_id] = deepcopy(all_blocks[block_id])
-                requested_blocks[block_id]["addresses"] = {
-                    uuid: all_blocks[block_id]["addresses"][uuid]
-                }
-    print(f"Manual lookup key errors {associater.manual_key_errors}")
-    print("Failed on {} of {} houses".format(associater.failed_houses, total_houses))
-    no_choices = len(list(x for x in associater.need_manual_review if len(x["choices"]) == 0))
-    print(f"Number of failed houses with no matches at all: {no_choices}")
-    with open(manual_match_input_file, "w") as manual_match_file:
-        json.dump(associater.need_manual_review, manual_match_file)
-else:
-    requested_blocks: blocks_file_t = json.load(open(blocks_file))
-exit()
-
-# After this point, the original blocks variable should never be used, so delete it
-all_blocks.clear()
-del all_blocks
-# endregion
+# Load the requested blocks
+requested_blocks: blocks_file_t = json.load(open(requested_blocks_file))
 
 display_blocks(requested_blocks)[0].save(os.path.join(BASE_DIR, "viz", "segments.html"))
 

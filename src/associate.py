@@ -1,47 +1,53 @@
-"""Associate PA voter file addresses with PA address points file addresses:
+"""Associate PA voter file addresses with PA address points file addresses.
 
 A universe file is provided, for which addresses are from the PA voter export.
 
 These addresses must be matched with addresses from the PA address points file
 (which were previously associated with blocks in make_blocks.py).
 """
+import csv
 import dataclasses
-from typing import Optional
+import json
+import os
+import pprint
+import sys
 from copy import deepcopy
 
 import jsonpickle
+from rapidfuzz import fuzz, process
+from termcolor import colored
 
+from src.address import Address, addresses_file_t
 from src.config import (
-    HouseInfo,
     addresses_file,
     blocks_file,
     blocks_file_t,
+    manual_match_input_file,
+    manual_match_output_file,
     street_suffixes_file,
-    manual_match_output_file
+    requested_blocks_file,
+    house_to_voters_file
 )
 
-from src.address import Address, addresses_file_t
 
-from rapidfuzz import process, fuzz
-
-import json
-import pprint
-
-
-def address_match_score(
-        s1: Address, s2: Address, threshold=90, score_cutoff=0.0
-):
+def address_match_score(s1: Address, s2: Address, threshold=90, score_cutoff=0.0):
     """
-    Computes a custom score based on the Jaro distance between words in the two strings.
+    Compute a custom score based on the Jaro distance between words in the two strings.
 
-    Args:
-    - s1, s2: The two strings to compare.
-    - threshold: The minimum allowed Jaro score for two words to be considered a match.
-    - score_cutoff: The minimum overall score for the function to return a non-zero result.
+    Parameters
+    ----------
+        s1 (Address): The first address to compare.
+        s2 (Address): The second address to compare.
+        threshold (int): The minimum allowed Jaro score for two words to be considered a match.
+        score_cutoff (float): The minimum overall score for the function to return a non-zero result.
 
-    Returns:
-    - A score representing the ratio of matched words to the total number of words.
-    Returns 0.0 immediately if the computed score is below score_cutoff or house numbers don't match.
+    Returns
+    -------
+        A score representing the ratio of matched words to the total number of words.
+
+    Notes
+    -----
+        Returns 0.0 immediately if the computed score is below score_cutoff or house numbers don't match.
     """
 
     if s1.house_number != s2.house_number:
@@ -95,44 +101,58 @@ class Associater:
         return " ".join(words).rstrip()
 
     def __init__(self):
-        self.failed_houses = self.apartment_houses = 0
-        with open('houses_pretty.txt', 'w') as f:
+        with open("houses_pretty.txt", "w") as f:
             f.write(pprint.pformat(self.addresses_to_id))
         self.need_manual_review = []
         self.manual_matches = json.load(open(manual_match_output_file))
-        self.manual_key_errors = 0
+        self.result_counter = {
+            "exact match": 0,
+            "manual match": 0,
+            "does not exist": 0,
+            "not in universe": 0,
+            "key error": 0,
+            "failed": 0,
+        }
 
     def search_manual_associations(self, address: Address) -> Address | None:
         for match in self.manual_matches:
             if match["universe"] == dataclasses.asdict(address):
                 if match["match"] == "DNE":
-                    print("house doesnt exist")
+                    self.result_counter["does not exist"] += 1
                     return None
                 elif match["match"] == {}:
-                    print("no match exists for this house in addr_pts")
+                    self.result_counter["not in universe"] += 1
                     return None
                 else:
                     if isinstance(match["match"], dict):
                         print("found manual match")
                         matched_dict: dict = match["match"]
-                        as_address = Address(matched_dict["house_number"], matched_dict["house_number_suffix"],
-                                       matched_dict["street_name"], matched_dict["unit_num"], matched_dict["city"],
-                                       matched_dict["state"], matched_dict["zip_code"])
+                        as_address = Address(
+                            matched_dict["house_number"],
+                            matched_dict["house_number_suffix"],
+                            matched_dict["street_name"],
+                            matched_dict["unit_num"],
+                            matched_dict["city"],
+                            matched_dict["state"],
+                            matched_dict["zip_code"],
+                        )
                         if as_address in self.addresses_to_id:
+                            self.result_counter["manual match"] += 1
                             return as_address
                         else:
-                            self.manual_key_errors += 1
-                            print("keyerror")
+                            self.result_counter["key error"] += 1
         return None
 
     def associate(self, address: Address) -> tuple[str, str] | None:
         """
-        Associate an address with a house and get the house info
+        Associate an address with a house and get the house info.
 
-        Parameters:
+        Parameters
+        ----------
             address (str): the address to associate
 
-        Returns:
+        Returns
+        -------
             HouseInfo | None: information on the house, or None if the address could not be associated
         """
 
@@ -144,33 +164,123 @@ class Associater:
             precise_match_found = True
             matched_block_id, matched_uuid = self.addresses_to_id[address]
         else:
-            # print(f"Failed to find exact match for address: {address}")
-
             for choice in process.extract_iter(
-                    query=address,
-                    choices=self.addresses_to_id.keys(),
-                    scorer=address_match_score,
-                    score_cutoff=85,
+                query=address,
+                choices=self.addresses_to_id.keys(),
+                scorer=address_match_score,
+                score_cutoff=85,
             ):
                 matched_block_id, matched_uuid = self.addresses_to_id[choice[0]]
                 if isinstance(choice[0], Address) and (
-                        choice[0].unit_num == address.unit_num and
-                        choice[0].zip_code == address.zip_code and
-                        choice[0].house_number_suffix == address.house_number_suffix):
+                    choice[0].unit_num == address.unit_num
+                    and choice[0].zip_code == address.zip_code
+                    and choice[0].house_number_suffix == address.house_number_suffix
+                ):
                     precise_match_found = True
-                    # print(f"Fuzzy matched\n{address} to \n{choice[0]}")
+                    self.result_counter["exact match"] += 1
+
                     # TODO: Handle what happens if there is more than one match here
                 else:
                     choices.append(
-                        (dataclasses.asdict(choice[0]), choice[1], choice[2], matched_block_id, matched_uuid))
-                    # print(f"Choice for fuzzy match: {choice}")
+                        (
+                            dataclasses.asdict(choice[0]),
+                            choice[1],
+                            choice[2],
+                            matched_block_id,
+                            matched_uuid,
+                        )
+                    )
 
         if not precise_match_found:
             result = self.search_manual_associations(address)
             if result:
                 matched_block_id, matched_uuid = self.addresses_to_id[result]
             else:
-                self.need_manual_review.append({"universe": dataclasses.asdict(address), "choices": choices})
-                self.failed_houses += 1
+                self.need_manual_review.append(
+                    {"universe": dataclasses.asdict(address), "choices": choices}
+                )
+                self.result_counter["failed"] += 1
                 return None
         return matched_block_id, matched_uuid
+
+
+def handle_universe_file(universe_file: str, blocks: blocks_file_t):
+    reader = csv.DictReader(open(universe_file))
+    associater = Associater()
+
+    requested_blocks: blocks_file_t = {}
+    num_voters = 0
+
+    # Process each requested house
+    for entry in reader:
+        if (
+            "Address" not in entry
+            and "House Number" in entry
+            and "Street Name" in entry
+        ):
+            street_name = Address.sanitize_street_name(entry["Street Name"])
+
+            formatted_address = Address(
+                entry["House Number"],
+                entry["House Number Suffix"],
+                street_name,
+                entry["Apartment Number"],
+                None,
+                None,
+                entry["Zip"],
+            )
+
+        else:
+            raise ValueError(
+                "The universe file must contain either an 'Address' column or 'House Number' and 'Street Name' columns"
+            )
+
+        num_voters += 1
+
+        result = associater.associate(formatted_address)
+        if result is not None:
+            block_id, uuid = result
+
+            if block_id in requested_blocks:
+                requested_blocks[block_id]["addresses"][uuid] = blocks[block_id][
+                    "addresses"
+                ][uuid]
+
+            else:
+                requested_blocks[block_id] = deepcopy(blocks[block_id])
+                requested_blocks[block_id]["addresses"] = {
+                    uuid: blocks[block_id]["addresses"][uuid]
+                }
+
+    print(
+        colored(
+            f"Of {num_voters} voters, {num_voters - associater.result_counter['failed']} were matched",
+            "green",
+        )
+    )
+    print(
+        colored(
+            f"Of the remaining {associater.result_counter['failed']}, {associater.result_counter['does not exist']} do not exist,"
+            + f"and {associater.result_counter['not in universe'] + associater.result_counter['key error']} are not in the universe",
+            "yellow",
+        )
+    )
+
+    # no_choices = len(list(x for x in associater.need_manual_review if len(x["choices"]) == 0))
+    # print(f"Number of failed houses with no matches at all: {no_choices}")
+    with open(manual_match_input_file, "w") as manual_match_file:
+        json.dump(associater.need_manual_review, manual_match_file)
+
+    # Write the requested blocks to a file
+    with open(requested_blocks_file, "w") as f:
+        json.dump(requested_blocks, f)
+
+
+if __name__ == "__main__":
+    all_blocks: blocks_file_t = json.load(open(blocks_file))
+
+    if len(sys.argv) != 2 or not os.path.isfile(sys.argv[1]):
+        print("Usage: python3 associate.py <universe_file>")
+        sys.exit(1)
+
+    handle_universe_file(sys.argv[1], all_blocks)

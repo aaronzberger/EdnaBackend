@@ -61,6 +61,14 @@ universe_association = os.path.join(
     BASE_DIR, "regions", AREA_ID, "universe_association.json"
 )
 
+requested_blocks_file = os.path.join(
+    BASE_DIR, "regions", AREA_ID, "requested_blocks.json"
+)
+
+house_to_voters_file = os.path.join(
+    BASE_DIR, "regions", AREA_ID, "house_to_voters.json"
+)
+
 blocks_file = os.path.join(BASE_DIR, "regions", AREA_ID, "blocks.json")
 
 address_pts_file = os.path.join(BASE_DIR, "input", "address_pts.csv")
