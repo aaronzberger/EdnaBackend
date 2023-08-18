@@ -1,4 +1,5 @@
 
+from copy import deepcopy
 import itertools
 import json
 import math
@@ -27,6 +28,37 @@ class NodeDistances():
             cls._node_distances[pt_id(node_1)][pt_id(node_2)] = get_distance(node_1, node_2)
 
     @classmethod
+    def _generate_from_previous(cls):
+        """
+        Generate the node distance table from a previous table, adding any missing records.
+
+        Notes
+        -----
+            Time complexity: O(nk), with n the number of total nodes and k the number of new nodes
+        """
+        unseen_nodes = []
+        for node in cls.all_nodes:
+            if pt_id(node) not in cls._node_distances:
+                unseen_nodes.append(node)
+
+        with tqdm(total=math.comb(len(unseen_nodes), 2), desc='Generating', unit='pairs', colour='green') as progress:
+            for i, node in enumerate(unseen_nodes):
+                cls._node_distances[pt_id(node)] = {}
+                for other_node in unseen_nodes[i:]:
+                    cls._insert_pair(node, other_node)
+                    progress.update()
+
+    @classmethod
+    def _generate(cls):
+        cls._node_distances = {}
+        with tqdm(total=math.comb(len(cls.all_nodes), 2), desc='Generating', unit='pairs', colour='green') as progress:
+            for i, node in enumerate(cls.all_nodes):
+                cls._node_distances[pt_id(node)] = {}
+                for other_node in cls.all_nodes[i:]:
+                    cls._insert_pair(node, other_node)
+                    progress.update()
+
+    @classmethod
     def __init__(cls, blocks: blocks_file_t):
         cls.all_nodes = list(itertools.chain.from_iterable((i['nodes'][0], i['nodes'][-1]) for i in blocks.values()))
 
@@ -45,33 +77,29 @@ class NodeDistances():
                     break
             if not need_regeneration:
                 return
-            print('The saved node distance table did not include all requested nodes ({}). Regenerating...'.format(unseen_node))
+            print('The saved node distance table did not include all requested nodes (sample: {}). Adding missing records...'.format(unseen_node))
+            cls._generate_from_previous()
         else:
             print('No node distance table file found at {}. Generating now...'.format(node_distance_table_file))
+            cls._generate()
 
-        cls._node_distances = {}
-        with tqdm(total=math.comb(len(cls.all_nodes), 2), desc='Generating', unit='pairs', colour='green') as progress:
-            for i, node in enumerate(cls.all_nodes):
-                cls._node_distances[pt_id(node)] = {}
-                for other_node in cls.all_nodes[i:]:
-                    cls._insert_pair(node, other_node)
-                    progress.update()
-
-            print('Saving to {}'.format(node_distance_table_file))
-            json.dump(cls._node_distances, open(node_distance_table_file, 'w', encoding='utf-8'), indent=4)
+        print('Saving to {}'.format(node_distance_table_file))
+        json.dump(cls._node_distances, open(node_distance_table_file, 'w', encoding='utf-8'), indent=4)
 
     @classmethod
     def get_distance(cls, p1: Point, p2: Point) -> Optional[float]:
-        '''
-        Get the distance between two nodes by their coordinates
+        """
+        Get the distance between two nodes by their coordinates.
 
-        Parameters:
+        Parameters
+        ----------
             p1 (Point): the first point
             p2 (Point): the second point
 
-        Returns:
+        Returns
+        -------
             float | None: distance between the two points if it exists, None otherwise
-        '''
+        """
         try:
             return cls._node_distances[pt_id(p1)][pt_id(p2)]
         except KeyError:
