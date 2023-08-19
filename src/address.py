@@ -63,5 +63,19 @@ class Address:
         # Join the words back together and return
         return " ".join(words).rstrip()
 
+    def __eq__(self, __value: object) -> bool:
+        if not isinstance(__value, Address):
+            return False
+
+        return (
+            self.house_number == __value.house_number
+            and self.house_number_suffix == __value.house_number_suffix
+            and self.street_name == __value.street_name
+            and self.unit_num == __value.unit_num
+            and self.city == __value.city
+            and self.state == __value.state
+            and self.zip_code == __value.zip_code
+        )
+
 
 addresses_file_t = dict[Address, tuple[str, str]]

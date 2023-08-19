@@ -14,7 +14,7 @@ BASE_DIR = os.path.abspath(os.path.join(__file__, "../../"))
 VRP_CLI_PATH = "/home/user/.cargo/bin/vrp-cli"
 
 AREA_ID = "rosselli"
-USE_COST_METRIC = False
+USE_COST_METRIC = True
 
 street_suffixes_file = os.path.join(BASE_DIR, "src", "street_suffixes.json")
 
@@ -72,6 +72,10 @@ house_to_voters_file = os.path.join(
 
 turnout_predictions_file = os.path.join(
     BASE_DIR, "input", "2023_general_predictions.json"
+)
+
+optimizer_points_pickle_file = os.path.join(
+    BASE_DIR, "optimize", "points.pkl"
 )
 
 blocks_file = os.path.join(BASE_DIR, "regions", AREA_ID, "blocks.json")

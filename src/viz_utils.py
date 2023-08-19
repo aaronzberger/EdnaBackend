@@ -58,7 +58,7 @@ def generate_starter_map(
 
     return folium.Map(
         location=[(min(lats) + max(lats)) / 2, (min(lons) + max(lons)) / 2],
-        zoom_start=30
+        # zoom_start=30
     )
 
 
@@ -72,12 +72,40 @@ class ColorMap:
         return matplotlib.colors.rgb2hex(self.cmap(self.norm(value))[:3])
 
     def get_reverse(self, value: float) -> str:
-        """Get the opposite color for this value"""
+        """Get the opposite color for this value."""
         rgb = self.cmap(self.norm(value))[:3]
         return matplotlib.colors.rgb2hex((1 - rgb[0], 1 - rgb[1], 1 - rgb[2]))
 
 
-def display_blocks(blocks: blocks_file_t) -> tuple[folium.Map, set[tuple[float, float]]]:
+def display_targeting_voters(voters):
+    lats = [v.coords["lat"] for v in voters if v != -1]
+    lons = [v.coords["lon"] for v in voters if v != -1]
+    m = generate_starter_map(lats=lats, lons=lons)
+
+    for voter in voters:
+        if voter.coords["lat"] == -1 or voter.coords["lon"] == -1:
+            continue
+        # The text is the address on the first line, then each voter and their value on the next
+        text = f"{voter.address_line_1}<br>"
+        for voter_person in voter.people:
+            text += f"{voter_person['name']}: <b>{round(voter_person['value'] * 100)}%</b><br>"
+        folium.Circle(
+            [voter.coords["lat"], voter.coords["lon"]],
+            weight=10,
+            color="#0F6BF5",
+            opacity=1.0,
+            radius=1,
+            tooltip=text,
+        ).add_to(m)
+
+    m.fit_bounds(m.get_bounds())
+
+    return m
+
+
+def display_blocks(
+    blocks: blocks_file_t,
+) -> tuple[folium.Map, set[tuple[float, float]]]:
     # Seed the hash consistently for better visualization
     os.environ["PYTHONHASHSEED"] = "0"
 
@@ -122,10 +150,17 @@ def display_blocks(blocks: blocks_file_t) -> tuple[folium.Map, set[tuple[float, 
                 tooltip="{}: {}".format(house_info["display_address"], word),
             ).add_to(m)
 
-    print(colored("Of {} addresses, {} were duplicates (too close to render both).".format(
-        sum(num_houses_per_block), num_duplicate_coords
-    ), "yellow"))
-    print('This is likely fine, since storefronts or other close buildings may be in the same location. Debug if necessary.')
+    print(
+        colored(
+            "Of {} addresses, {} were duplicates (too close to render both).".format(
+                sum(num_houses_per_block), num_duplicate_coords
+            ),
+            "yellow",
+        )
+    )
+    print(
+        "This is likely fine, since storefronts or other close buildings may be in the same location. Debug if necessary."
+    )
 
     return m, added_houses
 
@@ -408,7 +443,9 @@ if __name__ == "__main__":
     )
 
     all_houses: list[Point] = []
-    for row in tqdm(house_points_reader, total=num_houses, colour="green", desc="Loading houses"):
+    for row in tqdm(
+        house_points_reader, total=num_houses, colour="green", desc="Loading houses"
+    ):
         lat, lon = float(row["latitude"]), float(row["longitude"])
         if lat < min_lat or lat > max_lat or lon < min_lon or lon > max_lon:
             continue
@@ -417,7 +454,7 @@ if __name__ == "__main__":
                 lat=float(Decimal(lat).quantize(Decimal("0.000001"))),
                 lon=float(Decimal(lon).quantize(Decimal("0.000001"))),
                 id=row["full_address"],
-                type=NodeType.house
+                type=NodeType.house,
             )
         )
 

@@ -1,5 +1,7 @@
 import itertools
 import json
+import os
+import pickle
 from copy import deepcopy
 from random import randint
 
@@ -7,20 +9,31 @@ import names
 from termcolor import colored
 
 from src.config import (
+    BASE_DIR,
+    TURF_SPLIT,
     HousePeople,
     NodeType,
     Person,
     Point,
+    Solution,
     Tour,
     blocks_file,
     blocks_file_t,
     house_id_to_block_id_file,
+    optimizer_points_pickle_file,
     pt_id,
+    requested_blocks_file,
 )
 from src.distances.mix import MixDistances
 from src.distances.nodes import NodeDistances
 from src.gps_utils import SubBlock, project_to_line
+from src.optimize import Optimizer
 from src.route import RouteMaker
+from src.viz_utils import (
+    display_house_orders,
+    display_individual_walk_lists,
+    display_walk_lists,
+)
 
 
 class PostProcess:
@@ -258,7 +271,11 @@ class PostProcess:
             )
 
         else:
-            print(colored('Error: "entrance" and "exit" were not valid for this block', "red"))
+            print(
+                colored(
+                    'Error: "entrance" and "exit" were not valid for this block', "red"
+                )
+            )
         # endregion
 
         # region: Order the houses
@@ -464,13 +481,13 @@ class PostProcess:
                         lat=block["nodes"][0]["lat"],
                         lon=block["nodes"][0]["lon"],
                         type=NodeType.node,
-                        id=block["nodes"][0]["id"],
+                        id="",
                     )
                     end = Point(
                         lat=block["nodes"][-1]["lat"],
                         lon=block["nodes"][-1]["lon"],
                         type=NodeType.node,
-                        id=block["nodes"][-1]["id"],
+                        id="",
                     )
 
                     reverse = pt_id(start) != pt_id(running_node)
@@ -791,3 +808,60 @@ class PostProcess:
 
         # Write the file
         json.dump(list_out, open(output_file, "w"))
+
+
+def process_solution(
+    solution: Solution, optimizer_points: list[Point], requested_blocks: blocks_file_t
+):
+    point_orders: list[list[Point]] = []
+
+    for i, route in enumerate(solution["tours"]):
+        point_orders.append([])
+        for stop in route["stops"][1:-1]:
+            point_orders[i].append(optimizer_points[stop["location"]["index"]])
+
+    # house_dcs = [[HouseDistances.get_distance(i, j) for (i, j) in itertools.pairwise(list)] for list in point_orders]
+
+    display_house_orders(point_orders).save(
+        os.path.join(BASE_DIR, "viz", "optimal.html")
+    )
+
+    post_processor = PostProcess(requested_blocks, points=optimizer_points)
+    walk_lists: list[list[SubBlock]] = []
+    for i, tour in enumerate(solution["tours"]):
+        # Do not count the starting location service at the start or end
+        tour["stops"] = tour["stops"][1:-1] if TURF_SPLIT else tour["stops"]
+
+        if len(tour["stops"]) == 0:
+            print("List {} has 0 stops".format(i))
+            continue
+
+        walk_lists.append(post_processor.post_process(tour))
+
+    # Save the walk lists
+    display_walk_lists(walk_lists).save(
+        os.path.join(BASE_DIR, "viz", "walk_lists.html")
+    )
+
+    list_visualizations = display_individual_walk_lists(walk_lists)
+    for i, walk_list in enumerate(list_visualizations):
+        walk_list.save(os.path.join(BASE_DIR, "viz", "walk_lists", "{}.html".format(i)))
+
+    for i in range(len(walk_lists)):
+        post_processor.generate_file(
+            walk_lists[i], os.path.join(BASE_DIR, "viz", "files", f"{i}.json")
+        )
+
+
+if __name__ == "__main__":
+    # Load the requested blocks
+    requested_blocks = json.load(open(requested_blocks_file, "r"))
+
+    # Load the optimizer points from pickle
+    optimizer_points = pickle.load(open(optimizer_points_pickle_file, "rb"))
+
+    # Load the solution file
+    solution: Solution = Optimizer.process_solution()
+
+    # Process the solution
+    process_solution(solution, optimizer_points, requested_blocks)

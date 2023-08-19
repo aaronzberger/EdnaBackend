@@ -1,7 +1,6 @@
 # TODO: Fix arbitrary large distances throughout package
 
 from __future__ import annotations
-import itertools
 
 import json
 import os
@@ -12,7 +11,6 @@ from copy import deepcopy
 from sklearn.cluster import DBSCAN
 from termcolor import colored
 
-from gps_utils import SubBlock
 from src.config import (
     BASE_DIR,
     DEPOT,
@@ -22,21 +20,19 @@ from src.config import (
     NodeType,
     Point,
     blocks_file_t,
+    optimizer_points_pickle_file,
     pt_id,
-    requested_blocks_file
+    requested_blocks_file,
 )
 from src.distances.blocks import BlockDistances
 from src.distances.houses import HouseDistances
 from src.distances.mix import MixDistances
 from src.distances.nodes import NodeDistances
 from src.optimize import Optimizer
-from src.post_process import PostProcess
+from src.post_process import process_solution
 from src.viz_utils import (
     display_blocks,
     display_clustered_blocks,
-    display_house_orders,
-    display_individual_walk_lists,
-    display_walk_lists,
 )
 
 # Load the requested blocks
@@ -113,7 +109,10 @@ display_clustered_blocks(requested_blocks, labels, centers).save(
 # endregion
 
 # Use all blocks as a single area
-areas = [i for i in range(len(clustered_blocks))]
+# areas = [i for i in range(len(clustered_blocks))]
+
+areas = [2]
+
 area = clustered_points[areas[0]]
 area_blocks = deepcopy(clustered_blocks[areas[0]])
 for i in range(1, len(areas)):
@@ -161,7 +160,8 @@ else:
 "-----------------------------------------------------------------------------------------"
 # region Optimize
 optimizer = Optimizer(area, num_lists=NUM_LISTS, starting_locations=depot)
-solution = optimizer.optimize()
+optimizer.optimize()
+solution = optimizer.process_solution()
 
 if solution is None:
     print(colored("Failed to generate lists", color="red"))
@@ -176,43 +176,12 @@ if solution is None:
 "-----------------------------------------------------------------------------------------"
 # region: Post-Process
 
-pickle.dump(
-    optimizer.points, open(os.path.join(BASE_DIR, "optimize", "points.pkl"), "wb")
+pickle.dump(optimizer.points, open(optimizer_points_pickle_file, "wb"))
+
+process_solution(
+    solution=solution,
+    optimizer_points=optimizer.points,
+    requested_blocks=requested_blocks,
 )
-
-point_orders: list[list[Point]] = []
-
-for i, route in enumerate(solution['tours']):
-    point_orders.append([])
-    for stop in route['stops'][1:-1]:
-        point_orders[i].append(optimizer.points[stop['location']['index']])
-
-house_dcs = [[HouseDistances.get_distance(i, j) for (i, j) in itertools.pairwise(list)] for list in point_orders]
-
-display_house_orders(point_orders).save(os.path.join(BASE_DIR, 'viz', 'optimal.html'))
-
-post_processor = PostProcess(requested_blocks, points=optimizer.points)
-walk_lists: list[list[SubBlock]] = []
-for i, tour in enumerate(solution["tours"]):
-    # Do not count the starting location service at the start or end
-    tour["stops"] = tour["stops"][1:-1] if TURF_SPLIT else tour["stops"]
-
-    if len(tour["stops"]) == 0:
-        print("List {} has 0 stops".format(i))
-        continue
-
-    walk_lists.append(post_processor.post_process(tour))
-
-# Save the walk lists
-display_walk_lists(walk_lists).save(os.path.join(BASE_DIR, "viz", "walk_lists.html"))
-
-list_visualizations = display_individual_walk_lists(walk_lists)
-for i, walk_list in enumerate(list_visualizations):
-    walk_list.save(os.path.join(BASE_DIR, "viz", "walk_lists", "{}.html".format(i)))
-
-for i in range(len(walk_lists)):
-    post_processor.generate_file(
-        walk_lists[i], os.path.join(BASE_DIR, "viz", "files", f"{i}.json")
-    )
 
 # endregion

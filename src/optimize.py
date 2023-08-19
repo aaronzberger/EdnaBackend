@@ -44,10 +44,10 @@ from src.config import (
     Vehicle,
     VehicleLimits,
     VehicleProfile,
+    house_to_voters_file,
     problem_path,
     pt_id,
     solution_path,
-    house_to_voters_file
 )
 from src.distances.houses import HouseDistances
 from src.distances.mix import MixDistances
@@ -185,7 +185,10 @@ class Optimizer:
                         if pt_id(pt) == pt_id(other_pt) == "depot":
                             time = cost = 0
                         else:
-                            if pt["type"] == NodeType.house or other_pt["type"] == NodeType.house:
+                            if (
+                                pt["type"] == NodeType.house
+                                or other_pt["type"] == NodeType.house
+                            ):
                                 # It is impossible to traverse between depots, or from a house to a depot
                                 time = MAX_ROUTE_TIME.seconds
                                 cost = MAX_TOURING_DISTANCE
@@ -266,7 +269,12 @@ class Optimizer:
                 try:
                     value = self._house_to_voters[pt_id(location)]["value"]
                 except KeyError:
-                    print(colored(f"Unable to find house with ID {pt_id(location)} in voters file. Quitting.", "red"))
+                    print(
+                        colored(
+                            f"Unable to find house with ID {pt_id(location)} in voters file. Quitting.",
+                            "red",
+                        )
+                    )
                     sys.exit(1)
                 jobs.append(Job(id=pt_id(location), services=[delivery], value=1))
 
@@ -386,6 +394,8 @@ class Optimizer:
             )
         )
 
+    @classmethod
+    def process_solution(cls) -> Solution:
         solution_dict = json.load(open(solution_path))
         tours: list[Tour] = []
         for tour in solution_dict["tours"]:
@@ -408,10 +418,10 @@ class Optimizer:
                     stops=stops,
                 )
             )
-        self.solution = Solution(
+        solution = Solution(
             statistic=Statistic(**solution_dict["statistic"]),
             tours=tours,
             unassigned=solution_dict["unassigned"],
         )
 
-        return self.solution
+        return solution
