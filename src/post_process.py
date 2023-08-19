@@ -19,11 +19,14 @@ from src.config import (
     Tour,
     blocks_file,
     blocks_file_t,
+    generate_pt_id,
     house_id_to_block_id_file,
     optimizer_points_pickle_file,
     pt_id,
     requested_blocks_file,
 )
+from src.distances.blocks import BlockDistances
+from src.distances.houses import HouseDistances
 from src.distances.mix import MixDistances
 from src.distances.nodes import NodeDistances
 from src.gps_utils import SubBlock, project_to_line
@@ -217,6 +220,7 @@ class PostProcess:
                 lat=closest_to_end["lat"],
                 lon=closest_to_end["lon"],
                 type=NodeType.house,
+                # TODO: Change this to use uuid by changing above line to items
                 id=closest_to_end["display_address"],
             )
 
@@ -481,13 +485,13 @@ class PostProcess:
                         lat=block["nodes"][0]["lat"],
                         lon=block["nodes"][0]["lon"],
                         type=NodeType.node,
-                        id="",
+                        id=generate_pt_id(block["nodes"][0]["lat"], block["nodes"][0]["lon"]),
                     )
                     end = Point(
                         lat=block["nodes"][-1]["lat"],
                         lon=block["nodes"][-1]["lon"],
                         type=NodeType.node,
-                        id="",
+                        id=generate_pt_id(block["nodes"][-1]["lat"], block["nodes"][-1]["lon"])
                     )
 
                     reverse = pt_id(start) != pt_id(running_node)
@@ -496,8 +500,8 @@ class PostProcess:
                         start, end = end, start
                         nav_pts = nav_pts[::-1]
 
-                    assert pt_id(start) == pt_id(running_node)
-                    assert pt_id(nav_pts[0]) == pt_id(start)
+                    assert pt_id(start) == pt_id(running_node), f"{start} != {running_node}"
+                    assert pt_id(nav_pts[0]) == pt_id(start), f"{nav_pts[0]} != {start}"
 
                     running_node = end
 
@@ -524,7 +528,7 @@ class PostProcess:
         # new_sub_blocks: list[SubBlock] = []
 
         for i, sub_block in enumerate(sub_blocks):
-            print("Original navigation points", sub_block.navigation_points, flush=True)
+            # print("Original navigation points", sub_block.navigation_points, flush=True)
             if len(sub_block.houses) == 0:
                 # new_sub_blocks.append(sub_block)
                 continue
@@ -573,14 +577,14 @@ class PostProcess:
 
                 other_assigned_addresses = [h["id"] for h in other_sub_block.houses]
                 other_block_addresses = {
-                    add: inf
-                    for add, inf in self.blocks[block_id]["addresses"].items()
-                    if add in other_assigned_addresses
+                    uuid: inf
+                    for uuid, inf in self.blocks[block_id]["addresses"].items()
+                    if uuid in other_assigned_addresses
                 }
 
                 assert len(other_block_addresses) == len(
                     other_sub_block.houses
-                ), "Other block addresses was {} but other sub block houses was {}".format(
+                ), "Other block addresses was {} but other sub block houses was {}. ".format(
                     len(other_block_addresses), len(other_sub_block.houses)
                 )
 
@@ -592,7 +596,7 @@ class PostProcess:
                 ):
                     # print(info['side'], house)
                     if info["side"] in house_sides:
-                        print("Adding house {} to sub-block".format(house))
+                        # print("Adding house {} to sub-block".format(house))
                         new_houses.append(house)
                         to_delete.append(house)
 
@@ -761,10 +765,10 @@ class PostProcess:
 
         # Combine sub-blocks that are on the same block, if there are houses on the same side
         num_houses = sum([len(sub_block.houses) for sub_block in walk_list])
-        print("Number of houses before combining sub-blocks: {}".format(num_houses))
+        # print("Number of houses before combining sub-blocks: {}".format(num_houses))
         walk_list = self.combine_sub_blocks(walk_list)
         num_houses = sum([len(sub_block.houses) for sub_block in walk_list])
-        print("Number of houses after combining sub-blocks: {}".format(num_houses))
+        # print("Number of houses after combining sub-blocks: {}".format(num_houses))
 
         # Fill in any holes
         walk_list = self.fill_holes(walk_list)
@@ -829,7 +833,7 @@ def process_solution(
     post_processor = PostProcess(requested_blocks, points=optimizer_points)
     walk_lists: list[list[SubBlock]] = []
     for i, tour in enumerate(solution["tours"]):
-        # Do not count the starting location service at the start or end
+        # Do not count the startingg location service at the start or end
         tour["stops"] = tour["stops"][1:-1] if TURF_SPLIT else tour["stops"]
 
         if len(tour["stops"]) == 0:
@@ -856,6 +860,15 @@ def process_solution(
 if __name__ == "__main__":
     # Load the requested blocks
     requested_blocks = json.load(open(requested_blocks_file, "r"))
+
+    # Generate node distance matrix
+    NodeDistances(requested_blocks)
+
+    # Generate block distance matrix
+    BlockDistances(requested_blocks)
+
+    # Initialize calculator for mixed distances
+    MixDistances()
 
     # Load the optimizer points from pickle
     optimizer_points = pickle.load(open(optimizer_points_pickle_file, "rb"))

@@ -143,7 +143,7 @@ GOOGLE_MAPS_API_KEY = "AIzaSyAPpRP4mPuMlyRP8YiIaEOL_YAms6TpCwM"
 
 UUID_NAMESPACE = uuid.UUID("ccf207c6-3b15-11ee-be56-0242ac120002")
 
-TURF_SPLIT = True  # Which problem to run
+TURF_SPLIT = False  # Which problem to run
 
 # Maximum distance between two nodes where they should be stored
 ARBITRARY_LARGE_DISTANCE = 10000
@@ -194,6 +194,10 @@ ROAD_WIDTH = {
 NodeType = Enum("NodeType", ["house", "node", "other"])
 
 
+def generate_pt_id(lat: float, lon: float) -> str:
+    return str("{:.7f}".format(lat)) + ":" + str("{:.7f}".format(lon))
+
+
 class Point(TypedDict):
     lat: float
     lon: float
@@ -214,7 +218,7 @@ def pt_id(p: Point) -> str:
         str: the ID, if it was provided upon creation. Otherwise, an ID made up of the rounded coordinates
     """
     return (
-        str("{:.7f}".format(p["lat"])) + ":" + str("{:.7f}".format(p["lon"]))
+        generate_pt_id(p["lat"], p["lon"])
         if "id" not in p or p["id"] is None
         else p["id"]
     )
@@ -227,9 +231,11 @@ node_list_t = list[Point]
 # DEPOT = Point(lat=40.4471477, lon=-79.9311578, type='node')  # Kipling and Dunmoyle
 # DEPOT = Point(lat=40.4310603, lon=-79.9191268, type='node')  # Shady and Nicholson
 # DEPOT = Point(lat=40.4430899, lon=-79.9329246, type='node')  # Maynard and Bennington
-DEPOT = Point(
-    lat=40.4362340, lon=-79.9191103, type=NodeType.node, id=""
-)  # Forbes and Shady
+# DEPOT = Point(
+#     lat=40.4362340, lon=-79.9191103, type=NodeType.node, id=""
+# )  # Forbes and Shady
+
+DEPOT = "107503392"
 NUM_LISTS = 1
 
 

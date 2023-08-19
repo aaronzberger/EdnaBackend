@@ -377,7 +377,7 @@ class Optimizer:
                 "-t",
                 str(TIMEOUT.seconds),
                 "--min-cv",
-                "sample,200,0.1,true",
+                "sample,200,0.01,true",
                 "--search-mode",
                 "deep" if SEARCH_MODE_DEEP else "broad",
                 "--log",

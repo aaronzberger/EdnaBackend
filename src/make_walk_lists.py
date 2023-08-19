@@ -19,10 +19,12 @@ from src.config import (
     TURF_SPLIT,
     NodeType,
     Point,
+    Solution,
     blocks_file_t,
     optimizer_points_pickle_file,
     pt_id,
     requested_blocks_file,
+    node_coords_file
 )
 from src.distances.blocks import BlockDistances
 from src.distances.houses import HouseDistances
@@ -34,6 +36,12 @@ from src.viz_utils import (
     display_blocks,
     display_clustered_blocks,
 )
+
+if len(sys.argv) == 2 and sys.argv[1] == "-no":
+    NO_OPTIMIZE = True
+else:
+    NO_OPTIMIZE = False
+
 
 # Load the requested blocks
 requested_blocks: blocks_file_t = json.load(open(requested_blocks_file))
@@ -148,7 +156,20 @@ if TURF_SPLIT:
     # Generate the house distance matrix
     HouseDistances(area_blocks)
 else:
-    depot = DEPOT
+    node_coords_file = json.load(open(node_coords_file))
+
+    try:
+        result = node_coords_file[DEPOT]
+    except KeyError:
+        print(colored("Depot not found in node_coords_file", color="red"))
+        sys.exit()
+
+    depot = Point(
+        lat=result["lat"],
+        lon=result["lon"],
+        type=NodeType.node,
+        id="depot",
+    )
 
     # Generate house distance matrix, and distances to the depot
     HouseDistances(area_blocks, depot)
@@ -158,15 +179,18 @@ else:
 " Run the optimizer on the subset of the universe, providing a startting location for the "
 " group canvas problem and nothing for the turf split problem                             "
 "-----------------------------------------------------------------------------------------"
-# region Optimize
-optimizer = Optimizer(area, num_lists=NUM_LISTS, starting_locations=depot)
-optimizer.optimize()
-solution = optimizer.process_solution()
 
-if solution is None:
-    print(colored("Failed to generate lists", color="red"))
-    sys.exit()
-# endregion
+if not NO_OPTIMIZE:
+    optimizer = Optimizer(area, num_lists=NUM_LISTS, starting_locations=depot)
+    optimizer.optimize()
+    solution = optimizer.process_solution()
+
+    if solution is None:
+        print(colored("Failed to generate lists", color="red"))
+        sys.exit()
+
+    pickle.dump(optimizer.points, open(optimizer_points_pickle_file, "wb"))
+
 
 "-----------------------------------------------------------------------------------------"
 "                                      Post-Process                                       "
@@ -174,14 +198,12 @@ if solution is None:
 " heuristics (combining duplicate blocks, eliminating backtracking, etc.)                 "
 " Also, generate the walk list files and visualizations                                   "
 "-----------------------------------------------------------------------------------------"
-# region: Post-Process
 
-pickle.dump(optimizer.points, open(optimizer_points_pickle_file, "wb"))
+# Load the optimizer points from pickle
+optimizer_points = pickle.load(open(optimizer_points_pickle_file, "rb"))
 
-process_solution(
-    solution=solution,
-    optimizer_points=optimizer.points,
-    requested_blocks=requested_blocks,
-)
+# Load the solution file
+solution: Solution = Optimizer.process_solution()
 
-# endregion
+# Process the solution
+process_solution(solution=solution, optimizer_points=optimizer_points, requested_blocks=requested_blocks)

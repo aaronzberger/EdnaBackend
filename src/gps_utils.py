@@ -9,7 +9,7 @@ import utm
 from geographiclib.geodesic import Geodesic
 from haversine import Unit, haversine
 
-from src.config import MINS_PER_HOUSE, WALKING_M_PER_S, Block, NodeType, Point
+from src.config import MINS_PER_HOUSE, WALKING_M_PER_S, Block, NodeType, Point, generate_pt_id
 
 converter: Geodesic = Geodesic.WGS84  # type: ignore
 
@@ -283,7 +283,7 @@ def project_to_line(p1: Point, p2: Point, p3: Point) -> Point:
     ald_p1 = along_track_distance(p1, p2, p3)[0]
     projected = path_between.Position(ald_p1)
     return Point(
-        lat=projected["lat2"], lon=projected["lon2"], type=NodeType.other, id="proj"
+        lat=projected["lat2"], lon=projected["lon2"], type=NodeType.other, id=generate_pt_id(projected["lat2"], projected["lon2"])
     )
 
 

@@ -6,6 +6,7 @@ import json
 import os
 from decimal import Decimal
 from random import randint
+import sys
 from typing import Optional
 
 import folium
@@ -24,6 +25,7 @@ from src.config import (
     address_pts_file,
     blocks_file,
     blocks_file_t,
+    node_coords_file
 )
 from src.gps_utils import SubBlock
 
@@ -415,8 +417,16 @@ def display_walk_lists(walk_lists: list[list[SubBlock]]) -> folium.Map:
                 house_counter += 1
 
     # Place the depot
+
+    node_coords = json.load(open(node_coords_file))
+    try:
+        pt = node_coords[DEPOT]
+    except KeyError:
+        print(colored("Depot not found in node_coords.json. Quitting.", "red"))
+        sys.exit()
+
     folium.Circle(
-        location=[DEPOT["lat"], DEPOT["lon"]],
+        location=[pt["lat"], pt["lon"]],
         radius=11,
         color="red",
         fillOpacity=1,
