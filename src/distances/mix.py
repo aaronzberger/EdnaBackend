@@ -6,6 +6,7 @@ from typing import Optional
 from termcolor import colored
 
 from src.config import (
+    NODE_TOO_FAR_DISTANCE,
     NodeType,
     Point,
     blocks_file,

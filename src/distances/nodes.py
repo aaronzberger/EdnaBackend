@@ -1,5 +1,4 @@
 
-from copy import deepcopy
 import itertools
 import json
 import math
@@ -40,6 +39,8 @@ class NodeDistances():
         for node in cls.all_nodes:
             if pt_id(node) not in cls._node_distances:
                 unseen_nodes.append(node)
+
+        print('Of the {} nodes, {} are unseen.'.format(len(cls.all_nodes), len(unseen_nodes)))
 
         with tqdm(total=math.comb(len(unseen_nodes), 2), desc='Generating', unit='pairs', colour='green') as progress:
             for i, node in enumerate(unseen_nodes):

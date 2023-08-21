@@ -263,10 +263,13 @@ def handle_universe_file(universe_file: str, blocks: blocks_file_t, turnouts: di
             # TODO: When the manual association returns a unit number, create a new entry in requested_blocks with that unit number
             requested_voters[uuid] = HousePeople(
                 display_address=house_info["display_address"],
+                city=house_info["city"],
+                state=house_info["state"],
+                zip=house_info["zip"],
                 latitude=house_info["lat"],
                 longitude=house_info["lon"],
                 voter_info=[],
-                value=0,
+                value=-1,
             )
 
         name = f"{universe_row['First Name']} {universe_row['Last Name']}"

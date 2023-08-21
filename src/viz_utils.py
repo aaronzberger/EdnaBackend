@@ -226,7 +226,7 @@ def display_clustered_blocks(
 def display_house_orders(
     walk_lists: list[list[Point]],
     cmap: Optional[ColorMap] = None,
-    dcs: Optional[list[list[Optional[tuple[float, float]]]]] = None,
+    dcs: Optional[list[list[tuple[float, float]]]] = None,
 ) -> folium.Map:
     """
     Display the house orders in a map.
@@ -276,21 +276,21 @@ def display_house_orders(
                     points, color=text_color, weight=5, opacity=0.5, tooltip=display
                 ).add_to(m)
 
-                # Display distance, cost text over the line
-                mid_point = [
-                    (points[0][0] + points[1][0]) / 2,
-                    (points[0][1] + points[1][1]) / 2,
-                ]
-                folium.Marker(
-                    location=mid_point,
-                    icon=DivIcon(
-                        icon_size=(25, 25),
-                        icon_anchor=(10, 10),  # left-right, up-down
-                        html='<div style="font-size: 15pt; color:{}">{}</div>'.format(
-                            text_color, display
-                        ),
-                    ),
-                ).add_to(m)
+                # # Display distance, cost text over the line
+                # mid_point = [
+                #     (points[0][0] + points[1][0]) / 2,
+                #     (points[0][1] + points[1][1]) / 2,
+                # ]
+                # folium.Marker(
+                #     location=mid_point,
+                #     icon=DivIcon(
+                #         icon_size=(25, 25),
+                #         icon_anchor=(10, 10),  # left-right, up-down
+                #         html='<div style="font-size: 15pt; color:{}">{}</div>'.format(
+                #             text_color, display
+                #         ),
+                #     ),
+                # ).add_to(m)
     return m
 
 

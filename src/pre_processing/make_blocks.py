@@ -545,6 +545,9 @@ with tqdm(
 
             output_house = HouseInfo(
                 display_address=item["full_address"],
+                city=item["municipality"],
+                state=item["state"],
+                zip=item["zip_code"],
                 lat=house_pt["lat"],
                 lon=house_pt["lon"],
                 distance_to_start=round(distance_to_start),
@@ -552,6 +555,7 @@ with tqdm(
                 side=best_segment.side,
                 distance_to_road=round(best_segment.ctd),
                 subsegment=(min(sub_nodes), max(sub_nodes)),
+                value=-1
             )
 
             # TODO: resolve best_segment type issues, these casts should not be needed

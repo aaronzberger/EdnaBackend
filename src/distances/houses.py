@@ -218,18 +218,20 @@ class HouseDistances():
         json.dump(cls._house_matrix, open(house_distance_table_file, 'w', encoding='utf-8'), indent=4)
 
     @classmethod
-    def get_distance(cls, p1: Point, p2: Point) -> Optional[tuple[float, float]] | Optional[float]:
-        '''
-        Get the distance between two houses by their coordinates
+    def get_distance(cls, p1: Point, p2: Point) -> Optional[tuple[float, float] | float]:
+        """
+        Get the distance between two houses by their coordinates.
 
-        Parameters:
+        Parameters
+        ----------
             p1 (Point): the first point
             p2 (Point): the second point
 
-        Returns:
+        Returns
+        -------
             tuple[float, float] | float | None: distance, cost between the two points (if using the cost metric)
                 or just the distance (if not using the cost metric), or None if the distance is too far
-        '''
+        """
         if len(cls._house_matrix) == 0:
             raise ValueError('House distance table has not been initialized')
         try:

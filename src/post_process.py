@@ -1,16 +1,20 @@
 import itertools
 import json
+import math
 import os
 import pickle
 from copy import deepcopy
 from random import randint
+import sys
 
 import names
 from termcolor import colored
 
 from src.config import (
     BASE_DIR,
+    NODE_TOO_FAR_DISTANCE,
     TURF_SPLIT,
+    HouseOutput,
     HousePeople,
     NodeType,
     Person,
@@ -24,6 +28,7 @@ from src.config import (
     optimizer_points_pickle_file,
     pt_id,
     requested_blocks_file,
+    house_to_voters_file
 )
 from src.distances.blocks import BlockDistances
 from src.distances.houses import HouseDistances
@@ -45,6 +50,7 @@ class PostProcess:
         self.house_id_to_block_id: dict[str, str] = json.load(
             open(house_id_to_block_id_file)
         )
+        self.house_to_voters = json.load(open(house_to_voters_file))
         # self.address_to_segment_id: houses_file_t = json.load(open(addresses_file))
 
         self.blocks = blocks
@@ -797,36 +803,83 @@ class PostProcess:
                 nodes.append({"lat": nav_pt["lat"], "lon": nav_pt["lon"]})
             houses = []
             for house in sub_block.houses:
+                # Lookup this entry by uuid
+                try:
+                    house_voter_info: HousePeople = self.house_to_voters[pt_id(house)]
+                except KeyError:
+                    print(colored("House {} not found in voter info".format(house), "red"))
+                    sys.exit(1)
+
+                assert house_voter_info["latitude"] == house["lat"] and house_voter_info["longitude"] == house["lon"], \
+                    "House coordinate mismatch: voter info file had {}, routing file had {}".format(
+                        (house_voter_info["latitude"], house_voter_info["longitude"]), (house["lat"], house["lon"]))
+
                 houses.append(
-                    HousePeople(
-                        address=house["id"],
-                        coordinates={"lat": house["lat"], "lon": house["lon"]},
-                        voter_info=[
-                            Person(name=names.get_full_name(), age=randint(18, 95))
-                            for _ in range(randint(1, 5))
-                        ],
+                    HouseOutput(
+                        display_address=house_voter_info["display_address"],
+                        city=house_voter_info["city"],
+                        state=house_voter_info["state"],
+                        zip=house_voter_info["zip"],
+                        uuid=pt_id(house),
+                        latitude=house_voter_info["latitude"],
+                        longitude=house_voter_info["longitude"],
+                        voter_info=house_voter_info["voter_info"],
                         subsegment_start=house["subsegment_start"],
-                    )
-                )
+                ))
+
             list_out["blocks"].append({"nodes": nodes, "houses": houses})
 
         # Write the file
         json.dump(list_out, open(output_file, "w"))
 
 
+def get_distance_cost(idx1: int, idx2: int) -> tuple[float, float]:
+    """
+    Get the distance and cost from the routing input for two indices.
+
+    Parameters
+    ----------
+        idx1 (int): The first index
+        idx2 (int): The second index
+
+    Returns
+    -------
+        float: The distance between the two indices
+        float: The cost between the two indices
+    """
+    distance_costs = json.load(open(os.path.join(BASE_DIR, "optimize", "distances.json")))
+
+    # Distances are stored as a flattened matrix
+    # The index of the distance between two points is calculated as follows:
+    #   (idx1 * num_points) + idx2
+    #   (idx2 * num_points) + idx1
+
+    num_points = math.sqrt(len(distance_costs["distances"]))
+    assert num_points == int(num_points), "Number of points is not an integer"
+
+    return distance_costs["travelTimes"][(idx1 * int(num_points)) + idx2], \
+        distance_costs["distances"][(idx1 * int(num_points)) + idx2]
+
+
 def process_solution(
     solution: Solution, optimizer_points: list[Point], requested_blocks: blocks_file_t
 ):
-    point_orders: list[list[Point]] = []
+    point_orders: list[list[tuple[Point, int]]] = []
 
     for i, route in enumerate(solution["tours"]):
         point_orders.append([])
         for stop in route["stops"][1:-1]:
-            point_orders[i].append(optimizer_points[stop["location"]["index"]])
+            point_orders[i].append((optimizer_points[stop["location"]["index"]], stop["location"]["index"]))
 
     # house_dcs = [[HouseDistances.get_distance(i, j) for (i, j) in itertools.pairwise(list)] for list in point_orders]
+    house_dcs = [
+        [get_distance_cost(i[1], j[1]) for (i, j) in itertools.pairwise(list)]
+        for list in point_orders
+    ]
 
-    display_house_orders(point_orders).save(
+    points = [[i[0] for i in list] for list in point_orders]
+
+    display_house_orders(points, dcs=house_dcs).save(
         os.path.join(BASE_DIR, "viz", "optimal.html")
     )
 

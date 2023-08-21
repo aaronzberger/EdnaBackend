@@ -43,32 +43,24 @@ if walk_list is None:
 # endregion
 
 # region Retrieve house keys
-addresses = []
-coordinates = []
+addresses: list[str] = []
+uuids: list[str] = []
 for block in walk_list['blocks']:
     for house in block['houses']:
-        addresses.append(house['address'])
-        coordinates.append(house['coordinates'])
+        addresses.append(f"{house['display_address'], {house['city']}, {house['state']}, {house['zip']}}".replace('None', ''))
+        uuids.append(house["uuid"])
 
-# Keys
-keys = []
-for i in range(len(addresses)):
-    lat = Decimal(coordinates[i]['lat']).quantize(Decimal('0.0001'))
-    lon = Decimal(coordinates[i]['lon']).quantize(Decimal('0.0001'))
-    split_address = addresses[i].split(' ')
-    house_num, street = split_address[0], split_address[1]
-    keys.append('{}_{}_{}_{}'.format(house_num, street.upper(), lat, lon))
 # endregion
 
 # region Check which files don't already exist
-needed_images: list[tuple[str, dict]] = []
-for key, coords in tqdm.tqdm(zip(keys, coordinates), desc='Checking images', total=len(keys), unit='images', colour='green'):
-    url = 'https://votefalcon.s3.amazonaws.com/{}.jpg'.format(key)
+needed_images: list[tuple[str, str]] = []
+for uuid, address in tqdm.tqdm(zip(uuids, addresses), desc='Checking images', total=len(uuids), unit='images', colour='green'):
+    url = 'https://votefalcon.s3.amazonaws.com/images/{}.jpg'.format(uuid)
     r = requests.head(url)
     if r.status_code != 200:
-        needed_images.append((key, coords))
+        needed_images.append((uuid, address))
 
-print('Found {}/{} images already. Requesting {} new...'.format(len(keys) - len(needed_images), len(keys), len(needed_images)))
+print('Found {}/{} images already. Requesting {} new...'.format(len(uuids) - len(needed_images), len(uuids), len(needed_images)))
 # endregion
 
 print(colored('Confirm requesting {} houses from street view? (y/n)'.format(len(needed_images)), 'yellow'))
@@ -84,9 +76,7 @@ os.mkdir(list_file_name)
 for image in tqdm.tqdm(needed_images, desc='Downloading images', total=len(needed_images), unit='images', colour='green'):
     params = [{
         'size': '640x640',
-        'location': '{},{}'.format(image[1]['lat'], image[1]['lon']),
-        'pitch': '10',  # Pitch up slightly to see house
-        'fov': '70',  # Fov in slightly to see house
+        'location': image[1],
         'key': API_KEY
     }]
 
@@ -96,12 +86,12 @@ for image in tqdm.tqdm(needed_images, desc='Downloading images', total=len(neede
     results.download_links(list_file_name)
 
     # Rename the image to the key
-    os.rename('{}/gsv_0.jpg'.format(list_file_name), '{}/{}.jpg'.format(list_file_name, image[0]))
+    os.rename('{}/gsv_0.jpg'.format(list_file_name), '{}.jpg'.format(image[0]))
 
     # Crop the image a bit (remove 10 pixels from bottom)
-    img = cv2.imread('{}/{}.jpg'.format(list_file_name, image[0]))
+    img = cv2.imread('{}.jpg'.format(image[0]))
     img = img[:-25, :]
-    cv2.imwrite('{}/{}.jpg'.format(list_file_name, image[0]), img)
+    cv2.imwrite('{}.jpg'.format(image[0]), img)
 # endregion
 
 print(colored('Retrieved and wrote {} images to {}'.format(len(needed_images), list_file_name), 'green'))
@@ -113,7 +103,7 @@ qr = qrcode.QRCode(
     box_size=10,
     border=4,
 )
-qr.add_data(sys.argv[1])
+qr.add_data("https://votefalcon.s3.amazonaws.com/lists/{}.json".format(list_file_name))
 qr.make(fit=True)
 
 img = qr.make_image(fill_color="black", back_color="white")

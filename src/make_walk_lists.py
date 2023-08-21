@@ -167,7 +167,7 @@ else:
     depot = Point(
         lat=result["lat"],
         lon=result["lon"],
-        type=NodeType.node,
+        type=NodeType.other,
         id="depot",
     )
 
@@ -190,6 +190,7 @@ if not NO_OPTIMIZE:
         sys.exit()
 
     pickle.dump(optimizer.points, open(optimizer_points_pickle_file, "wb"))
+    print(colored("Generated lists and pickled optimizer points", color="green"))
 
 
 "-----------------------------------------------------------------------------------------"

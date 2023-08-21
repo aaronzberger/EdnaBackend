@@ -19,6 +19,7 @@ from src.config import (
     OPTIM_OBJECTIVES,
     SEARCH_MODE_DEEP,
     TIMEOUT,
+    USE_COST_METRIC,
     VRP_CLI_PATH,
     WALKING_M_PER_S,
     DistanceMatrix,
@@ -184,32 +185,37 @@ class Optimizer:
                     if pt_id(pt) == "depot" or pt_id(other_pt) == "depot":
                         if pt_id(pt) == pt_id(other_pt) == "depot":
                             time = cost = 0
+                        elif (
+                            pt["type"] == NodeType.house
+                            or other_pt["type"] == NodeType.house
+                        ):
+                            # It is impossible to traverse between depots, or from a house to a depot
+                            time = MAX_ROUTE_TIME.seconds
+                            cost = MAX_TOURING_DISTANCE
+                        elif pt["type"] == NodeType.node or other_pt["type"] == NodeType.node:
+                            # It is possible to travel exactly to one intersection and back
+                            time = depot_to_node_duration.seconds
+                            cost = 0
                         else:
-                            if (
-                                pt["type"] == NodeType.house
-                                or other_pt["type"] == NodeType.house
-                            ):
-                                # It is impossible to traverse between depots, or from a house to a depot
-                                time = MAX_ROUTE_TIME.seconds
-                                cost = MAX_TOURING_DISTANCE
-                            else:
-                                # It is possible to travel exactly to one intersection and back
-                                time = depot_to_node_duration.seconds
-                                cost = 0
+                            print(colored("All points must be either nodes, houses, or the depot. Quitting", "red"))
                     else:
                         # Calculate the distance between two nodes, two houses, or a house and a node
                         distance_cost = MixDistances.get_distance(pt, other_pt)
 
                         if type(distance_cost) is tuple:
+                            # This only holds for houses (if one is not a house, distance is a float)
                             distance, cost = distance_cost
                             time = distance / WALKING_M_PER_S
                         else:
                             cost = (
-                                distance_cost
-                                if distance_cost is not None
-                                else MAX_TOURING_DISTANCE
-                            )
+                                    distance_cost
+                                    if distance_cost is not None
+                                    else MAX_TOURING_DISTANCE
+                                )
                             time = cost / WALKING_M_PER_S
+
+                            if USE_COST_METRIC:
+                                cost = 0  # There is no cost between house and node or between two nodes
 
                     distance_matrix["travelTimes"].append(round(time))
                     distance_matrix["distances"].append(round(cost))
@@ -235,7 +241,7 @@ class Optimizer:
                     places=[
                         PlaceTW(
                             location=Location(index=i),
-                            duration=node_duration.seconds,
+                            duration=1,
                             times=[[node_start_open, node_start_close]],
                         )
                     ]
@@ -244,7 +250,7 @@ class Optimizer:
                     places=[
                         PlaceTW(
                             location=Location(index=i),
-                            duration=node_duration.seconds,
+                            duration=1,
                             times=[[node_end_open, node_end_close]],
                         )
                     ]
@@ -256,13 +262,13 @@ class Optimizer:
                         value=1,
                     )
                 )
-            else:
+            elif location["type"] == NodeType.house:
                 delivery = Service(
                     places=[
                         PlaceTW(
                             location=Location(index=i),
                             duration=round(MINS_PER_HOUSE * 60),
-                            times=[full_time_window],
+                            times=[full_time_window]
                         )
                     ]
                 )
@@ -276,7 +282,15 @@ class Optimizer:
                         )
                     )
                     sys.exit(1)
-                jobs.append(Job(id=pt_id(location), services=[delivery], value=1))
+                jobs.append(Job(id=pt_id(location), services=[delivery], value=10))
+            else:
+                print(
+                    colored(
+                        f"Point {pt_id(location)} has an invalid type. Quitting.",
+                        "red",
+                    )
+                )
+                sys.exit(1)
 
         fleet = self.build_fleet(
             shift_time=(end_time - start_time),
@@ -335,9 +349,10 @@ class Optimizer:
             if i != self.start_idx:  # The starting location is not a real service
                 service = Service(
                     places=[
-                        Place(
+                        PlaceTW(
                             location=Location(index=i),
                             duration=round(MINS_PER_HOUSE * 60),
+                            times=[full_time_window],
                         )
                     ]
                 )
@@ -377,7 +392,7 @@ class Optimizer:
                 "-t",
                 str(TIMEOUT.seconds),
                 "--min-cv",
-                "sample,200,0.01,true",
+                "sample,200,0.1,true",
                 "--search-mode",
                 "deep" if SEARCH_MODE_DEEP else "broad",
                 "--log",

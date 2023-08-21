@@ -14,7 +14,7 @@ BASE_DIR = os.path.abspath(os.path.join(__file__, "../../"))
 VRP_CLI_PATH = "/home/user/.cargo/bin/vrp-cli"
 
 AREA_ID = "rosselli"
-USE_COST_METRIC = True
+USE_COST_METRIC = False
 
 street_suffixes_file = os.path.join(BASE_DIR, "src", "street_suffixes.json")
 
@@ -143,7 +143,7 @@ GOOGLE_MAPS_API_KEY = "AIzaSyAPpRP4mPuMlyRP8YiIaEOL_YAms6TpCwM"
 
 UUID_NAMESPACE = uuid.UUID("ccf207c6-3b15-11ee-be56-0242ac120002")
 
-TURF_SPLIT = False  # Which problem to run
+TURF_SPLIT = True  # Which problem to run
 
 # Maximum distance between two nodes where they should be stored
 ARBITRARY_LARGE_DISTANCE = 10000
@@ -156,6 +156,9 @@ KEEP_APARTMENTS = False
 DISTANCE_TO_ROAD_MULTIPLIER = 0.5
 ALD_BUFFER = 150  # Meters after a block ends where a house is still on the block
 DIFFERENT_BLOCK_COST = 25
+
+# Number of meters to store if nodes are too far away from each other
+NODE_TOO_FAR_DISTANCE = 10000
 
 
 # Cost of crossing the street (technically, in meters)
@@ -236,11 +239,14 @@ node_list_t = list[Point]
 # )  # Forbes and Shady
 
 DEPOT = "107503392"
-NUM_LISTS = 1
+NUM_LISTS = 3
 
 
 class HouseInfo(TypedDict):
     display_address: str  # VERY IMPORTANT!!! NEVER USE THIS TO INDEX INTO HOUSES, USE HOUSE UUID INSTEAD
+    city: str
+    state: str
+    zip: str
     lat: float
     lon: float
     distance_to_start: int
@@ -303,11 +309,26 @@ class Person(TypedDict):
 
 class HousePeople(TypedDict):
     display_address: str
+    city: str
+    state: str
+    zip: str
     latitude: float
     longitude: float
     voter_info: list[Person]
     value: float
     # NOTE: This previously had subsegment_start, but this will now only be in the post-processing output
+
+
+class HouseOutput(TypedDict):
+    display_address: str
+    city: str
+    state: str
+    zip: str
+    uuid: str
+    latitude: float
+    longitude: float
+    voter_info: list[Person]
+    subsegment_start: int
 
 
 voters_file_t = dict[str, HousePeople]
@@ -453,9 +474,13 @@ class DistanceMatrix(TypedDict):
 "----------------------------------------------------------------------------------"
 "                             Optimization Parameters                              "
 "----------------------------------------------------------------------------------"
-OPTIM_COSTS = Costs(fixed=0, distance=3, time=1)
+OPTIM_COSTS = Costs(fixed=0, distance=0, time=1)
+
+# OPTIM_OBJECTIVES = [
+#     [Objective(type="maximize-value")],
+#     [Objective(type="minimize-cost")],
+# ]
 
 OPTIM_OBJECTIVES = [
     [Objective(type="maximize-value")],
-    [Objective(type="minimize-cost")],
 ]
