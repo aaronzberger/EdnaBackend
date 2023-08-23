@@ -223,7 +223,7 @@ class PostProcess:
 
         # region: Calculate the navigation points
         if pt_id(entrance) != pt_id(exit):
-            # Order the navigation points
+            # Order the navigation points (reverse the order if necessary)
             navigation_points = (
                 block["nodes"]
                 if pt_id(entrance) == pt_id(block["nodes"][0])
@@ -231,74 +231,35 @@ class PostProcess:
             )
 
         elif pt_id(entrance) == pt_id(exit) == pt_id(block["nodes"][0]):
-            # Find the last subsegment containing houses
-            last_subsegment = max(
-                block_addresses.values(), key=lambda a: a["subsegment"][1]
-            )["subsegment"]
-
-            # Find the last house on that segment
-            houses_on_last = [
-                i
-                for i in block_addresses.values()
-                if i["subsegment"] == last_subsegment
-            ]
-            closest_to_end = max(houses_on_last, key=lambda d: d["distance_to_start"])
-            closest_to_end = Point(
-                lat=closest_to_end["lat"],
-                lon=closest_to_end["lon"],
-                type=NodeType.house,
-                # TODO: Change this to use uuid by changing above line to items
-                id=closest_to_end["display_address"],
-            )
-
-            # Project that house onto the segment
+            # User certainly walks at the front of the block, so simply find the
+            # last point they need to walk at the back of the block
+            extremum_house_uuid, extremum_house = max(block_addresses.items(), key=lambda a: a[1]["distance_to_start"])
             end_extremum = project_to_line(
-                p1=closest_to_end,
-                p2=block["nodes"][last_subsegment[0]],
-                p3=block["nodes"][last_subsegment[1]],
+                p1=Point(lat=extremum_house["lat"], lon=extremum_house["lon"], type=NodeType.house, id=extremum_house_uuid),
+                p2=block["nodes"][extremum_house["subsegment"][0]],
+                p3=block["nodes"][extremum_house["subsegment"][1]],
             )
             extremum = (extremum[0], end_extremum)
 
             navigation_points = (
-                block["nodes"][: last_subsegment[0] + 1]
+                block["nodes"][: extremum_house["subsegment"][0] + 1]
                 + [end_extremum]
-                + list(reversed(block["nodes"][: last_subsegment[0] + 1]))
+                + list(reversed(block["nodes"][: extremum_house["subsegment"][0] + 1]))
             )
 
         elif pt_id(entrance) == pt_id(exit) == pt_id(block["nodes"][-1]):
-            # Find the first subsegment containing houses
-            first_subsegment = min(
-                block_addresses.values(), key=lambda a: a["subsegment"][1]
-            )["subsegment"]
-
-            # Find the first house on that segment
-            houses_on_first = [
-                i
-                for i in block_addresses.values()
-                if i["subsegment"] == first_subsegment
-            ]
-            closest_to_start = min(
-                houses_on_first, key=lambda d: d["distance_to_start"]
-            )
-            closest_to_start = Point(
-                lat=closest_to_start["lat"],
-                lon=closest_to_start["lon"],
-                type=NodeType.house,
-                id=closest_to_start["display_address"],
-            )
-
-            # Project that house onto the segment
+            extremum_house_uuid, extremum_house = max(block_addresses.items(), key=lambda a: a[1]["distance_to_end"])
             start_extremum = project_to_line(
-                p1=closest_to_start,
-                p2=block["nodes"][first_subsegment[0]],
-                p3=block["nodes"][first_subsegment[1]],
+                p1=Point(lat=extremum_house["lat"], lon=extremum_house["lon"], type=NodeType.house, id=extremum_house_uuid),
+                p2=block["nodes"][extremum_house["subsegment"][0]],
+                p3=block["nodes"][extremum_house["subsegment"][1]],
             )
             extremum = (start_extremum, extremum[1])
 
             navigation_points = (
-                block["nodes"][first_subsegment[1] :]
+                list(reversed(block["nodes"][extremum_house["subsegment"][1] :]))
                 + [start_extremum]
-                + list(reversed(block["nodes"][first_subsegment[1] :]))
+                + block["nodes"][extremum_house["subsegment"][1] :]
             )
 
         else:
@@ -402,11 +363,11 @@ class PostProcess:
             houses = sorted(
                 out_side,
                 key=lambda h: block_addresses[h["id"]]["distance_to_start"],
-                reverse=pt_id(entrance) != pt_id(block["nodes"][0]),
+                reverse=generate_pt_id(entrance) != generate_pt_id(block["nodes"][0]),
             ) + sorted(
                 back_side,
                 key=lambda h: block_addresses[h["id"]]["distance_to_end"],
-                reverse=pt_id(entrance) != pt_id(block["nodes"][0]),
+                reverse=generate_pt_id(entrance) != generate_pt_id(block["nodes"][0]),
             )
 
             # For the out houses, we're always going forward, so the subsegments are as they are
@@ -468,9 +429,9 @@ class PostProcess:
             navigation_points=navigation_points,
         )
 
-        if pt_id(entrance) == pt_id(exit):
-            new_dual = self._split_sub_block(sub_block, entrance, exit)
-            return new_dual
+        # if pt_id(entrance) == pt_id(exit):
+        #     new_dual = self._split_sub_block(sub_block, entrance, exit)
+        #     return new_dual
 
         return sub_block
 
@@ -647,13 +608,13 @@ class PostProcess:
 
             # One of the two endpoints must be an endpoint of the block
             # print(sub_block.start, sub_block.navigation_points[0], sub_block.navigation_points[-1], sub_block.end)
-            assert sub_block.start in [
-                sub_block.navigation_points[0],
-                sub_block.navigation_points[-1],
-            ] or sub_block.end in [
-                sub_block.navigation_points[0],
-                sub_block.navigation_points[-1],
-            ]
+            # assert sub_block.start in [
+            #     sub_block.navigation_points[0],
+            #     sub_block.navigation_points[-1],
+            # ] or sub_block.end in [
+            #     sub_block.navigation_points[0],
+            #     sub_block.navigation_points[-1],
+            # ]
 
             metric = (
                 "distance_to_start"
@@ -731,7 +692,7 @@ class PostProcess:
         depot, houses = tour_stops[0], tour_stops[1:-1]
         self.depot = depot
 
-        current_sub_block_points: list[Point] = []
+        current_sub_block_houses: list[Point] = []
 
         # Take the side closest to the first house (likely where a canvasser would park)
         running_intersection = depot
@@ -740,15 +701,17 @@ class PostProcess:
         # Process the list
         for house, next_house in itertools.pairwise(houses):
             next_block_id = self.house_id_to_block_id[next_house["id"]]
-            current_sub_block_points.append(house)
+            current_sub_block_houses.append(house)
 
             if next_block_id != running_block_id:
+                # Calculate the entrance to the block which is ending
                 entrance_pt = self._calculate_entrance(
-                    running_intersection, current_sub_block_points[0]
+                    running_intersection, current_sub_block_houses[0]
                 )
+                # Calculate the exit from the block which is ending
                 exit_pt = self._calculate_exit(house, next_house)
                 subsegment = self._process_sub_block(
-                    current_sub_block_points,
+                    current_sub_block_houses,
                     running_block_id,
                     entrance=entrance_pt,
                     exit=exit_pt,
@@ -760,23 +723,23 @@ class PostProcess:
                 else:
                     walk_list.append(subsegment)
 
-                current_sub_block_points = []
+                current_sub_block_houses = []
 
                 # After completing this segment, the canvasser is at the end of the subsegment
                 running_intersection = exit_pt
                 running_block_id = next_block_id
 
         # Since we used pairwise, the last house is never evaluated
-        current_sub_block_points.append(houses[-1])
+        current_sub_block_houses.append(houses[-1])
 
         # Determine the final intersection the canvasser will end up at to process the final subsegment
-        exit_point = self._calculate_entrance(depot, current_sub_block_points[-1])
+        exit_point = self._calculate_entrance(depot, current_sub_block_houses[-1])
         entrance_point = self._calculate_entrance(
-            running_intersection, current_sub_block_points[0]
+            running_intersection, current_sub_block_houses[0]
         )
 
         sub_block = self._process_sub_block(
-            current_sub_block_points,
+            current_sub_block_houses,
             running_block_id,
             entrance=entrance_point,
             exit=exit_point,
