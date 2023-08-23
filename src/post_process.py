@@ -3,9 +3,9 @@ import json
 import math
 import os
 import pickle
+import sys
 from copy import deepcopy
 from random import randint
-import sys
 
 import names
 from termcolor import colored
@@ -27,10 +27,10 @@ from src.config import (
     blocks_file_t,
     generate_pt_id,
     house_id_to_block_id_file,
+    house_to_voters_file,
     optimizer_points_pickle_file,
     pt_id,
     requested_blocks_file,
-    house_to_voters_file
 )
 from src.distances.blocks import BlockDistances
 from src.distances.houses import HouseDistances
@@ -48,7 +48,7 @@ from src.viz_utils import (
 
 
 class PostProcess:
-    def __init__(self, blocks: blocks_file_t, points: list[Point]):
+    def __init__(self, requested_blocks: blocks_file_t, optimizer_points: list[Point]):
         self._all_blocks: blocks_file_t = json.load(open(blocks_file))
         self.house_id_to_block_id: dict[str, str] = json.load(
             open(house_id_to_block_id_file)
@@ -56,9 +56,12 @@ class PostProcess:
         self.house_to_voters = json.load(open(house_to_voters_file))
         # self.address_to_segment_id: houses_file_t = json.load(open(addresses_file))
 
-        self.blocks = blocks
-        self.points = points
+        self.requested_blocks = requested_blocks
+        self.tour_points = optimizer_points
         RouteMaker()
+
+        # Map block IDs to the UUIDs on this route on that block
+        self.blocks_on_route: dict[str, list[str]] = {}
 
     def _calculate_exit(self, final_house: Point, next_house: Point) -> Point:
         """
@@ -75,7 +78,7 @@ class PostProcess:
         """
         # Determine the exit direction, which will either be the start or end of the segment
         origin_block_id = self.house_id_to_block_id[final_house["id"]]
-        origin_block = self.blocks[origin_block_id]
+        origin_block = self.requested_blocks[origin_block_id]
 
         end_node = deepcopy(origin_block["nodes"][-1])
         end_node["type"] = NodeType.node
@@ -85,9 +88,9 @@ class PostProcess:
         through_end = MixDistances.get_distance(p1=end_node, p2=next_house)
 
         if through_end is not None:
-            through_end = self.blocks[origin_block_id]["addresses"][final_house["id"]][
-                "distance_to_end"
-            ]
+            through_end = self.requested_blocks[origin_block_id]["addresses"][
+                final_house["id"]
+            ]["distance_to_end"]
 
         start_node = deepcopy(origin_block["nodes"][0])
         start_node["type"] = NodeType.node
@@ -95,9 +98,9 @@ class PostProcess:
         through_start = MixDistances.get_distance(p1=start_node, p2=next_house)
 
         if through_start is not None:
-            through_start = self.blocks[origin_block_id]["addresses"][final_house["id"]][
-                "distance_to_start"
-            ]
+            through_start = self.requested_blocks[origin_block_id]["addresses"][
+                final_house["id"]
+            ]["distance_to_start"]
 
         if through_start is None and through_end is None:
             print(
@@ -134,11 +137,11 @@ class PostProcess:
         """
         # Determine the exit direction, which will either be the start or end of the segment
         destination_block_id = self.house_id_to_block_id[next_house["id"]]
-        destination_block = self.blocks[destination_block_id]
+        destination_block = self.requested_blocks[destination_block_id]
 
-        through_end = self.blocks[destination_block_id]["addresses"][next_house["id"]][
-            "distance_to_end"
-        ]
+        through_end = self.requested_blocks[destination_block_id]["addresses"][
+            next_house["id"]
+        ]["distance_to_end"]
         try:
             to_end = NodeDistances.get_distance(
                 intersection, destination_block["nodes"][-1]
@@ -148,7 +151,7 @@ class PostProcess:
             print("Unable to find distance through end of block in post-processing")
             through_end += 1600
 
-        through_start = self.blocks[destination_block_id]["addresses"][
+        through_start = self.requested_blocks[destination_block_id]["addresses"][
             next_house["id"]
         ]["distance_to_start"]
         try:
@@ -211,13 +214,22 @@ class PostProcess:
     def _process_sub_block(
         self, houses: list[Point], block_id: str, entrance: Point, exit: Point
     ) -> SubBlock | tuple[SubBlock, SubBlock]:
-        assigned_addresses = [i["id"] for i in houses]
-        block_addresses = {
-            add: inf
-            for add, inf in self.blocks[block_id]["addresses"].items()
-            if add in assigned_addresses
+        uuids = [i["id"] for i in houses]
+        block_houses = {
+            uuid: info
+            for uuid, info in self.requested_blocks[block_id]["addresses"].items()
+            if uuid in uuids
         }
-        block = self.blocks[block_id]
+
+        if len(uuids) != len(self.blocks_on_route[block_id]):
+            print(
+                colored(
+                    f"Notice: There are f{len(uuids)} houses on this block, but {len(self.blocks_on_route[block_id])} houses on this block in the route",
+                    "blue",
+                )
+            )
+
+        block = self.requested_blocks[block_id]
 
         extremum: tuple[Point, Point] = (entrance, exit)
 
@@ -233,9 +245,16 @@ class PostProcess:
         elif pt_id(entrance) == pt_id(exit) == pt_id(block["nodes"][0]):
             # User certainly walks at the front of the block, so simply find the
             # last point they need to walk at the back of the block
-            extremum_house_uuid, extremum_house = max(block_addresses.items(), key=lambda a: a[1]["distance_to_start"])
+            extremum_house_uuid, extremum_house = max(
+                block_houses.items(), key=lambda a: a[1]["distance_to_start"]
+            )
             end_extremum = project_to_line(
-                p1=Point(lat=extremum_house["lat"], lon=extremum_house["lon"], type=NodeType.house, id=extremum_house_uuid),
+                p1=Point(
+                    lat=extremum_house["lat"],
+                    lon=extremum_house["lon"],
+                    type=NodeType.house,
+                    id=extremum_house_uuid,
+                ),
                 p2=block["nodes"][extremum_house["subsegment"][0]],
                 p3=block["nodes"][extremum_house["subsegment"][1]],
             )
@@ -248,9 +267,16 @@ class PostProcess:
             )
 
         elif pt_id(entrance) == pt_id(exit) == pt_id(block["nodes"][-1]):
-            extremum_house_uuid, extremum_house = max(block_addresses.items(), key=lambda a: a[1]["distance_to_end"])
+            extremum_house_uuid, extremum_house = max(
+                block_houses.items(), key=lambda a: a[1]["distance_to_end"]
+            )
             start_extremum = project_to_line(
-                p1=Point(lat=extremum_house["lat"], lon=extremum_house["lon"], type=NodeType.house, id=extremum_house_uuid),
+                p1=Point(
+                    lat=extremum_house["lat"],
+                    lon=extremum_house["lon"],
+                    type=NodeType.house,
+                    id=extremum_house_uuid,
+                ),
                 p2=block["nodes"][extremum_house["subsegment"][0]],
                 p3=block["nodes"][extremum_house["subsegment"][1]],
             )
@@ -272,7 +298,7 @@ class PostProcess:
 
         # region: Order the houses
         if pt_id(entrance) != pt_id(exit):
-            running_side = block_addresses[houses[0]["id"]]["side"]
+            running_side = block_houses[houses[0]["id"]]["side"]
             start = 0
             i = 0
             new_house_order = []
@@ -286,7 +312,7 @@ class PostProcess:
             )
 
             for i, house in enumerate(houses):
-                if block_addresses[house["id"]]["side"] != running_side:
+                if block_houses[house["id"]]["side"] != running_side:
                     # Add any houses on the same side with less distance to the start
                     new_houses = deepcopy(houses[start:i])
                     new_houses = [h for h in new_houses if h["id"] not in added_houses]
@@ -295,7 +321,7 @@ class PostProcess:
                         running_distance_to_start,
                         max(
                             [
-                                block_addresses[house["id"]][metric]
+                                block_houses[house["id"]][metric]
                                 for house in new_houses + new_house_order
                             ]
                         ),
@@ -303,9 +329,8 @@ class PostProcess:
 
                     for remaining_house in houses[i + 1 :]:
                         if (
-                            block_addresses[remaining_house["id"]]["side"]
-                            != running_side
-                            and block_addresses[remaining_house["id"]][metric]
+                            block_houses[remaining_house["id"]]["side"] != running_side
+                            and block_houses[remaining_house["id"]][metric]
                             < running_distance_to_start
                             and remaining_house["id"] not in added_houses
                         ):
@@ -319,66 +344,61 @@ class PostProcess:
 
                     new_house_order += sorted(
                         new_houses,
-                        key=lambda h, metric=metric: block_addresses[h["id"]][metric],
+                        key=lambda h, metric=metric: block_houses[h["id"]][metric],
                     )
-                    running_side = block_addresses[house["id"]]["side"]
+                    running_side = block_houses[house["id"]]["side"]
                     start = i
                     added_houses.update([h["id"] for h in new_houses])
 
             # Now, sort the last side
             houses_left = [h for h in houses[start:] if h["id"] not in added_houses]
             new_house_order += sorted(
-                houses_left, key=lambda h: block_addresses[h["id"]][metric]
+                houses_left, key=lambda h: block_houses[h["id"]][metric]
             )
 
             houses = new_house_order
 
             # We're always going forward, so the subsegments are as they are
             for i, house in enumerate(houses):
-                sub_start = block["nodes"][
-                    block_addresses[house["id"]]["subsegment"][0]
-                ]
-                sub_end = block["nodes"][block_addresses[house["id"]]["subsegment"][1]]
+                sub_start = block["nodes"][block_houses[house["id"]]["subsegment"][0]]
+                sub_end = block["nodes"][block_houses[house["id"]]["subsegment"][1]]
                 sub_start_idx = navigation_points.index(sub_start)
                 sub_end_idx = navigation_points.index(sub_end)
                 houses[i]["subsegment_start"] = min(sub_start_idx, sub_end_idx)
 
         elif pt_id(entrance) == pt_id(exit):
-            # We can assume that the first house is on the "out" side
-            # TODO/NOTE: Eventually, we should make the out side be on the same side as where we're coming from (avoid crossing)
+            # The optimal path is always to go out on one side and back on the other
+            # (since you must go out and back anyway, and this minimizes street crossings)
             out_side = [
                 h
                 for h in houses
-                if block_addresses[h["id"]]["side"]
-                == block_addresses[houses[0]["id"]]["side"]
+                if block_houses[h["id"]]["side"]
+                == block_houses[houses[0]["id"]]["side"]
             ]
             back_side = [
                 h
                 for h in houses
-                if block_addresses[h["id"]]["side"]
-                != block_addresses[houses[0]["id"]]["side"]
+                if block_houses[h["id"]]["side"]
+                != block_houses[houses[0]["id"]]["side"]
             ]
 
             # Put the "out" side houses first, then the "back" side houses
             houses = sorted(
                 out_side,
-                key=lambda h: block_addresses[h["id"]]["distance_to_start"],
+                key=lambda h: block_houses[h["id"]]["distance_to_start"],
                 reverse=generate_pt_id(entrance) != generate_pt_id(block["nodes"][0]),
             ) + sorted(
                 back_side,
-                key=lambda h: block_addresses[h["id"]]["distance_to_end"],
+                key=lambda h: block_houses[h["id"]]["distance_to_end"],
                 reverse=generate_pt_id(entrance) != generate_pt_id(block["nodes"][0]),
             )
 
             # For the out houses, we're always going forward, so the subsegments are as they are
-            # print('ALL NAV', navigation_points, flush=True)
             for i, house in enumerate(out_side):
                 out_nav_nodes = navigation_points[: len(navigation_points) // 2 + 1]
                 # print('OUT NAV', out_nav_nodes, flush=True)
-                sub_start = block["nodes"][
-                    block_addresses[house["id"]]["subsegment"][0]
-                ]
-                sub_end = block["nodes"][block_addresses[house["id"]]["subsegment"][1]]
+                sub_start = block["nodes"][block_houses[house["id"]]["subsegment"][0]]
+                sub_end = block["nodes"][block_houses[house["id"]]["subsegment"][1]]
                 try:
                     sub_start_idx = out_nav_nodes.index(sub_start)
                 except ValueError:
@@ -397,10 +417,8 @@ class PostProcess:
             for i, house in enumerate(back_side):
                 back_nav_nodes = navigation_points[len(navigation_points) // 2 :]
                 # print('BACK NAV', back_nav_nodes, flush=True)
-                sub_start = block["nodes"][
-                    block_addresses[house["id"]]["subsegment"][0]
-                ]
-                sub_end = block["nodes"][block_addresses[house["id"]]["subsegment"][1]]
+                sub_start = block["nodes"][block_houses[house["id"]]["subsegment"][0]]
+                sub_end = block["nodes"][block_houses[house["id"]]["subsegment"][1]]
                 try:
                     sub_start_idx = back_nav_nodes.index(sub_start)
                 except ValueError:
@@ -473,13 +491,17 @@ class PostProcess:
                         lat=block["nodes"][0]["lat"],
                         lon=block["nodes"][0]["lon"],
                         type=NodeType.node,
-                        id=generate_pt_id(block["nodes"][0]["lat"], block["nodes"][0]["lon"]),
+                        id=generate_pt_id(
+                            block["nodes"][0]["lat"], block["nodes"][0]["lon"]
+                        ),
                     )
                     end = Point(
                         lat=block["nodes"][-1]["lat"],
                         lon=block["nodes"][-1]["lon"],
                         type=NodeType.node,
-                        id=generate_pt_id(block["nodes"][-1]["lat"], block["nodes"][-1]["lon"])
+                        id=generate_pt_id(
+                            block["nodes"][-1]["lat"], block["nodes"][-1]["lon"]
+                        ),
                     )
 
                     reverse = pt_id(start) != pt_id(running_node)
@@ -488,7 +510,9 @@ class PostProcess:
                         start, end = end, start
                         nav_pts = nav_pts[::-1]
 
-                    assert pt_id(start) == pt_id(running_node), f"{start} != {running_node}"
+                    assert pt_id(start) == pt_id(
+                        running_node
+                    ), f"{start} != {running_node}"
                     assert pt_id(nav_pts[0]) == pt_id(start), f"{nav_pts[0]} != {start}"
 
                     running_node = end
@@ -509,188 +533,26 @@ class PostProcess:
 
         return new_walk_list
 
-    def combine_sub_blocks(self, sub_blocks: list[SubBlock]) -> list[SubBlock]:
-        """
-        Combine sub-blocks that are on the same block, if there are houses on the same side.
-        """
-        # new_sub_blocks: list[SubBlock] = []
-
-        for i, sub_block in enumerate(sub_blocks):
-            # print("Original navigation points", sub_block.navigation_points, flush=True)
-            if len(sub_block.houses) == 0:
-                # new_sub_blocks.append(sub_block)
-                continue
-
-            new_houses = sub_block.houses.copy()
-            block_id = sub_block.block_id
-            # block_id = self.address_to_segment_id[sub_block.houses[0]["id"]]
-
-            sub_block_nav_ids = set([pt_id(pt) for pt in sub_block.navigation_points])
-            assigned_addresses = [h["id"] for h in sub_block.houses]
-            block_addresses = {
-                add: inf
-                for add, inf in self.blocks[block_id]["addresses"].items()
-                if add in assigned_addresses
-            }
-            house_sides = set([inf["side"] for inf in block_addresses.values()])
-
-            combined_block_addresses = block_addresses.copy()
-
-            # print(block_addresses, flush=True)
-            # print(sub_block.houses, flush=True)
-
-            assert len(block_addresses) == len(
-                sub_block.houses
-            ), "Block addresses was {} but sub block houses was {}".format(
-                len(block_addresses), len(sub_block.houses)
-            )
-
-            # Check if there are any other sub-blocks for which the navigation points are the same (or reversed)
-            for other_sub_block in sub_blocks:
-                if sub_block == other_sub_block or len(other_sub_block.houses) == 0:
-                    continue
-
-                other_sub_block_nav_ids = set(
-                    [pt_id(pt) for pt in other_sub_block.navigation_points]
-                )
-
-                # If the navigation points are not the same then skip
-                if set(sub_block_nav_ids) != set(other_sub_block_nav_ids):
-                    continue
-
-                # print("Combining sub-block {} with sub-block {}".format(0 if len(sub_block.houses) == 0 else sub_block.houses[0],
-                #                                                         0 if len(other_sub_block.houses) == 0 else other_sub_block.houses[0]))
-                # print("FIrst block has sides {}".format(house_sides))
-                # print("Second blok has {} houses".format(len(other_sub_block.houses)))
-
-                other_assigned_addresses = [h["id"] for h in other_sub_block.houses]
-                other_block_addresses = {
-                    uuid: inf
-                    for uuid, inf in self.blocks[block_id]["addresses"].items()
-                    if uuid in other_assigned_addresses
-                }
-
-                assert len(other_block_addresses) == len(
-                    other_sub_block.houses
-                ), "Other block addresses was {} but other sub block houses was {}. ".format(
-                    len(other_block_addresses), len(other_sub_block.houses)
-                )
-
-                # Combine houses on the second block into the first block (if they are on the same side)
-                to_delete = []
-                # print(len(list(other_block_addresses.values())), len(other_sub_block.houses))
-                for info, house in zip(
-                    other_block_addresses.values(), other_sub_block.houses
-                ):
-                    # print(info['side'], house)
-                    if info["side"] in house_sides:
-                        # print("Adding house {} to sub-block".format(house))
-                        new_houses.append(house)
-                        to_delete.append(house)
-
-                # Remove the houses from the other sub-block
-                for house in to_delete:
-                    other_sub_block.houses.remove(house)
-
-                combined_block_addresses = {
-                    **combined_block_addresses,
-                    **other_block_addresses,
-                }
-
-            # Order the houses
-            start = 0
-            i = 0
-            new_house_order = []
-            running_distance_to_start = 0
-            added_houses = set()
-
-            # combined_block_addresses = {**block_addresses, **other_block_addresses}
-
-            # One of the two endpoints must be an endpoint of the block
-            # print(sub_block.start, sub_block.navigation_points[0], sub_block.navigation_points[-1], sub_block.end)
-            # assert sub_block.start in [
-            #     sub_block.navigation_points[0],
-            #     sub_block.navigation_points[-1],
-            # ] or sub_block.end in [
-            #     sub_block.navigation_points[0],
-            #     sub_block.navigation_points[-1],
-            # ]
-
-            metric = (
-                "distance_to_start"
-                if sub_block.navigation_points[0] == self.blocks[block_id]["nodes"][0]
-                or sub_block.navigation_points[-1] == self.blocks[block_id]["nodes"][-1]
-                else "distance_to_end"
-            )
-
-            assert len(new_houses) >= len(sub_block.houses)
-
-            # If it's only one side of the street, just order them
-            if len(house_sides) == 1:
-                new_house_order = sorted(
-                    new_houses, key=lambda h: combined_block_addresses[h["id"]][metric]
-                )
-            else:
-                new_house_order = sorted(
-                    new_houses, key=lambda h: combined_block_addresses[h["id"]][metric]
-                )
-                # running_side = combined_block_addresses[new_houses[0]['id']]['side']
-                # for j, house in enumerate(new_houses):
-                #     if combined_block_addresses[house['id']]['side'] != running_side:
-                #         # Add any houses on the same side with less distance to the start
-                #         new_houses = deepcopy(new_houses[start:j])
-                #         new_houses = [h for h in new_houses if h['id'] not in added_houses]
-
-                #         running_distance_to_start = max(running_distance_to_start, max([combined_block_addresses[house['id']][metric] for house in new_houses + new_house_order]))
-
-                #         # for remaining_house in new_houses[j + 1:]:
-                #         #     if combined_block_addresses[remaining_house['id']]['side'] != running_side and \
-                #         #             combined_block_addresses[remaining_house['id']][metric] < running_distance_to_start and \
-                #         #             remaining_house['id'] not in added_houses:
-                #         #         new_houses.append(remaining_house)
-
-                #                 # print("Adding house {} with {}".format(remaining_house['id'], house['id']))
-
-                #         new_house_order += sorted(new_houses, key=lambda h, metric=metric: combined_block_addresses[h['id']][metric])
-                #         running_side = combined_block_addresses[house['id']]['side']
-                #         start = j
-                #         added_houses.update([h['id'] for h in new_houses])
-
-                # # Now, sort the last side
-                # houses_left = [h for h in new_houses[start:] if h['id'] not in added_houses]
-                # new_house_order += sorted(houses_left, key=lambda h, metric=metric: combined_block_addresses[h['id']][metric])
-
-            sub_block.houses = new_house_order
-
-            # # print("BEFORE", self.depot if i == 0 else new_sub_blocks[i - 1], flush=True)
-            # entrance_pt = self._calculate_entrance(self.depot if i == 0 else new_sub_blocks[i - 1].navigation_points[-1], new_houses[0])
-            # if i == len(sub_blocks) - 1:
-            #     exit_pt = self._calculate_entrance(self.depot, new_houses[-1])
-            # elif len(sub_blocks[i + 1].houses) == 0:
-            #     exit_pt = sub_blocks[i + 1].navigation_points[0]
-            # else:
-            #     exit_pt = self._calculate_exit(new_houses[-1], sub_blocks[i + 1].houses[0])
-            # print("For last house {}, exit point {}".format(new_houses[-1], exit_pt), flush=True)
-            # new_block = self._process_sub_block(houses=new_houses, block_id=block_id, entrance=entrance_pt, exit=exit_pt)
-
-            # if type(new_block) == tuple:
-            #     new_sub_blocks.extend(new_block)
-            # else:
-            #     new_sub_blocks.append(new_block)
-            # print('New navigation points', new_block.navigation_points, sub_block.navigation_points, flush=True)
-
-        return sub_blocks
-
     def post_process(self, tour: Tour) -> list[SubBlock]:
         # Iterate through the solution and add subsegments
         walk_list: list[SubBlock] = []
 
         # From the index of each stop, get the points for those stops
         tour_stops: list[Point] = [
-            self.points[h["location"]["index"]] for h in tour["stops"]
+            self.tour_points[h["location"]["index"]] for h in tour["stops"]
         ]
         depot, houses = tour_stops[0], tour_stops[1:-1]
         self.depot = depot
+
+        for house in houses:
+            if self.house_id_to_block_id[house["id"]] not in self.blocks_on_route:
+                self.blocks_on_route[self.house_id_to_block_id[house["id"]]] = [
+                    house["id"]
+                ]
+            else:
+                self.blocks_on_route[self.house_id_to_block_id[house["id"]]].append(
+                    house["id"]
+                )
 
         current_sub_block_houses: list[Point] = []
 
@@ -710,18 +572,17 @@ class PostProcess:
                 )
                 # Calculate the exit from the block which is ending
                 exit_pt = self._calculate_exit(house, next_house)
-                subsegment = self._process_sub_block(
+                sub_block = self._process_sub_block(
                     current_sub_block_houses,
                     running_block_id,
                     entrance=entrance_pt,
                     exit=exit_pt,
                 )
 
-                if type(subsegment) == tuple:
-                    walk_list.append(subsegment[0])
-                    walk_list.append(subsegment[1])
+                if isinstance(sub_block, SubBlock):
+                    walk_list.append(sub_block)
                 else:
-                    walk_list.append(subsegment)
+                    walk_list.extend(sub_block)
 
                 current_sub_block_houses = []
 
@@ -745,20 +606,10 @@ class PostProcess:
             exit=exit_point,
         )
 
-        if type(sub_block) == tuple:
-            walk_list.extend(sub_block)
-        else:
+        if isinstance(sub_block, SubBlock):
             walk_list.append(sub_block)
-
-        # walk_list.append(self._process_sub_block(
-        #     current_sub_block_points, running_block_id, entrance=entrance_point, exit=exit_point))
-
-        # Combine sub-blocks that are on the same block, if there are houses on the same side
-        num_houses = sum([len(sub_block.houses) for sub_block in walk_list])
-        # print("Number of houses before combining sub-blocks: {}".format(num_houses))
-        walk_list = self.combine_sub_blocks(walk_list)
-        num_houses = sum([len(sub_block.houses) for sub_block in walk_list])
-        # print("Number of houses after combining sub-blocks: {}".format(num_houses))
+        else:
+            walk_list.extend(sub_block)
 
         # Fill in any holes
         walk_list = self.fill_holes(walk_list)
@@ -791,12 +642,23 @@ class PostProcess:
                 try:
                     house_voter_info: HousePeople = self.house_to_voters[pt_id(house)]
                 except KeyError:
-                    print(colored("House {} with id {} not found in voter info".format(house, pt_id(house)), "red"))
+                    print(
+                        colored(
+                            "House {} with id {} not found in voter info".format(
+                                house, pt_id(house)
+                            ),
+                            "red",
+                        )
+                    )
                     sys.exit(1)
 
-                assert house_voter_info["latitude"] == house["lat"] and house_voter_info["longitude"] == house["lon"], \
-                    "House coordinate mismatch: voter info file had {}, routing file had {}".format(
-                        (house_voter_info["latitude"], house_voter_info["longitude"]), (house["lat"], house["lon"]))
+                assert (
+                    house_voter_info["latitude"] == house["lat"]
+                    and house_voter_info["longitude"] == house["lon"]
+                ), "House coordinate mismatch: voter info file had {}, routing file had {}".format(
+                    (house_voter_info["latitude"], house_voter_info["longitude"]),
+                    (house["lat"], house["lon"]),
+                )
 
                 houses.append(
                     HouseOutput(
@@ -809,7 +671,8 @@ class PostProcess:
                         longitude=house_voter_info["longitude"],
                         voter_info=house_voter_info["voter_info"],
                         subsegment_start=house["subsegment_start"],
-                ))
+                    )
+                )
 
             list_out["blocks"].append({"nodes": nodes, "houses": houses})
 
@@ -841,28 +704,39 @@ def get_distance_cost(idx1: int, idx2: int, distances_file: str) -> tuple[float,
     num_points = math.sqrt(len(distance_costs["distances"]))
     assert num_points == int(num_points), "Number of points is not an integer"
 
-    return distance_costs["travelTimes"][(idx1 * int(num_points)) + idx2], \
-        distance_costs["distances"][(idx1 * int(num_points)) + idx2]
+    return (
+        distance_costs["travelTimes"][(idx1 * int(num_points)) + idx2],
+        distance_costs["distances"][(idx1 * int(num_points)) + idx2],
+    )
 
 
 def process_solution(
-    solution: Solution, optimizer_points: list[Point], requested_blocks: blocks_file_t, viz_path: str = VIZ_PATH, problem_path: str = PROBLEM_PATH
+    solution: Solution,
+    optimizer_points: list[Point],
+    requested_blocks: blocks_file_t,
+    viz_path: str = VIZ_PATH,
+    problem_path: str = PROBLEM_PATH,
 ):
     point_orders: list[list[tuple[Point, int]]] = []
 
     for i, route in enumerate(solution["tours"]):
         point_orders.append([])
         for stop in route["stops"][1:-1]:
-            point_orders[i].append((optimizer_points[stop["location"]["index"]], stop["location"]["index"]))
+            point_orders[i].append(
+                (optimizer_points[stop["location"]["index"]], stop["location"]["index"])
+            )
 
-    display_distance_matrix(optimizer_points, os.path.join(problem_path, "distances.json")).save(
-        os.path.join(viz_path, "distances.html")
-    )
+    display_distance_matrix(
+        optimizer_points, os.path.join(problem_path, "distances.json")
+    ).save(os.path.join(viz_path, "distances.html"))
 
     # house_dcs = [[HouseDistances.get_distance(i, j) for (i, j) in itertools.pairwise(list)] for list in point_orders]
     distances_file = os.path.join(problem_path, "distances.json")
     house_dcs = [
-        [get_distance_cost(i[1], j[1], distances_file) for (i, j) in itertools.pairwise(list)]
+        [
+            get_distance_cost(i[1], j[1], distances_file)
+            for (i, j) in itertools.pairwise(list)
+        ]
         for list in point_orders
     ]
 
@@ -872,7 +746,7 @@ def process_solution(
         os.path.join(viz_path, "optimal.html")
     )
 
-    post_processor = PostProcess(requested_blocks, points=optimizer_points)
+    post_processor = PostProcess(requested_blocks, optimizer_points=optimizer_points)
     walk_lists: list[list[SubBlock]] = []
     for i, tour in enumerate(solution["tours"]):
         # Do not count the startingg location service at the start or end
@@ -885,9 +759,7 @@ def process_solution(
         walk_lists.append(post_processor.post_process(tour))
 
     # Save the walk lists
-    display_walk_lists(walk_lists).save(
-        os.path.join(viz_path, "walk_lists.html")
-    )
+    display_walk_lists(walk_lists).save(os.path.join(viz_path, "walk_lists.html"))
 
     list_visualizations = display_individual_walk_lists(walk_lists)
     for i, walk_list in enumerate(list_visualizations):

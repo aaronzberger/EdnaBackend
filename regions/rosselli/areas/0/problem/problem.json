@@ -1,0 +1,909 @@
+{
+  "plan": {
+    "jobs": [
+      {
+        "id": "18e2548e-3396-5dfb-a8fa-a03a5db93143",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 0
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "27ec0518-a3d7-51e8-83ed-6569bd23499c",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 1
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "2c556447-b61b-5337-9d0d-d10025078f68",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 2
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "e8ee9967-d151-5ea2-a9f6-4ec992f7dba2",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 3
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ef6c0a93-f3ac-5062-95bd-7e6a3cf92e9a",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 4
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "38593a5b-0228-56b1-8187-61950b41c0a2",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 5
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "45ce8251-4bb5-558b-b596-d94a58ec8291",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 6
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "8b70f921-82fc-55c0-b7ab-5739f84a824c",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 7
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "67e87031-9ebb-584a-a412-5c9a5d7eb6cd",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 8
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "4556f2c9-b32f-52da-bbd9-dc03305fe5e7",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 9
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ea9e08c2-7169-5b2e-bd5c-b90072261c4c",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 10
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "819aafb0-bf5f-5cfd-8f46-23ae3165276b",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 11
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "7cac9b4d-abc0-5cd5-8c9b-e1af4bde98ad",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 12
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "adaf30ad-b7be-563f-bb5d-206e1b0f76ad",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 13
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "340ce2d0-4d1c-5243-88e7-a6931a10b0aa",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 14
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "5302d2fa-ef01-5f58-8639-02fdab3fd6de",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 15
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "7ab9b202-4eb1-596c-8a17-acdba3254f35",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 16
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "be86391f-c335-501c-83f4-0c46ccc0e195",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 17
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "42dbc811-9275-5a12-a5a1-db997c36893b",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 18
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "dac599ed-950a-519a-b034-697c16b03d85",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 19
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "4f095c26-4e23-50e3-b16a-eb567604e065",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 20
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ea4a8934-fae2-5666-b6af-44fdf3a35d17",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 21
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "efd1cbc6-c814-57e5-abf2-31b504962b13",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 22
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ed1ff65e-4a1b-521f-88ec-16ee36028cbe",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 23
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "6072cabc-717d-5d19-ba78-fdda3a998480",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 24
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "c1e9b713-a027-5484-9751-3a24cc28bcd3",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 25
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "8eb8abb9-a2ba-5051-a2df-1074016f4d65",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 26
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "8c86eda9-0af4-5e92-8e02-3968e609e551",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 27
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "d2ea7c0d-e6c9-5807-aa04-e4a4cf1d9b21",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 28
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "9b440854-7b83-53f3-826b-3dd7ff537548",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 29
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "2a8a890f-4125-501f-a3e9-1da2a7e20f4e",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 30
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "9280efb5-11cc-5b17-be8b-5d403665823f",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 31
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "960334b4-d8ea-573a-ae7a-09373e5bccf8",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 32
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "d263c9b4-c678-5fde-8f72-68d5bad83838",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 33
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "a1d44d47-a8b0-507d-b4e9-54c9beaa2c13",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 34
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "c224dfd4-dca5-5dcc-b6e6-fd6a9030d717",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 35
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "c8b284ae-adf4-5cd9-99d2-7cb94d28c8b0",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 36
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "2bb58b32-b307-5ab6-9977-5b08ad33a8aa",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 37
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "1287d50b-8510-50b7-8b90-20c1ff2d1e1b",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 38
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "78341aa9-f0b4-5f3e-a9f9-42ddc353d95b",
+        "services": [
+          {
+            "places": [
+              {
+                "location": {
+                  "index": 39
+                },
+                "duration": 99,
+                "times": [
+                  [
+                    "3000-01-01T00:00:00Z",
+                    "3000-01-01T03:00:00Z"
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "fleet": {
+    "vehicles": [
+      {
+        "typeId": "person",
+        "vehicleIds": [
+          "walker_0"
+        ],
+        "profile": {
+          "matrix": "person"
+        },
+        "costs": {
+          "fixed": 1,
+          "distance": 0,
+          "time": 1
+        },
+        "shifts": [
+          {
+            "start": {
+              "earliest": "3000-01-01T00:00:00Z",
+              "location": {
+                "index": 40
+              }
+            },
+            "end": {
+              "latest": "3000-01-01T03:00:00Z",
+              "location": {
+                "index": 40
+              }
+            }
+          }
+        ],
+        "capacity": [
+          1
+        ],
+        "limits": {
+          "shiftTime": 10800,
+          "maxDistance": 10000
+        }
+      }
+    ],
+    "profiles": [
+      {
+        "name": "person"
+      }
+    ]
+  },
+  "objectives": [
+    [
+      {
+        "type": "minimize-unassigned"
+      }
+    ],
+    [
+      {
+        "type": "minimize-tours"
+      }
+    ],
+    [
+      {
+        "type": "minimize-cost"
+      }
+    ]
+  ]
+}

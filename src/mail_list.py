@@ -52,7 +52,7 @@ def handle_universe_file(
 
     output_file = open(os.path.join(BASE_DIR, "indep_addresses.csv"), "w")
     writer = csv.DictWriter(
-        output_file, fieldnames=["Name", "Address Line 1", "Address Line 2", "PA-ID"]
+        output_file, fieldnames=["Name", "Address Line 1", "Address Line 2", "State", "Zip Code", "PA-ID"]
     )
     writer.writeheader()
 
