@@ -83,6 +83,10 @@ blocks_file = os.path.join(BASE_DIR, "regions", AREA_ID, "blocks.json")
 address_pts_file = os.path.join(BASE_DIR, "input", "address_pts.csv")
 problem_path = os.path.join(BASE_DIR, "optimize", "problem.json")
 solution_path = os.path.join(BASE_DIR, "optimize", "solution.json")
+distances_path = os.path.join(BASE_DIR, "optimize", "distances.json")
+
+VIZ_PATH = os.path.join(BASE_DIR, "viz")
+PROBLEM_PATH = os.path.join(VIZ_PATH, "problem")
 
 "----------------------------------------------------------------------------------"
 "                               Problem Parameters                                 "
@@ -143,7 +147,8 @@ GOOGLE_MAPS_API_KEY = "AIzaSyAPpRP4mPuMlyRP8YiIaEOL_YAms6TpCwM"
 
 UUID_NAMESPACE = uuid.UUID("ccf207c6-3b15-11ee-be56-0242ac120002")
 
-TURF_SPLIT = True  # Which problem to run
+TURF_SPLIT = False  # Which problem to run
+GROUP_CANVAS_FULL = True
 
 # Maximum distance between two nodes where they should be stored
 ARBITRARY_LARGE_DISTANCE = 10000
@@ -197,7 +202,21 @@ ROAD_WIDTH = {
 NodeType = Enum("NodeType", ["house", "node", "other"])
 
 
-def generate_pt_id(lat: float, lon: float) -> str:
+def generate_pt_id(*args, **kwargs) -> str:
+    if "lat" in kwargs and "lon" in kwargs:
+        lat = kwargs["lat"]
+        lon = kwargs["lon"]
+    elif "pt" in kwargs:
+        lat = kwargs["pt"]["lat"]
+        lon = kwargs["pt"]["lon"]
+    elif len(args) == 2:
+        lat = args[0]
+        lon = args[1]
+    elif len(args) == 1:
+        lat = args[0]["lat"]
+        lon = args[0]["lon"]
+    else:
+        raise ValueError("Either lat/lon or pt must be provided")
     return str("{:.7f}".format(lat)) + ":" + str("{:.7f}".format(lon))
 
 
@@ -222,7 +241,7 @@ def pt_id(p: Point) -> str:
     """
     return (
         generate_pt_id(p["lat"], p["lon"])
-        if "id" not in p or p["id"] is None
+        if "id" not in p.keys() or p["id"] is None
         else p["id"]
     )
 
@@ -406,6 +425,22 @@ class Shift(TypedDict):
     end: ShiftEnd
 
 
+class Limit(TypedDict):
+    max: int
+    start: str
+    end: str
+
+
+class Dispatch(TypedDict):
+    location: Location
+    limits: list[Limit]
+
+
+class ShiftDispatch(TypedDict):
+    start: ShiftStart
+    dispatch: list[Dispatch]
+
+
 class VehicleLimits(TypedDict):
     shiftTime: int
     maxDistance: int
@@ -474,13 +509,13 @@ class DistanceMatrix(TypedDict):
 "----------------------------------------------------------------------------------"
 "                             Optimization Parameters                              "
 "----------------------------------------------------------------------------------"
-OPTIM_COSTS = Costs(fixed=0, distance=0, time=1)
-
-# OPTIM_OBJECTIVES = [
-#     [Objective(type="maximize-value")],
-#     [Objective(type="minimize-cost")],
-# ]
+OPTIM_COSTS = Costs(fixed=0, distance=3, time=1)
 
 OPTIM_OBJECTIVES = [
     [Objective(type="maximize-value")],
+    [Objective(type="minimize-cost")],
 ]
+
+# OPTIM_OBJECTIVES = [
+#     [Objective(type="maximize-value")],
+# ]

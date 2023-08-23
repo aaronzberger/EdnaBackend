@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import itertools
 import json
+import math
 import os
 from decimal import Decimal
 from random import randint
@@ -218,6 +219,36 @@ def display_clustered_blocks(
                     icon_anchor=(5, 12),  # left-right, up-down
                     html='<div style="font-size: 15pt">{}</div>'.format(i),
                 ),
+            ).add_to(m)
+
+    return m
+
+
+def display_distance_matrix(points: list[Point], distances_file: str) -> folium.Map:
+    lats = [i["lat"] for i in points]
+    lons = [i["lon"] for i in points]
+    m = generate_starter_map(lats=lats, lons=lons)
+
+    distances = json.load(open(distances_file))
+
+    # Distances is a flattened matrix
+    num_elements = math.sqrt(len(distances["distances"]))
+    assert num_elements == int(num_elements)
+
+    for i, p1 in enumerate(points):
+        for j, p2 in enumerate(points):
+            # Skip 9 out of every 10 elements randomly
+            if randint(0, 19) != 0:
+                continue
+            if i == j:
+                continue
+            distance = distances["distances"][int(i * num_elements + j)]
+            folium.PolyLine(
+                [[p1["lat"], p1["lon"]], [p2["lat"], p2["lon"]]],
+                weight=5,
+                color="red",
+                opacity=0.5,
+                tooltip=distance,
             ).add_to(m)
 
     return m

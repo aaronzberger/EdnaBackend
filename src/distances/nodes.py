@@ -3,12 +3,11 @@ import itertools
 import json
 import math
 import os
-import random
 from typing import Optional
 
 from tqdm import tqdm
 
-from src.config import Point, blocks_file_t, node_distance_table_file, pt_id
+from src.config import Point, blocks_file_t, generate_pt_id, node_distance_table_file
 from src.gps_utils import great_circle_distance
 from src.route import get_distance
 
@@ -24,7 +23,7 @@ class NodeDistances():
 
         # Only calculate and insert the routed distance if needed
         if distance <= cls.MAX_STORAGE_DISTANCE:
-            cls._node_distances[pt_id(node_1)][pt_id(node_2)] = get_distance(node_1, node_2)
+            cls._node_distances[generate_pt_id(node_1)][generate_pt_id(node_2)] = get_distance(node_1, node_2)
 
     @classmethod
     def _generate_from_previous(cls):
@@ -37,14 +36,14 @@ class NodeDistances():
         """
         unseen_nodes = []
         for node in cls.all_nodes:
-            if pt_id(node) not in cls._node_distances:
+            if generate_pt_id(node) not in cls._node_distances:
                 unseen_nodes.append(node)
 
         print('Of the {} nodes, {} are unseen.'.format(len(cls.all_nodes), len(unseen_nodes)))
 
         with tqdm(total=math.comb(len(unseen_nodes), 2), desc='Generating', unit='pairs', colour='green') as progress:
             for i, node in enumerate(unseen_nodes):
-                cls._node_distances[pt_id(node)] = {}
+                cls._node_distances[generate_pt_id(node)] = {}
                 for other_node in unseen_nodes[i:]:
                     cls._insert_pair(node, other_node)
                     progress.update()
@@ -54,7 +53,7 @@ class NodeDistances():
         cls._node_distances = {}
         with tqdm(total=math.comb(len(cls.all_nodes), 2), desc='Generating', unit='pairs', colour='green') as progress:
             for i, node in enumerate(cls.all_nodes):
-                cls._node_distances[pt_id(node)] = {}
+                cls._node_distances[generate_pt_id(node)] = {}
                 for other_node in cls.all_nodes[i:]:
                     cls._insert_pair(node, other_node)
                     progress.update()
@@ -68,11 +67,10 @@ class NodeDistances():
             cls._node_distances = json.load(open(node_distance_table_file))
 
             # If the file was found, make sure it includes all the records we need
-            num_samples = min(len(cls.all_nodes), 1000)
             need_regeneration = False
             unseen_node: Optional[Point] = None
-            for node in random.sample(cls.all_nodes, num_samples):
-                if pt_id(node) not in cls._node_distances:
+            for node in cls.all_nodes:
+                if generate_pt_id(node) not in cls._node_distances:
                     need_regeneration = True
                     unseen_node = node
                     break
@@ -102,9 +100,9 @@ class NodeDistances():
             float | None: distance between the two points if it exists, None otherwise
         """
         try:
-            return cls._node_distances[pt_id(p1)][pt_id(p2)]
+            return cls._node_distances[generate_pt_id(p1)][generate_pt_id(p2)]
         except KeyError:
             try:
-                return cls._node_distances[pt_id(p2)][pt_id(p1)]
+                return cls._node_distances[generate_pt_id(p2)][generate_pt_id(p1)]
             except KeyError:
                 return None

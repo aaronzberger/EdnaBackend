@@ -13,7 +13,9 @@ from termcolor import colored
 from src.config import (
     BASE_DIR,
     NODE_TOO_FAR_DISTANCE,
+    PROBLEM_PATH,
     TURF_SPLIT,
+    VIZ_PATH,
     HouseOutput,
     HousePeople,
     NodeType,
@@ -38,6 +40,7 @@ from src.gps_utils import SubBlock, project_to_line
 from src.optimize import Optimizer
 from src.route import RouteMaker
 from src.viz_utils import (
+    display_distance_matrix,
     display_house_orders,
     display_individual_walk_lists,
     display_walk_lists,
@@ -74,23 +77,41 @@ class PostProcess:
         origin_block_id = self.house_id_to_block_id[final_house["id"]]
         origin_block = self.blocks[origin_block_id]
 
-        through_end = self.blocks[origin_block_id]["addresses"][final_house["id"]][
-            "distance_to_end"
-        ]
-        through_end += min(
-            MixDistances.get_distance_through_ends(
-                node=origin_block["nodes"][-1], house=next_house
-            )
-        )
+        end_node = deepcopy(origin_block["nodes"][-1])
+        end_node["type"] = NodeType.node
 
-        through_start = self.blocks[origin_block_id]["addresses"][final_house["id"]][
-            "distance_to_start"
-        ]
-        through_start += min(
-            MixDistances.get_distance_through_ends(
-                node=origin_block["nodes"][0], house=next_house
+        assert next_house["type"] == NodeType.house
+
+        through_end = MixDistances.get_distance(p1=end_node, p2=next_house)
+
+        if through_end is not None:
+            through_end = self.blocks[origin_block_id]["addresses"][final_house["id"]][
+                "distance_to_end"
+            ]
+
+        start_node = deepcopy(origin_block["nodes"][0])
+        start_node["type"] = NodeType.node
+
+        through_start = MixDistances.get_distance(p1=start_node, p2=next_house)
+
+        if through_start is not None:
+            through_start = self.blocks[origin_block_id]["addresses"][final_house["id"]][
+                "distance_to_start"
+            ]
+
+        if through_start is None and through_end is None:
+            print(
+                colored(
+                    "Unable to find distance through start or end of block in post-processing. Quitting.",
+                    "red",
+                )
             )
-        )
+            sys.exit(1)
+
+        if through_start is None:
+            return origin_block["nodes"][-1]
+        if through_end is None:
+            return origin_block["nodes"][0]
 
         return (
             origin_block["nodes"][-1]
@@ -807,7 +828,7 @@ class PostProcess:
                 try:
                     house_voter_info: HousePeople = self.house_to_voters[pt_id(house)]
                 except KeyError:
-                    print(colored("House {} not found in voter info".format(house), "red"))
+                    print(colored("House {} with id {} not found in voter info".format(house, pt_id(house)), "red"))
                     sys.exit(1)
 
                 assert house_voter_info["latitude"] == house["lat"] and house_voter_info["longitude"] == house["lon"], \
@@ -833,7 +854,7 @@ class PostProcess:
         json.dump(list_out, open(output_file, "w"))
 
 
-def get_distance_cost(idx1: int, idx2: int) -> tuple[float, float]:
+def get_distance_cost(idx1: int, idx2: int, distances_file: str) -> tuple[float, float]:
     """
     Get the distance and cost from the routing input for two indices.
 
@@ -847,7 +868,7 @@ def get_distance_cost(idx1: int, idx2: int) -> tuple[float, float]:
         float: The distance between the two indices
         float: The cost between the two indices
     """
-    distance_costs = json.load(open(os.path.join(BASE_DIR, "optimize", "distances.json")))
+    distance_costs = json.load(open(distances_file))
 
     # Distances are stored as a flattened matrix
     # The index of the distance between two points is calculated as follows:
@@ -862,7 +883,7 @@ def get_distance_cost(idx1: int, idx2: int) -> tuple[float, float]:
 
 
 def process_solution(
-    solution: Solution, optimizer_points: list[Point], requested_blocks: blocks_file_t
+    solution: Solution, optimizer_points: list[Point], requested_blocks: blocks_file_t, viz_path: str = VIZ_PATH, problem_path: str = PROBLEM_PATH
 ):
     point_orders: list[list[tuple[Point, int]]] = []
 
@@ -871,16 +892,21 @@ def process_solution(
         for stop in route["stops"][1:-1]:
             point_orders[i].append((optimizer_points[stop["location"]["index"]], stop["location"]["index"]))
 
+    display_distance_matrix(optimizer_points, os.path.join(problem_path, "distances.json")).save(
+        os.path.join(viz_path, "distances.html")
+    )
+
     # house_dcs = [[HouseDistances.get_distance(i, j) for (i, j) in itertools.pairwise(list)] for list in point_orders]
+    distances_file = os.path.join(problem_path, "distances.json")
     house_dcs = [
-        [get_distance_cost(i[1], j[1]) for (i, j) in itertools.pairwise(list)]
+        [get_distance_cost(i[1], j[1], distances_file) for (i, j) in itertools.pairwise(list)]
         for list in point_orders
     ]
 
     points = [[i[0] for i in list] for list in point_orders]
 
     display_house_orders(points, dcs=house_dcs).save(
-        os.path.join(BASE_DIR, "viz", "optimal.html")
+        os.path.join(viz_path, "optimal.html")
     )
 
     post_processor = PostProcess(requested_blocks, points=optimizer_points)
@@ -890,23 +916,23 @@ def process_solution(
         tour["stops"] = tour["stops"][1:-1] if TURF_SPLIT else tour["stops"]
 
         if len(tour["stops"]) == 0:
-            print("List {} has 0 stops".format(i))
+            print(f"List {i} has 0 stops")
             continue
 
         walk_lists.append(post_processor.post_process(tour))
 
     # Save the walk lists
     display_walk_lists(walk_lists).save(
-        os.path.join(BASE_DIR, "viz", "walk_lists.html")
+        os.path.join(viz_path, "walk_lists.html")
     )
 
     list_visualizations = display_individual_walk_lists(walk_lists)
     for i, walk_list in enumerate(list_visualizations):
-        walk_list.save(os.path.join(BASE_DIR, "viz", "walk_lists", "{}.html".format(i)))
+        walk_list.save(os.path.join(viz_path, f"walk_lists_{i}.html"))
 
     for i in range(len(walk_lists)):
         post_processor.generate_file(
-            walk_lists[i], os.path.join(BASE_DIR, "viz", "files", f"{i}.json")
+            walk_lists[i], os.path.join(viz_path, f"files_{i}.json")
         )
 
 

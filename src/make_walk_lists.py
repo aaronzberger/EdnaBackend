@@ -8,12 +8,15 @@ import pickle
 import sys
 from copy import deepcopy
 
-from sklearn.cluster import DBSCAN
+from kmedoids import KMedoids
+from sklearn.cluster import DBSCAN, AgglomerativeClustering
 from termcolor import colored
 
 from src.config import (
+    AREA_ID,
     BASE_DIR,
     DEPOT,
+    GROUP_CANVAS_FULL,
     KEEP_APARTMENTS,
     NUM_LISTS,
     TURF_SPLIT,
@@ -21,10 +24,11 @@ from src.config import (
     Point,
     Solution,
     blocks_file_t,
+    node_coords_file,
     optimizer_points_pickle_file,
     pt_id,
     requested_blocks_file,
-    node_coords_file
+    solution_path,
 )
 from src.distances.blocks import BlockDistances
 from src.distances.houses import HouseDistances
@@ -32,10 +36,7 @@ from src.distances.mix import MixDistances
 from src.distances.nodes import NodeDistances
 from src.optimize import Optimizer
 from src.post_process import process_solution
-from src.viz_utils import (
-    display_blocks,
-    display_clustered_blocks,
-)
+from src.viz_utils import display_blocks, display_clustered_blocks
 
 if len(sys.argv) == 2 and sys.argv[1] == "-no":
     NO_OPTIMIZE = True
@@ -65,7 +66,11 @@ MixDistances()
 # region Cluster
 # Cluster blocks using kmedoids
 distance_matrix = BlockDistances.get_distance_matrix()
-db = DBSCAN(metric="precomputed", eps=400, min_samples=10).fit(distance_matrix)
+# db = DBSCAN(metric="precomputed", eps=400, min_samples=10).fit(distance_matrix)
+# db = KMedoids(n_clusters=25, metric="precomputed").fit(distance_matrix)
+db = AgglomerativeClustering(
+    n_clusters=None, linkage="complete", distance_threshold=1000, metric="precomputed"
+).fit(distance_matrix)
 labels: list[int] = db.labels_  # type: ignore
 
 # Expand labels into a list of block groups
@@ -88,12 +93,12 @@ def cluster_to_houses(cluster: blocks_file_t) -> list[Point]:
 
         for house_id, house_data in block["addresses"].items():
             # TODO: Move this conditional outward so we can get rid of this whole method
-            if not KEEP_APARTMENTS and " APT " in house_data["display_address"]:
-                continue
+            # if not KEEP_APARTMENTS and " APT " in house_data["display_address"]:
+            #     continue
 
-            if "3245 BEECHWOOD BLVD" in house_data["display_address"]:
-                # This is the only address where there are multiple houses on multiple blocks
-                continue
+            # if "3245 BEECHWOOD BLVD" in house_data["display_address"]:
+            #     # This is the only address where there are multiple houses on multiple blocks
+            #     continue
 
             # TODO: Maybe do this earlier to get rid of this method
             points.append(
@@ -108,9 +113,52 @@ def cluster_to_houses(cluster: blocks_file_t) -> list[Point]:
     return points
 
 
+def cluster_to_intersections(cluster: blocks_file_t) -> list[Point]:
+    """Convert a list of blocks to its corresponding list of intersections."""
+    points: list[Point] = []
+
+    for block in cluster.values():
+        # Duplicate addresses from apartments may occur. For now, only insert once
+
+        for node in block["nodes"]:
+            points.append(
+                Point(
+                    lat=node["lat"],
+                    lon=node["lon"],
+                    id=pt_id(node),
+                    type=NodeType.node,
+                )
+            )
+
+    return points
+
+
 clustered_points: list[list[Point]] = [cluster_to_houses(c) for c in clustered_blocks]
 
-centers = [c[0] for c in clustered_points]
+centers: list[Point] = []
+for cluster in clustered_blocks:
+    insertections: list[Point] = cluster_to_intersections(cluster)
+
+    # Choose the intersection which minimizes the sum of distances to all other intersections
+    min_sum = float("inf")
+    min_intersection = None
+    for intersection in insertections:
+        sum = 0
+        for other_intersection in insertections:
+            distance = NodeDistances.get_distance(intersection, other_intersection)
+            if distance is None:
+                distance = 1600
+            sum += distance
+        if sum < min_sum:
+            min_sum = sum
+            min_intersection = intersection
+
+    if min_intersection is None:
+        print(colored("Intersection not found", color="red"))
+        sys.exit()
+
+    centers.append(min_intersection)
+
 display_clustered_blocks(requested_blocks, labels, centers).save(
     os.path.join(BASE_DIR, "viz", "clusters.html")
 )
@@ -119,7 +167,9 @@ display_clustered_blocks(requested_blocks, labels, centers).save(
 # Use all blocks as a single area
 # areas = [i for i in range(len(clustered_blocks))]
 
-areas = [2]
+areas = [8]
+
+# areas = [1]
 
 area = clustered_points[areas[0]]
 area_blocks = deepcopy(clustered_blocks[areas[0]])
@@ -155,6 +205,13 @@ if TURF_SPLIT:
 
     # Generate the house distance matrix
     HouseDistances(area_blocks)
+elif GROUP_CANVAS_FULL:
+    # depot = deepcopy(centers[areas[0]])
+    # depot["id"] = "depot"
+    # depot["type"] = NodeType.other
+
+    # Generate house distance matrix, and distances to the depot
+    HouseDistances(requested_blocks)
 else:
     node_coords_file = json.load(open(node_coords_file))
 
@@ -180,10 +237,52 @@ else:
 " group canvas problem and nothing for the turf split problem                             "
 "-----------------------------------------------------------------------------------------"
 
+# TODO: Run the optimizer for each cluster, saving the lists into separate folders
+# Then, we can re-run on individual clusters and such if we need (or do more logic)
+
+if GROUP_CANVAS_FULL:
+    for i, (cluster, center) in enumerate(zip(clustered_points, centers)):
+        print(colored("Optimizing cluster {}".format(i), color="green"))
+        save_path = os.path.join(BASE_DIR, "regions", AREA_ID, "areas", str(i))
+        os.makedirs(save_path, exist_ok=True)
+
+        viz_dir = os.path.join(save_path, "viz")
+        problem_dir = os.path.join(save_path, "problem")
+        os.makedirs(viz_dir, exist_ok=True)
+        os.makedirs(problem_dir, exist_ok=True)
+
+        optimizer = Optimizer(cluster, starting_locations=center, save_path=problem_dir)
+        optimizer.optimize()
+        solution = optimizer.process_solution(
+            os.path.join(problem_dir, "solution.json")
+        )
+
+        if solution is None:
+            print(
+                colored(
+                    "Failed to generate lists for cluster {}".format(cluster),
+                    color="red",
+                )
+            )
+            continue
+
+        process_solution(
+            solution=solution,
+            optimizer_points=optimizer.points,
+            requested_blocks=requested_blocks,
+            viz_path=viz_dir,
+            problem_path=problem_dir
+        )
+
+        # TEMPORARY NOTE
+        sys.exit(0)
+
+    sys.exit(0)
+
 if not NO_OPTIMIZE:
     optimizer = Optimizer(area, num_lists=NUM_LISTS, starting_locations=depot)
     optimizer.optimize()
-    solution = optimizer.process_solution()
+    solution = optimizer.process_solution(solution_path)
 
     if solution is None:
         print(colored("Failed to generate lists", color="red"))
@@ -204,7 +303,11 @@ if not NO_OPTIMIZE:
 optimizer_points = pickle.load(open(optimizer_points_pickle_file, "rb"))
 
 # Load the solution file
-solution: Solution = Optimizer.process_solution()
+solution: Solution = Optimizer.process_solution(solution_path)
 
 # Process the solution
-process_solution(solution=solution, optimizer_points=optimizer_points, requested_blocks=requested_blocks)
+process_solution(
+    solution=solution,
+    optimizer_points=optimizer_points,
+    requested_blocks=requested_blocks,
+)
