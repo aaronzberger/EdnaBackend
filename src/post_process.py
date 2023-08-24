@@ -83,12 +83,10 @@ class PostProcess:
         end_node = deepcopy(origin_block["nodes"][-1])
         end_node["type"] = NodeType.node
 
-        assert next_house["type"] == NodeType.house
-
         through_end = MixDistances.get_distance(p1=end_node, p2=next_house)
 
         if through_end is not None:
-            through_end = self.requested_blocks[origin_block_id]["addresses"][
+            through_end += self.requested_blocks[origin_block_id]["addresses"][
                 final_house["id"]
             ]["distance_to_end"]
 
@@ -98,7 +96,7 @@ class PostProcess:
         through_start = MixDistances.get_distance(p1=start_node, p2=next_house)
 
         if through_start is not None:
-            through_start = self.requested_blocks[origin_block_id]["addresses"][
+            through_start += self.requested_blocks[origin_block_id]["addresses"][
                 final_house["id"]
             ]["distance_to_start"]
 
@@ -224,7 +222,8 @@ class PostProcess:
         if len(uuids) != len(self.blocks_on_route[block_id]):
             print(
                 colored(
-                    f"Notice: There are f{len(uuids)} houses on this block, but {len(self.blocks_on_route[block_id])} houses on this block in the route",
+                    f"Notice: There are {len(uuids)} houses on this block, but {len(self.blocks_on_route[block_id])} houses on this block in the route" + \
+                    f"Houses placed are {uuids}, houses overall are {self.blocks_on_route[block_id]}",
                     "blue",
                 )
             )
@@ -232,6 +231,11 @@ class PostProcess:
         block = self.requested_blocks[block_id]
 
         extremum: tuple[Point, Point] = (entrance, exit)
+
+        if "c8b284ae-adf4-5cd9-99d2-7cb94d28c8b0" in uuids:
+            VERBOSE = True
+        else:
+            VERBOSE = False
 
         # region: Calculate the navigation points
         if pt_id(entrance) != pt_id(exit):
@@ -260,6 +264,9 @@ class PostProcess:
             )
             extremum = (extremum[0], end_extremum)
 
+            if VERBOSE:
+                print(f"house {extremum_house_uuid} is projected to {end_extremum} via {block['nodes'][extremum_house['subsegment'][0]]} and {block['nodes'][extremum_house['subsegment'][1]]}")
+
             navigation_points = (
                 block["nodes"][: extremum_house["subsegment"][0] + 1]
                 + [end_extremum]
@@ -281,6 +288,9 @@ class PostProcess:
                 p3=block["nodes"][extremum_house["subsegment"][1]],
             )
             extremum = (start_extremum, extremum[1])
+
+            if VERBOSE:
+                print(f"house {extremum_house_uuid} is projected to {start_extremum} via {block['nodes'][extremum_house['subsegment'][0]]} and {block['nodes'][extremum_house['subsegment'][1]]}")
 
             navigation_points = (
                 list(reversed(block["nodes"][extremum_house["subsegment"][1] :]))
