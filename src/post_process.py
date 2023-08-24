@@ -233,11 +233,6 @@ class PostProcess:
 
         extremum: tuple[Point, Point] = (entrance, exit)
 
-        if "ef6c0a93-f3ac-5062-95bd-7e6a3cf92e9a" in uuids:
-            VERBOSE = True
-        else:
-            VERBOSE = False
-
         # region: Calculate the navigation points
         if pt_id(entrance) != pt_id(exit):
             # Order the navigation points (reverse the order if necessary)
@@ -265,9 +260,6 @@ class PostProcess:
             )
             extremum = (extremum[0], end_extremum)
 
-            if VERBOSE:
-                print(f'Last house is {extremum_house_uuid}, projected to point {end_extremum} via subsegment points {block["nodes"][extremum_house["subsegment"][0]]} and {block["nodes"][extremum_house["subsegment"][1]]}')
-
             navigation_points = (
                 block["nodes"][: extremum_house["subsegment"][0] + 1]
                 + [end_extremum]
@@ -289,9 +281,6 @@ class PostProcess:
                 p3=block["nodes"][extremum_house["subsegment"][1]],
             )
             extremum = (start_extremum, extremum[1])
-
-            if VERBOSE:
-                print(f'First house is {extremum_house_uuid}, projected to point {start_extremum} via subsegment points {block["nodes"][extremum_house["subsegment"][0]]} and {block["nodes"][extremum_house["subsegment"][1]]}')
 
             navigation_points = (
                 list(reversed(block["nodes"][extremum_house["subsegment"][1] :]))
@@ -393,15 +382,19 @@ class PostProcess:
                 != block_houses[houses[0]["id"]]["side"]
             ]
 
+            # To avoid mis-placing houses off the end, sort by the distance to the entrance/exit
+            metric_out = "distance_to_start" if pt_id(entrance) == pt_id(
+                block["nodes"][0]
+            ) else "distance_to_end"
+
             # Put the "out" side houses first, then the "back" side houses
             houses = sorted(
                 out_side,
-                key=lambda h: block_houses[h["id"]]["distance_to_start"],
-                reverse=generate_pt_id(entrance) != generate_pt_id(block["nodes"][0]),
+                key=lambda h: block_houses[h["id"]][metric_out],
             ) + sorted(
                 back_side,
-                key=lambda h: block_houses[h["id"]]["distance_to_end"],
-                reverse=generate_pt_id(entrance) != generate_pt_id(block["nodes"][0]),
+                key=lambda h: block_houses[h["id"]][metric_out],
+                reverse=True
             )
 
             # For the out houses, we're always going forward, so the subsegments are as they are

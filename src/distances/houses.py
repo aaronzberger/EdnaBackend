@@ -89,12 +89,6 @@ class HouseDistances():
 
     @classmethod
     def _insert_pair(cls, b1: Block, b1_id: str, b2: Block, b2_id: str):
-        if (b1_id == "104712960:104712975:0" and b2_id == "105956138:104712975:0") or \
-                (b2_id == "104712960:104712975:0" and b1_id == "105956138:104712975:0"):
-            VERBOSE_BLOCK = True
-        else:
-            VERBOSE_BLOCK = False
-
         def crossing_penalty(block: Block) -> int:
             try:
                 return DIFFERENT_SIDE_COST[block['type']]
@@ -111,16 +105,12 @@ class HouseDistances():
         # If any combination of houses on these two segments is inserted, they all are
         try:
             cls._house_matrix[next(iter(b2_houses.keys()))][next(iter(b1_houses.keys()))]
-            if VERBOSE_BLOCK:
-                print('Block already inserted')
             return
         except KeyError:
             pass
 
         # Check if the segments are the same
         if b1_id == b2_id:
-            if VERBOSE_BLOCK:
-                print('Same block')
             for (address_1, info_1), (address_2, info_2) in itertools.product(b1_houses.items(), b2_houses.items()):
                 if not KEEP_APARTMENTS and ' APT ' in address_1:
                     continue
@@ -159,21 +149,12 @@ class HouseDistances():
                           (b1['nodes'][-1], b2['nodes'][0]), (b1['nodes'][-1], b2['nodes'][-1])]]
         end_distances = [d for d in end_distances if d is not None]
 
-        if VERBOSE_BLOCK:
-            print('End distances: ', end_distances)
-            print(b1['nodes'][0], b1['nodes'][-1], b2['nodes'][0], b2['nodes'][1])
-
         # If this pair is too far away, don't add to the table.
         if len(end_distances) != 4 or min(end_distances) > cls.MAX_STORAGE_DISTANCE:
             return
 
         # Iterate over every possible pair of houses
         for (address_1, info_1), (address_2, info_2) in itertools.product(b1_houses.items(), b2_houses.items()):
-            if (address_1 == "8eb8abb9-a2ba-5051-a2df-1074016f4d65" and address_2 == "38593a5b-0228-56b1-8187-61950b41c0a2") or \
-                (address_2 == "8eb8abb9-a2ba-5051-a2df-1074016f4d65" and address_1 == "38593a5b-0228-56b1-8187-61950b41c0a2"):
-                VERBOSE = True
-            else:
-                VERBOSE = False
             if not KEEP_APARTMENTS and ' APT ' in address_1:
                 continue
             if address_1 not in cls._house_matrix:
@@ -187,9 +168,6 @@ class HouseDistances():
                  end_distances[1] + info_1['distance_to_start'] + info_2['distance_to_end'] + distances_to_road,
                  end_distances[2] + info_1['distance_to_end'] + info_2['distance_to_start'] + distances_to_road,
                  end_distances[3] + info_1['distance_to_end'] + info_2['distance_to_end'] + distances_to_road]
-
-            if VERBOSE:
-                print("Distances between blocks is: ", distances)
 
             # Add the street crossing penalties
             if USE_COST_METRIC:
