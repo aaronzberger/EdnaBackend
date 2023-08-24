@@ -280,7 +280,20 @@ def project_to_line(p1: Point, p2: Point, p3: Point) -> Point:
     path_between = converter.InverseLine(
         lat1=p2["lat"], lon1=p2["lon"], lat2=p3["lat"], lon2=p3["lon"]
     )
-    ald_p1 = along_track_distance(p1, p2, p3)[0]
+    ald_p1, ald_p2 = along_track_distance(p1, p2, p3)
+
+    # Account for the case where the house is off the end of the block
+    if ald_p1 > path_between.s13:
+        projected = path_between.Position(path_between.s13)
+        return Point(
+            lat=projected["lat2"], lon=projected["lon2"], type=NodeType.other, id=generate_pt_id(projected["lat2"], projected["lon2"])
+        )
+    elif ald_p2 > path_between.s13:
+        projected = path_between.Position(0)
+        return Point(
+            lat=projected["lat2"], lon=projected["lon2"], type=NodeType.other, id=generate_pt_id(projected["lat2"], projected["lon2"])
+        )
+
     projected = path_between.Position(ald_p1)
     return Point(
         lat=projected["lat2"], lon=projected["lon2"], type=NodeType.other, id=generate_pt_id(projected["lat2"], projected["lon2"])
