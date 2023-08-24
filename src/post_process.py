@@ -137,29 +137,33 @@ class PostProcess:
         destination_block_id = self.house_id_to_block_id[next_house["id"]]
         destination_block = self.requested_blocks[destination_block_id]
 
-        through_end = self.requested_blocks[destination_block_id]["addresses"][
-            next_house["id"]
-        ]["distance_to_end"]
-        try:
-            to_end = NodeDistances.get_distance(
-                intersection, destination_block["nodes"][-1]
-            )
-            through_end += 1600 if to_end is None else to_end
-        except TypeError:
-            print("Unable to find distance through end of block in post-processing")
-            through_end += 1600
+        through_end = NodeDistances.get_distance(intersection, destination_block["nodes"][-1])
 
-        through_start = self.requested_blocks[destination_block_id]["addresses"][
-            next_house["id"]
-        ]["distance_to_start"]
-        try:
-            to_start = NodeDistances.get_distance(
-                intersection, destination_block["nodes"][0]
+        if through_end is not None:
+            through_end += self.requested_blocks[destination_block_id]["addresses"][
+                next_house["id"]
+            ]["distance_to_end"]
+
+        through_start = NodeDistances.get_distance(intersection, destination_block["nodes"][0])
+
+        if through_start is not None:
+            through_start += self.requested_blocks[destination_block_id]["addresses"][
+                next_house["id"]
+            ]["distance_to_start"]
+
+        if through_start is None and through_end is None:
+            print(
+                colored(
+                    "Unable to find distance through start or end of block in post-processing. Quitting.",
+                    "red",
+                )
             )
-            through_start += 1600 if to_start is None else to_start
-        except TypeError:
-            print("Unable to find distance through end of block in post-processing")
-            through_start += 1600
+            sys.exit(1)
+
+        if through_start is None:
+            return destination_block["nodes"][-1]
+        if through_end is None:
+            return destination_block["nodes"][0]
 
         return (
             destination_block["nodes"][-1]
@@ -232,11 +236,6 @@ class PostProcess:
 
         extremum: tuple[Point, Point] = (entrance, exit)
 
-        if "c8b284ae-adf4-5cd9-99d2-7cb94d28c8b0" in uuids:
-            VERBOSE = True
-        else:
-            VERBOSE = False
-
         # region: Calculate the navigation points
         if pt_id(entrance) != pt_id(exit):
             # Order the navigation points (reverse the order if necessary)
@@ -264,9 +263,6 @@ class PostProcess:
             )
             extremum = (extremum[0], end_extremum)
 
-            if VERBOSE:
-                print(f"house {extremum_house_uuid} is projected to {end_extremum} via {block['nodes'][extremum_house['subsegment'][0]]} and {block['nodes'][extremum_house['subsegment'][1]]}")
-
             navigation_points = (
                 block["nodes"][: extremum_house["subsegment"][0] + 1]
                 + [end_extremum]
@@ -288,9 +284,6 @@ class PostProcess:
                 p3=block["nodes"][extremum_house["subsegment"][1]],
             )
             extremum = (start_extremum, extremum[1])
-
-            if VERBOSE:
-                print(f"house {extremum_house_uuid} is projected to {start_extremum} via {block['nodes'][extremum_house['subsegment'][0]]} and {block['nodes'][extremum_house['subsegment'][1]]}")
 
             navigation_points = (
                 list(reversed(block["nodes"][extremum_house["subsegment"][1] :]))
