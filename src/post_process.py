@@ -5,21 +5,18 @@ import os
 import pickle
 import sys
 from copy import deepcopy
-from random import randint
 
-import names
 from termcolor import colored
 
 from src.config import (
+    AREA_ID,
     BASE_DIR,
-    NODE_TOO_FAR_DISTANCE,
     PROBLEM_PATH,
     TURF_SPLIT,
     VIZ_PATH,
     HouseOutput,
     HousePeople,
     NodeType,
-    Person,
     Point,
     Solution,
     Tour,
@@ -28,12 +25,10 @@ from src.config import (
     generate_pt_id,
     house_id_to_block_id_file,
     house_to_voters_file,
-    optimizer_points_pickle_file,
     pt_id,
     requested_blocks_file,
 )
 from src.distances.blocks import BlockDistances
-from src.distances.houses import HouseDistances
 from src.distances.mix import MixDistances
 from src.distances.nodes import NodeDistances
 from src.gps_utils import SubBlock, project_to_line
@@ -54,7 +49,6 @@ class PostProcess:
             open(house_id_to_block_id_file)
         )
         self.house_to_voters = json.load(open(house_to_voters_file))
-        # self.address_to_segment_id: houses_file_t = json.load(open(addresses_file))
 
         self.requested_blocks = requested_blocks
         self.tour_points = optimizer_points
@@ -62,6 +56,7 @@ class PostProcess:
 
         # Map block IDs to the UUIDs on this route on that block
         self.blocks_on_route: dict[str, list[str]] = {}
+        self.inserted_houses: set[str] = set()
 
     def _calculate_exit(self, final_house: Point, next_house: Point) -> Point:
         """
@@ -223,14 +218,14 @@ class PostProcess:
             if uuid in uuids
         }
 
-        if len(uuids) != len(self.blocks_on_route[block_id]):
-            print(
-                colored(
-                    f"Notice: There are {len(uuids)} houses on this block, but {len(self.blocks_on_route[block_id])} houses on this block in the route" + \
-                    f"Houses placed are {uuids}, houses overall are {self.blocks_on_route[block_id]}",
-                    "blue",
-                )
-            )
+        # if len(uuids) != len(self.blocks_on_route[block_id]):
+        #     print(
+        #         colored(
+        #             f"Notice: There are {len(uuids)} houses on this block, but {len(self.blocks_on_route[block_id])} houses on this block in the route" + \
+        #             f"\nThe unplaced houses are {set(self.blocks_on_route[block_id]) - set(uuids)}",
+        #             "blue",
+        #         )
+        #     )
 
         block = self.requested_blocks[block_id]
 
@@ -299,6 +294,8 @@ class PostProcess:
             )
         # endregion
 
+        unused_uuids = set(self.blocks_on_route[block_id]) - set(uuids) - self.inserted_houses
+
         # region: Order the houses
         if pt_id(entrance) != pt_id(exit):
             running_side = block_houses[houses[0]["id"]]["side"]
@@ -332,18 +329,35 @@ class PostProcess:
 
                     for remaining_house in houses[i + 1 :]:
                         if (
-                            block_houses[remaining_house["id"]]["side"] != running_side
+                            block_houses[remaining_house["id"]]["side"] == running_side
                             and block_houses[remaining_house["id"]][metric]
                             < running_distance_to_start
                             and remaining_house["id"] not in added_houses
                         ):
                             new_houses.append(remaining_house)
 
-                            print(
-                                "Adding house {} with {}".format(
-                                    remaining_house["id"], house["id"]
+                    # Also, add any houses on future blocks which can be moved up to this block
+                    for potential_house_id in unused_uuids:
+                        info = self.requested_blocks[block_id]["addresses"][potential_house_id]
+                        if (
+                            info["side"] != running_side
+                            and info[metric]
+                            < running_distance_to_start
+                            and potential_house_id not in added_houses
+                        ):
+                            new_houses.append(
+                                Point(
+                                    lat=info["lat"],
+                                    lon=info["lon"],
+                                    type=NodeType.house,
+                                    id=potential_house_id,
                                 )
                             )
+
+                            uuids.append(potential_house_id)
+                            block_houses[potential_house_id] = info
+
+                            # print(f"Moving up house with id {potential_house_id} to this block (different entrance/exit)")
 
                     new_house_order += sorted(
                         new_houses,
@@ -355,6 +369,28 @@ class PostProcess:
 
             # Now, sort the last side
             houses_left = [h for h in houses[start:] if h["id"] not in added_houses]
+
+            # Also, add any houses on future blocks which can be moved up to this block
+            for potential_house_id in unused_uuids:
+                info = self.requested_blocks[block_id]["addresses"][potential_house_id]
+                if (
+                    info["side"] == running_side
+                    and potential_house_id not in added_houses
+                ):
+                    houses_left.append(
+                        Point(
+                            lat=info["lat"],
+                            lon=info["lon"],
+                            type=NodeType.house,
+                            id=potential_house_id,
+                        )
+                    )
+
+                    uuids.append(potential_house_id)
+                    block_houses[potential_house_id] = info
+
+                    # print(f"Moving up house with id {potential_house_id} to this block (different entrance/exit)")
+
             new_house_order += sorted(
                 houses_left, key=lambda h: block_houses[h["id"]][metric]
             )
@@ -406,18 +442,20 @@ class PostProcess:
                 # print('OUT NAV', out_nav_nodes, flush=True)
                 sub_start = block["nodes"][block_houses[house["id"]]["subsegment"][0]]
                 sub_end = block["nodes"][block_houses[house["id"]]["subsegment"][1]]
-                try:
-                    sub_start_idx = out_nav_nodes.index(sub_start)
-                except ValueError:
-                    sub_start_idx = len(out_nav_nodes)
-                try:
-                    sub_end_idx = out_nav_nodes.index(sub_end)
-                except ValueError:
-                    sub_end_idx = len(out_nav_nodes)
 
-                assert min(sub_start_idx, sub_end_idx) != len(
-                    out_nav_nodes
-                ), f'House {house["id"]} not found in navigation points'
+                # print(f'Out nav nodes are {out_nav_nodes} for house {house["id"]}, subsegment {sub_start}, {sub_end}')
+
+                sub_start_idx = sub_end_idx = len(out_nav_nodes)
+                for node in out_nav_nodes:
+                    if generate_pt_id(node) == generate_pt_id(sub_start):
+                        sub_start_idx = out_nav_nodes.index(node)
+                    if generate_pt_id(node) == generate_pt_id(sub_end):
+                        sub_end_idx = out_nav_nodes.index(node)
+
+                if min(sub_start_idx, sub_end_idx) == len(out_nav_nodes):
+                    sub_start_idx = len(out_nav_nodes) - 1
+                    print(colored(f"WARNNING: house {house['id']} 's subsegment is no longer existent: extremum calculation likely failed", "yellow"))
+
                 houses[i]["subsegment_start"] = min(sub_start_idx, sub_end_idx)
 
             # For the back houses, they are on the second half of the subsegments
@@ -426,18 +464,20 @@ class PostProcess:
                 # print('BACK NAV', back_nav_nodes, flush=True)
                 sub_start = block["nodes"][block_houses[house["id"]]["subsegment"][0]]
                 sub_end = block["nodes"][block_houses[house["id"]]["subsegment"][1]]
-                try:
-                    sub_start_idx = back_nav_nodes.index(sub_start)
-                except ValueError:
-                    sub_start_idx = len(back_nav_nodes)
-                try:
-                    sub_end_idx = back_nav_nodes.index(sub_end)
-                except ValueError:
-                    sub_end_idx = len(back_nav_nodes)
 
-                assert min(sub_start_idx, sub_end_idx) != len(
-                    back_nav_nodes
-                ), f'House {house["id"]} is not on the back side of the block'
+                # print(f'Back nav nodes are {back_nav_nodes} for house {house["id"]}, subsegment {sub_start}, {sub_end}')
+
+                sub_start_idx = sub_end_idx = len(back_nav_nodes)
+                for node in back_nav_nodes:
+                    if generate_pt_id(node) == generate_pt_id(sub_start):
+                        sub_start_idx = back_nav_nodes.index(node)
+                    if generate_pt_id(node) == generate_pt_id(sub_end):
+                        sub_end_idx = back_nav_nodes.index(node)
+
+                if min(sub_start_idx, sub_end_idx) == len(back_nav_nodes):
+                    sub_start_idx = len(back_nav_nodes) - 1
+                    print(colored(f"WARNNING: house {house['id']} 's subsegment is no longer existent: extremum calculation likely failed", "yellow"))
+
                 houses[i + len(out_side)]["subsegment_start"] = (
                     min(sub_start_idx, sub_end_idx) + len(navigation_points) // 2 - 1
                 )
@@ -454,9 +494,12 @@ class PostProcess:
             navigation_points=navigation_points,
         )
 
-        # if pt_id(entrance) == pt_id(exit):
-        #     new_dual = self._split_sub_block(sub_block, entrance, exit)
-        #     return new_dual
+        if pt_id(entrance) == pt_id(exit):
+            new_dual = self._split_sub_block(sub_block, entrance, exit)
+            return new_dual
+
+        for uuid in uuids:
+            self.inserted_houses.add(uuid)
 
         return sub_block
 
@@ -570,9 +613,15 @@ class PostProcess:
         # Process the list
         for house, next_house in itertools.pairwise(houses):
             next_block_id = self.house_id_to_block_id[next_house["id"]]
-            current_sub_block_houses.append(house)
+
+            if house["id"] not in self.inserted_houses:
+                current_sub_block_houses.append(house)
 
             if next_block_id != running_block_id:
+                if len(current_sub_block_houses) == 0:
+                    running_block_id = next_block_id
+                    continue
+
                 # Calculate the entrance to the block which is ending
                 entrance_pt = self._calculate_entrance(
                     running_intersection, current_sub_block_houses[0]
@@ -598,25 +647,27 @@ class PostProcess:
                 running_block_id = next_block_id
 
         # Since we used pairwise, the last house is never evaluated
-        current_sub_block_houses.append(houses[-1])
+        if houses[-1]["id"] not in self.inserted_houses:
+            current_sub_block_houses.append(houses[-1])
 
-        # Determine the final intersection the canvasser will end up at to process the final subsegment
-        exit_point = self._calculate_entrance(depot, current_sub_block_houses[-1])
-        entrance_point = self._calculate_entrance(
-            running_intersection, current_sub_block_houses[0]
-        )
+        if len(current_sub_block_houses) != 0:
+            # Determine the final intersection the canvasser will end up at to process the final subsegment
+            exit_point = self._calculate_entrance(depot, current_sub_block_houses[-1])
+            entrance_point = self._calculate_entrance(
+                running_intersection, current_sub_block_houses[0]
+            )
 
-        sub_block = self._process_sub_block(
-            current_sub_block_houses,
-            running_block_id,
-            entrance=entrance_point,
-            exit=exit_point,
-        )
+            sub_block = self._process_sub_block(
+                current_sub_block_houses,
+                running_block_id,
+                entrance=entrance_point,
+                exit=exit_point,
+            )
 
-        if isinstance(sub_block, SubBlock):
-            walk_list.append(sub_block)
-        else:
-            walk_list.extend(sub_block)
+            if isinstance(sub_block, SubBlock):
+                walk_list.append(sub_block)
+            else:
+                walk_list.extend(sub_block)
 
         # Fill in any holes
         walk_list = self.fill_holes(walk_list)
@@ -791,11 +842,19 @@ if __name__ == "__main__":
     # Initialize calculator for mixed distances
     MixDistances()
 
-    # Load the optimizer points from pickle
-    optimizer_points = pickle.load(open(optimizer_points_pickle_file, "rb"))
+    if len(sys.argv) == 2:
+        problem_dir = os.path.join(BASE_DIR, "regions", AREA_ID, "areas", sys.argv[1], "problem")
+        viz_dir = os.path.join(BASE_DIR, "regions", AREA_ID, "areas", sys.argv[1], "viz")
+        solution = Optimizer.process_solution(
+            os.path.join(problem_dir, "solution.json")
+        )
 
-    # Load the solution file
-    solution: Solution = Optimizer.process_solution()
+        optimizer_points = pickle.load(open(os.path.join(problem_dir, "points.pkl"), "rb"))
 
-    # Process the solution
-    process_solution(solution, optimizer_points, requested_blocks)
+        process_solution(
+            solution=solution,
+            optimizer_points=optimizer_points,
+            requested_blocks=requested_blocks,
+            viz_path=viz_dir,
+            problem_path=problem_dir
+        )

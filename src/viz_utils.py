@@ -150,7 +150,7 @@ def display_blocks(
                 color=cmap.get(index),
                 opacity=1.0,
                 radius=1,
-                tooltip="{}: {}".format(house_info["display_address"], word),
+                tooltip="{}: {}, {}".format(house_info["display_address"], word, house_info["side"]),
             ).add_to(m)
 
     print(

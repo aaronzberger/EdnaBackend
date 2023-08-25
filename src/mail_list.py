@@ -4,7 +4,7 @@ import csv
 import json
 import os
 import sys
-from typing import NamedTuple, Optional
+from typing import NamedTuple
 
 from termcolor import colored
 from tqdm import tqdm

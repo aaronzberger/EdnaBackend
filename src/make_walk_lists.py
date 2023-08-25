@@ -253,6 +253,9 @@ if GROUP_CANVAS_FULL:
 
         optimizer = Optimizer(cluster, starting_locations=center, save_path=problem_dir)
         optimizer.optimize()
+
+        pickle.dump(optimizer.points, open(os.path.join(problem_dir, "points.pkl"), "wb"))
+
         solution = optimizer.process_solution(
             os.path.join(problem_dir, "solution.json")
         )
@@ -275,7 +278,7 @@ if GROUP_CANVAS_FULL:
         )
 
         # TEMPORARY NOTE
-        sys.exit(0)
+        # sys.exit(0)
 
     sys.exit(0)
 
