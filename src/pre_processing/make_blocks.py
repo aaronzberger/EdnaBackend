@@ -41,6 +41,7 @@ from src.gps_utils import (
     along_track_distance,
     cross_track_distance,
     great_circle_distance,
+    pt_to_utm,
 )
 
 from src.address import Address, addresses_file_t
@@ -321,6 +322,14 @@ def search_for_best_subsegment(segment, segment_id, best_segment, house_pt: Poin
             max(alds) - great_circle_distance(node_1, node_2) - ALD_BUFFER,
         )
 
+        # Convert the nodes to UTM
+        x1, y1, _, _ = pt_to_utm(node_1)
+        x2, y2, _, _ = pt_to_utm(node_2)
+        xh, yh, _, _ = pt_to_utm(house_pt)
+        cross_product = (x2 - x1) * (yh - y1) - (y2 - y1) * (xh - x1)
+
+        house_side = cross_product > 0
+
         # If this segment is better than the best segment, insert it
         if (
                 best_segment is None
@@ -350,7 +359,7 @@ def search_for_best_subsegment(segment, segment_id, best_segment, house_pt: Poin
                 sub_node_2=deepcopy(node_2),
                 ctd=abs(ctd),
                 ald_offset=house_offset,
-                side=True if ctd > 0 else False,
+                side=bool(house_side),
                 id=segment_id,
             )
 

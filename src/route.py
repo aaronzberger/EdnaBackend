@@ -4,10 +4,12 @@ import json
 import os
 from collections import defaultdict
 from decimal import Decimal
+import sys
 from typing import Any
 
 import polyline
 import requests
+from termcolor import colored
 
 from src.config import (
     DISTANCE_TO_ROAD_MULTIPLIER,
@@ -209,7 +211,6 @@ class RouteMaker:
                     heapq.heappush(heap, (distance, neighbor))
 
         # Now, reconstruct the path
-
         path = []
         node = end_node_id
         while node is not None:
@@ -240,6 +241,10 @@ class RouteMaker:
 
     @classmethod
     def get_route(cls, start: Point, end: Point):
+        # If the init method has not been called, call it
+        if len(cls._node_table) == 0:
+            cls.__init__()
+
         # Take the closest node to the start and end points
         start_lat = Decimal(start["lat"]).quantize(Decimal("0.0001"))
         start_lon = Decimal(start["lon"]).quantize(Decimal("0.0001"))
@@ -269,7 +274,14 @@ class RouteMaker:
         # Now, run Djikstra's algorithm to find the shortest path between the start and end nodes
         # Limit the search to the blocks that are within d(start, end) of one of the nodes
         # Limit the number of iterations to 5, so this runs in O(n) time
-        path, distance = cls.djikstras(start_node[0], end_node[0])
+        try:
+            path, distance = cls.djikstras(start_node[0], end_node[0])
+        except TypeError:
+            print(colored(f"Failed to run djikstras from start node {start_node[0]} to end node {end_node[0]}", "red"))
+            print("104665366" in cls._node_table)
+            print(len(cls._node_table))
+            print(cls._node_table[start_node[0]], cls._node_table[end_node[0]])
+            sys.exit(1)
 
         return path, distance
 

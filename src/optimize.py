@@ -560,6 +560,7 @@ class Optimizer:
         optim_cost = Costs(fixed=1, distance=0, time=1)
 
         # About 60 houses per list
+        # TODO: Figure out how to use the actual minimize_tours to decide this.
         num_vehicles = len(self.points) // 60 + 1
 
         fleet = self.build_fleet(
