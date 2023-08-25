@@ -233,7 +233,7 @@ else:
 
 "-----------------------------------------------------------------------------------------"
 "                                      Optimize                                           "
-" Run the optimizer on the subset of the universe, providing a startting location for the "
+" Run the optimizer on the subset of the universe, providing a starting location for the "
 " group canvas problem and nothing for the turf split problem                             "
 "-----------------------------------------------------------------------------------------"
 
@@ -294,7 +294,7 @@ if not NO_OPTIMIZE:
 
 "-----------------------------------------------------------------------------------------"
 "                                      Post-Process                                       "
-" Eliminate innacuracies in the solution by applying some walkability and visibility      "
+" Eliminate inaccuracies in the solution by applying some walkability and visibility      "
 " heuristics (combining duplicate blocks, eliminating backtracking, etc.)                 "
 " Also, generate the walk list files and visualizations                                   "
 "-----------------------------------------------------------------------------------------"
