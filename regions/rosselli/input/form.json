@@ -1,0 +1,36 @@
+[
+    {
+        "type": "Multiple Choice",
+        "question": "Was the voter home?",
+        "options": [
+            "Yes",
+            "No"
+        ]
+    },
+    {
+        "type": "Linear Scale",
+        "question": "How likely is the voter to vote for Giuseppe?",
+        "options": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5"
+        ],
+        "markers": [
+            "Very unlikely",
+            "",
+            "",
+            "",
+            "Very likely"
+        ]
+    },
+    {
+        "type":"Short Answer",
+        "question": "How many minutes did you spend talking to the voter?"
+    },
+    {
+        "type": "Short Answer",
+        "question": "Any other comments?"
+    }
+]

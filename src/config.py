@@ -15,6 +15,7 @@ VRP_CLI_PATH = "/home/user/.cargo/bin/vrp-cli"
 
 AREA_ID = "rosselli"
 USE_COST_METRIC = False
+STYLE_COLOR = '#0F6BF5'
 
 street_suffixes_file = os.path.join(BASE_DIR, "src", "street_suffixes.json")
 

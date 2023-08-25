@@ -38,7 +38,6 @@ from src.viz_utils import (
     display_distance_matrix,
     display_house_orders,
     display_individual_walk_lists,
-    display_walk_lists,
 )
 
 
@@ -678,7 +677,7 @@ class PostProcess:
 
         return walk_list
 
-    def generate_file(self, walk_list: list[SubBlock], output_file: str):
+    def generate_file(self, walk_list: list[SubBlock], output_file: str, id: str, form: dict):
         """
         Generate a JSON file with the walk list (for front-end).
 
@@ -689,6 +688,7 @@ class PostProcess:
         """
         # Generate the JSON file
         list_out = {}
+        list_out["id"] = id
         list_out["blocks"] = []
         for sub_block in walk_list:
             nodes = []
@@ -734,6 +734,8 @@ class PostProcess:
 
             list_out["blocks"].append({"nodes": nodes, "houses": houses})
 
+        list_out["form"] = form
+
         # Write the file
         json.dump(list_out, open(output_file, "w"))
 
@@ -774,6 +776,7 @@ def process_solution(
     requested_blocks: blocks_file_t,
     viz_path: str = VIZ_PATH,
     problem_path: str = PROBLEM_PATH,
+    id: str = AREA_ID,
 ):
     point_orders: list[list[tuple[Point, int]]] = []
 
@@ -816,16 +819,16 @@ def process_solution(
 
         walk_lists.append(post_processor.post_process(tour))
 
-    # Save the walk lists
-    display_walk_lists(walk_lists).save(os.path.join(viz_path, "walk_lists.html"))
-
     list_visualizations = display_individual_walk_lists(walk_lists)
     for i, walk_list in enumerate(list_visualizations):
         walk_list.save(os.path.join(viz_path, f"walk_lists_{i}.html"))
 
+    form = json.load(open(os.path.join("regions", AREA_ID, "input", "form.json"), "r"))
+
     for i in range(len(walk_lists)):
+        list_id = AREA_ID + "-cluster-" + id + "-" + str(i)
         post_processor.generate_file(
-            walk_lists[i], os.path.join(viz_path, f"files_{i}.json")
+            walk_lists[i], os.path.join(viz_path, f"files_{i}.json"), id=list_id, form=form
         )
 
 

@@ -20,13 +20,17 @@ from tqdm import tqdm
 from src.config import (
     BASE_DIR,
     DEPOT,
+    STYLE_COLOR,
     USE_COST_METRIC,
     NodeType,
     Point,
     address_pts_file,
     blocks_file,
     blocks_file_t,
-    node_coords_file
+    generate_pt_id,
+    node_coords_file,
+    house_to_voters_file,
+    turnout_predictions_file
 )
 from src.gps_utils import SubBlock
 
@@ -338,10 +342,15 @@ def display_walk_list(walk_list: list[SubBlock], color: str) -> folium.Map:
     -------
         folium.Map: The map with the walk list displayed
     """
-    points = list(itertools.chain.from_iterable([s.houses for s in walk_list]))
-    lats = [i["lat"] for i in points]
-    lons = [i["lon"] for i in points]
-    m = generate_starter_map(lats=lats, lons=lons)
+    # points = list(itertools.chain.from_iterable([s.houses for s in walk_list]))
+    # lats = [i["lat"] for i in points]
+    # lons = [i["lon"] for i in points]
+    # m = generate_starter_map(lats=lats, lons=lons)
+
+    house_to_voters = json.load(open(house_to_voters_file))
+    turnout_predictions = json.load(open(turnout_predictions_file))
+
+    m = folium.Map()
 
     house_counter = 0
 
@@ -352,20 +361,89 @@ def display_walk_list(walk_list: list[SubBlock], color: str) -> folium.Map:
             color=color,
             opacity=0.7,
         ).add_to(m)
-        for house in sub_block.houses:
+
+        if len(sub_block.houses) == 0:
+            continue
+
+        display_num = ""
+        tooltip = ""
+        last_point = None
+        for house, next_house in itertools.pairwise(sub_block.houses):
+
+            voter_info = house_to_voters[house["id"]]
+
+            house_counter += 1
+            point = generate_pt_id(house)
+            if point != last_point:
+                display_num = str(house_counter)
+                last_point = point
+
+                # Add the address to the tooltip
+                tooltip = voter_info["display_address"]
+
+            # Add the voter names to the tooltip
+            for person in voter_info["voter_info"]:
+                turnout: float = turnout_predictions[person["voter_id"]]
+                tooltip += f"<br>{person['name'].title()} ({person['party']}): <b>{round(turnout * 100)}%</b>"
+
+            if point == generate_pt_id(next_house):
+                continue
+
+            if display_num != str(house_counter):
+                display_num += f"-{str(house_counter)}"
+
             folium.Marker(
                 location=[house["lat"], house["lon"]],
                 # On hover, the icon displays the address
                 icon=DivIcon(
-                    icon_size=(25, 25),
+                    icon_size=(60, 30),
                     icon_anchor=(10, 12),  # left-right, up-down
                     html='<div style="font-size: 15pt; color:{}">{}</div>'.format(
-                        color, house_counter
+                        color, display_num
                     ),
                 ),
-                tooltip=house["id"],
+                tooltip=tooltip,
             ).add_to(m)
-            house_counter += 1
+
+        house_counter += 1
+
+        # Add the last house
+        voter_info = house_to_voters[sub_block.houses[-1]["id"]]
+        point = generate_pt_id(sub_block.houses[-1])
+        if point != last_point:
+            display_num = str(house_counter)
+            last_point = point
+
+            # Add the address to the tooltip
+            tooltip = voter_info["display_address"]
+
+        # Add the voter names to the tooltip
+        for person in voter_info["voter_info"]:
+            turnout: float = float(turnout_predictions[person["voter_id"]])
+            tooltip += f"<br>{person['name'].title()} ({person['party']}): <b>{round(turnout * 100)}%</b>"
+
+        if display_num != str(house_counter):
+            if display_num == "":
+                display_num = str(house_counter)
+            else:
+                display_num += f"-{str(house_counter)}"
+        if len(sub_block.houses) == 0:
+            continue
+        folium.Marker(
+            location=[sub_block.houses[-1]["lat"], sub_block.houses[-1]["lon"]],
+            # On hover, the icon displays the address
+            icon=DivIcon(
+                icon_size=(60, 30),
+                icon_anchor=(10, 12),  # left-right, up-down
+                html='<div style="font-size: 15pt; color:{}">{}</div>'.format(
+                    color, display_num
+                ),
+            ),
+            tooltip=tooltip,
+        ).add_to(m)
+
+    # Fit the map to the bounds
+    m.fit_bounds(m.get_bounds())
 
     return m
 
@@ -382,89 +460,13 @@ def display_individual_walk_lists(walk_lists: list[list[SubBlock]]) -> list[foli
     -------
         list[folium.Map]: A map with all the walk lists
     """
-    cmap = ColorMap(0, len(walk_lists) - 1, cmap="tab10")
+    # cmap = ColorMap(0, len(walk_lists) - 1, cmap="tab10")
 
     maps = []
-    for i, walk_list in enumerate(walk_lists):
-        maps.append(display_walk_list(walk_list, cmap.get(i)))
+    for walk_list in walk_lists:
+        maps.append(display_walk_list(walk_list, STYLE_COLOR))
 
     return maps
-
-
-def display_walk_lists(walk_lists: list[list[SubBlock]]) -> folium.Map:
-    """
-    Display a list of walk lists, all in one map.
-
-    Parameters
-    ----------
-        walk_lists (list[list[SubBlock]]): A list of walk lists
-
-    Returns
-    -------
-        folium.Map: A map with all the walk lists
-    """
-    points = [
-        list(itertools.chain.from_iterable([s.houses for s in walk_list]))
-        for walk_list in walk_lists
-    ]
-    points = list(itertools.chain.from_iterable(points))
-
-    lats = [i["lat"] for walk_list in walk_lists for i in walk_list for i in i.houses]
-    lons = [i["lon"] for walk_list in walk_lists for i in walk_list for i in i.houses]
-    m = generate_starter_map(lats=lats, lons=lons)
-
-    cmap = ColorMap(0, len(walk_lists) - 1, cmap="tab10")
-
-    for i, walk_list in enumerate(walk_lists):
-        house_counter = 1
-        color = cmap.get(i)
-        for sub_block in walk_list:
-            folium.PolyLine(
-                [[p["lat"], p["lon"]] for p in sub_block.navigation_points],
-                weight=6,
-                color=color,
-                opacity=0.7,
-            ).add_to(m)
-            for house in sub_block.houses:
-                # Make a circle
-                folium.Circle(
-                    location=[house["lat"], house["lon"]],
-                    radius=11,
-                    weight=1,
-                    color=color,
-                    fill=False,
-                ).add_to(m)
-                folium.Marker(
-                    location=[house["lat"], house["lon"]],
-                    icon=DivIcon(
-                        icon_size=(20, 20),
-                        icon_anchor=(3, 5),  # left-right, up-down
-                        html='<div style="font-size: 6pt; color:{}">{}</div>'.format(
-                            color, house_counter
-                        ),
-                    ),
-                ).add_to(m)
-
-                house_counter += 1
-
-    # Place the depot
-
-    node_coords = json.load(open(node_coords_file))
-    try:
-        pt = node_coords[DEPOT]
-    except KeyError:
-        print(colored("Depot not found in node_coords.json. Quitting.", "red"))
-        sys.exit()
-
-    folium.Circle(
-        location=[pt["lat"], pt["lon"]],
-        radius=11,
-        color="red",
-        fillOpacity=1,
-        fill=True,
-    ).add_to(m)
-
-    return m
 
 
 if __name__ == "__main__":

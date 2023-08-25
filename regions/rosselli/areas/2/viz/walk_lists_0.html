@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_d98e0234c60f3ef9146ef78d14f02909 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+        
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_d98e0234c60f3ef9146ef78d14f02909" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_d98e0234c60f3ef9146ef78d14f02909 = L.map(
+                "map_d98e0234c60f3ef9146ef78d14f02909",
+                {
+                    center: [0, 0],
+                    crs: L.CRS.EPSG3857,
+                    zoom: 1,
+                    zoomControl: true,
+                    preferCanvas: false,
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_2876a6c6a3484af33c8696c824a80551 = L.tileLayer(
+                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {"attribution": "Data by \u0026copy; \u003ca target=\"_blank\" href=\"http://openstreetmap.org\"\u003eOpenStreetMap\u003c/a\u003e, under \u003ca target=\"_blank\" href=\"http://www.openstreetmap.org/copyright\"\u003eODbL\u003c/a\u003e.", "detectRetina": false, "maxNativeZoom": 18, "maxZoom": 18, "minZoom": 0, "noWrap": false, "opacity": 1, "subdomains": "abc", "tms": false}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var poly_line_130312337e57d8dbc76d03e16336742d = L.polyline(
+                [[40.5837949, -80.0883262], [40.583884, -80.0884186], [40.5842658, -80.0888144], [40.5844186, -80.0889603], [40.5845445, -80.0890697]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var marker_f4af59f838cbc5cc7c425e51bfc6f692 = L.marker(
+                [40.5843349885186, -80.0884340970581],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_6c68acb7e2087c7f57f9d02f3cf240cc = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e1\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_f4af59f838cbc5cc7c425e51bfc6f692.setIcon(div_icon_6c68acb7e2087c7f57f9d02f3cf240cc);
+        
+    
+            marker_f4af59f838cbc5cc7c425e51bfc6f692.bindTooltip(
+                `<div>
+                     2378 ROCHESTER RD<br>Sandra Mallasee (D): <b>41%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_21fe67e265366554befee6a77c282d07 = L.marker(
+                [40.5845311220761, -80.0886750165357],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_8b8815e11bb2896cfa737afd20ae51c8 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e2\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_21fe67e265366554befee6a77c282d07.setIcon(div_icon_8b8815e11bb2896cfa737afd20ae51c8);
+        
+    
+            marker_21fe67e265366554befee6a77c282d07.bindTooltip(
+                `<div>
+                     2371 ROCHESTER RD<br>Robert Bartholow (D): <b>43%</b><br>Graciela Bartholow (D): <b>22%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_9c78da403948eb03de91e0fccd7459ef = L.polyline(
+                [[40.5845445, -80.0890697], [40.5851303, -80.0895579], [40.585915, -80.0901834], [40.5859708, -80.0902461]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var poly_line_3e3966c79284b707241042495203c9f8 = L.polyline(
+                [[40.5859708, -80.0902461], [40.586038, -80.0902145], [40.5860947, -80.0902019], [40.5861154, -80.0901973], [40.5867562, -80.0902001]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var poly_line_2a3bf1c80d7efd39b62db63fc856c6a2 = L.polyline(
+                [[40.5867562, -80.0902001], [40.5867679, -80.0895744], [40.586774501994334, -80.0892237461692]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var marker_22ec5258413ea09cb979cd6bc64b2cfe = L.marker(
+                [40.5870943703584, -80.0892341076022],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_5f5e09c29f72ed15e209d93d544ae9fe = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e3\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_22ec5258413ea09cb979cd6bc64b2cfe.setIcon(div_icon_5f5e09c29f72ed15e209d93d544ae9fe);
+        
+    
+            marker_22ec5258413ea09cb979cd6bc64b2cfe.bindTooltip(
+                `<div>
+                     2389 CHARLES WRAY DR<br>William Vallecorsa (D): <b>24%</b><br>Tracey Vallecorsa (D): <b>82%</b><br>Natalie Vallecorsa (D): <b>87%</b><br>Gina Vallecorsa (D): <b>7%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_fadd6b85424bc9aca19273e2e374b917 = L.polyline(
+                [[40.586774501994334, -80.0892237461692], [40.5867679, -80.0895744], [40.5867562, -80.0902001]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var poly_line_db0b996f53c7c813340bb3a670523f6e = L.polyline(
+                [[40.5867562, -80.0902001], [40.5875578, -80.0902377], [40.5877167, -80.0902162], [40.5878511, -80.0901572], [40.5879733, -80.0900821], [40.5881119, -80.0899587], [40.5883441, -80.0897334], [40.5884948, -80.0895832], [40.5886251, -80.0894813], [40.5887514, -80.0894008], [40.5888818, -80.0893418], [40.5890325, -80.0892989], [40.5891221, -80.0892828], [40.5893014, -80.0892774], [40.59000609999999, -80.0892667]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var marker_8683b22ff386e9710c115dd3d5310713 = L.marker(
+                [40.5881170931665, -80.0904076740189],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_56b3a459916987184280cf45dba85337 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e4\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_8683b22ff386e9710c115dd3d5310713.setIcon(div_icon_56b3a459916987184280cf45dba85337);
+        
+    
+            marker_8683b22ff386e9710c115dd3d5310713.bindTooltip(
+                `<div>
+                     1409 NORTH SHEVLIN CT<br>Prasad Renukananda Kiladar (D): <b>20%</b><br>Tanuja Basavaraj (D): <b>19%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_25d7fc229529ea0e9784dca47fa95ab6 = L.marker(
+                [40.5883361169154, -80.0901713718638],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_12aeacd66a826370e7e9d3f9f76e06b2 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e5\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_25d7fc229529ea0e9784dca47fa95ab6.setIcon(div_icon_12aeacd66a826370e7e9d3f9f76e06b2);
+        
+    
+            marker_25d7fc229529ea0e9784dca47fa95ab6.bindTooltip(
+                `<div>
+                     1411 NORTH SHEVLIN CT<br>Anto Bagic (I): <b>22%</b><br>Katarina Bagic (I): <b>15%</b><br>Snjezana Bagic (I): <b>21%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_d7fe0c951c0899f1628cbd69b181167d = L.marker(
+                [40.5885448130664, -80.0900460626337],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_fa9bfae08ad91c988ac2ad15550d2fab = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e6\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_d7fe0c951c0899f1628cbd69b181167d.setIcon(div_icon_fa9bfae08ad91c988ac2ad15550d2fab);
+        
+    
+            marker_d7fe0c951c0899f1628cbd69b181167d.bindTooltip(
+                `<div>
+                     1413 NORTH SHEVLIN CT<br>Gretchen Medsger (I): <b>15%</b><br>Laura Medsger (I): <b>2%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_d08aba29179ba3adcfce39712c12b788 = L.marker(
+                [40.588743424945, -80.0898196529331],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_905acad196291a327ae9412dd1eedd55 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e7\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_d08aba29179ba3adcfce39712c12b788.setIcon(div_icon_905acad196291a327ae9412dd1eedd55);
+        
+    
+            marker_d08aba29179ba3adcfce39712c12b788.bindTooltip(
+                `<div>
+                     1415 NORTH SHEVLIN CT<br>Asha Manocha (D): <b>22%</b><br>Sonny Manocha (D): <b>20%</b><br>Anish Manocha (D): <b>20%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_9fbfa1caae4c67aa49dbbe077e3e8077 = L.marker(
+                [40.5890485355921, -80.0897242074946],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_2d988f1a9ae91331aa5119c2bf525b51 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e8\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_9fbfa1caae4c67aa49dbbe077e3e8077.setIcon(div_icon_2d988f1a9ae91331aa5119c2bf525b51);
+        
+    
+            marker_9fbfa1caae4c67aa49dbbe077e3e8077.bindTooltip(
+                `<div>
+                     1417 NORTH SHEVLIN CT<br>Charles Taggert (D): <b>78%</b><br>Francine Taggert (D): <b>88%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_14eb94520e41f24036d2ca16ae58c06f = L.marker(
+                [40.5892988055609, -80.089700495027],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_44dcef4530e9b971b6664d0598b5fa96 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e9\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_14eb94520e41f24036d2ca16ae58c06f.setIcon(div_icon_44dcef4530e9b971b6664d0598b5fa96);
+        
+    
+            marker_14eb94520e41f24036d2ca16ae58c06f.bindTooltip(
+                `<div>
+                     1419 NORTH SHEVLIN CT<br>Neslihan Ozdoganlar (D): <b>21%</b><br>Osman Ozdoganlar (D): <b>24%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_c179e1a92085072a81d1a555ab6939d0 = L.marker(
+                [40.5895400249828, -80.0896717586047],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_a37fcec01092faa2be013f4d4767ed81 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e10\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_c179e1a92085072a81d1a555ab6939d0.setIcon(div_icon_a37fcec01092faa2be013f4d4767ed81);
+        
+    
+            marker_c179e1a92085072a81d1a555ab6939d0.bindTooltip(
+                `<div>
+                     1421 NORTH SHEVLIN CT<br>Falesha Hollins (D): <b>63%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_5805ec6d17200f352b52a1d263734c26 = L.marker(
+                [40.5900580405893, -80.0897351227296],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_154125dcdd4048774ae2c4324752628a = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e11\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_5805ec6d17200f352b52a1d263734c26.setIcon(div_icon_154125dcdd4048774ae2c4324752628a);
+        
+    
+            marker_5805ec6d17200f352b52a1d263734c26.bindTooltip(
+                `<div>
+                     1425 NORTH SHEVLIN CT<br>Gary Urso (D): <b>21%</b><br>David Urso (D): <b>17%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_08738b9df5677f23c35f4316e628d162 = L.marker(
+                [40.5903158465416, -80.0895056358196],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_895d13c6999c39d016b89ae7c14114b3 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e12\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_08738b9df5677f23c35f4316e628d162.setIcon(div_icon_895d13c6999c39d016b89ae7c14114b3);
+        
+    
+            marker_08738b9df5677f23c35f4316e628d162.bindTooltip(
+                `<div>
+                     1427 NORTH SHEVLIN CT<br>Nuwan Dassanaike (D): <b>58%</b><br>Inoka Perera (D): <b>41%</b><br>Akshana Dassanaike-Perera (I): <b>16%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_96c9f7abaa2d8c4b48d447f8f6432f40 = L.marker(
+                [40.5903178917472, -80.0890644682636],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_8b20bd8b269568294e6714bf4d047e37 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e13\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_96c9f7abaa2d8c4b48d447f8f6432f40.setIcon(div_icon_8b20bd8b269568294e6714bf4d047e37);
+        
+    
+            marker_96c9f7abaa2d8c4b48d447f8f6432f40.bindTooltip(
+                `<div>
+                     1430 NORTH SHEVLIN CT<br>Kelly Miller (I): <b>20%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_4bf25aafff2d340805fd83fb6211694c = L.marker(
+                [40.5901267303374, -80.0887948842595],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_23728b36ac81cd8a85c641f3f96b4c36 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e14\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_4bf25aafff2d340805fd83fb6211694c.setIcon(div_icon_23728b36ac81cd8a85c641f3f96b4c36);
+        
+    
+            marker_4bf25aafff2d340805fd83fb6211694c.bindTooltip(
+                `<div>
+                     1428 NORTH SHEVLIN CT<br>Mingqiao Zhu (I): <b>23%</b><br>Mei Tsui (I): <b>22%</b><br>Kyle Zhu (D): <b>15%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_e0e9afe1f2ef963edeab5836db74e081 = L.marker(
+                [40.5898398115727, -80.0888661311511],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_a3fc93f94296f9058d7d7685acf959f7 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e15\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_e0e9afe1f2ef963edeab5836db74e081.setIcon(div_icon_a3fc93f94296f9058d7d7685acf959f7);
+        
+    
+            marker_e0e9afe1f2ef963edeab5836db74e081.bindTooltip(
+                `<div>
+                     1426 NORTH SHEVLIN CT<br>Ramesh Ramanathan (I): <b>20%</b><br>Aarthi Ramesh (D): <b>39%</b><br>Archana Ramesh (D): <b>15%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_206a1b9d39378443226fdf4ba6be6b43 = L.marker(
+                [40.5896138550035, -80.0888841213816],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_d1dab92fa0d4f32975f1ec7269538c07 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e16\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_206a1b9d39378443226fdf4ba6be6b43.setIcon(div_icon_d1dab92fa0d4f32975f1ec7269538c07);
+        
+    
+            marker_206a1b9d39378443226fdf4ba6be6b43.bindTooltip(
+                `<div>
+                     1424 NORTH SHEVLIN CT<br>Nadeem Ahmed (D): <b>40%</b><br>Salma Jabeen (D): <b>32%</b><br>Ayan Ahmed (D): <b>40%</b><br>Oruba Ahmed (D): <b>34%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_1d0fb1d2452d7fa305385721c06d448e = L.marker(
+                [40.5893768169296, -80.0888818935817],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_0bf53bafb3147465bec39adddfc6d48f = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e17\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_1d0fb1d2452d7fa305385721c06d448e.setIcon(div_icon_0bf53bafb3147465bec39adddfc6d48f);
+        
+    
+            marker_1d0fb1d2452d7fa305385721c06d448e.bindTooltip(
+                `<div>
+                     1422 NORTH SHEVLIN CT<br>Michael Lynch (D): <b>87%</b><br>Aidan Lynch (D): <b>41%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_bc6d0d03215a3f97acfb78ed72f61e56 = L.polyline(
+                [[40.59000609999999, -80.0892667], [40.5893014, -80.0892774], [40.5891221, -80.0892828], [40.5890325, -80.0892989], [40.5888818, -80.0893418], [40.5887514, -80.0894008], [40.5886251, -80.0894813], [40.5884948, -80.0895832], [40.5883441, -80.0897334], [40.5881119, -80.0899587], [40.5879733, -80.0900821], [40.5878511, -80.0901572], [40.5877167, -80.0902162], [40.5875578, -80.0902377], [40.5867562, -80.0902001]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var marker_304563891659d32e2018a4ad8d469d28 = L.marker(
+                [40.5891048801308, -80.0889360759871],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_e094234eb2231813f1a6aebe87c06d5b = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e18\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_304563891659d32e2018a4ad8d469d28.setIcon(div_icon_e094234eb2231813f1a6aebe87c06d5b);
+        
+    
+            marker_304563891659d32e2018a4ad8d469d28.bindTooltip(
+                `<div>
+                     1420 NORTH SHEVLIN CT<br>Guoji Wang (D): <b>41%</b><br>Chuntao Wu (D): <b>39%</b><br>Andrew Wu (D): <b>17%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_cb917a5e554ae4e6aaa1bd37467d2b25 = L.marker(
+                [40.5888891757063, -80.0890081190947],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_3187fef20830cacbe65f41f722b964e6 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e19\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_cb917a5e554ae4e6aaa1bd37467d2b25.setIcon(div_icon_3187fef20830cacbe65f41f722b964e6);
+        
+    
+            marker_cb917a5e554ae4e6aaa1bd37467d2b25.bindTooltip(
+                `<div>
+                     1418 NORTH SHEVLIN CT<br>Kathirvel Subramaniam (D): <b>19%</b><br>Manav Kathir (I): <b>16%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_5cedd56b822eebc4903ac0db0c472a6c = L.marker(
+                [40.5883885890368, -80.0892571151332],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_66032d493ad14aeeec7e6ff7abb00175 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e20\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_5cedd56b822eebc4903ac0db0c472a6c.setIcon(div_icon_66032d493ad14aeeec7e6ff7abb00175);
+        
+    
+            marker_5cedd56b822eebc4903ac0db0c472a6c.bindTooltip(
+                `<div>
+                     1414 NORTH SHEVLIN CT<br>Jill Spak (I): <b>21%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_24fe73d4da3248a0eb6184a2ecce5728 = L.marker(
+                [40.5879582582414, -80.0895994609106],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_2a3fa3b6a4280eaee5e3310fd55ec8e1 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e21\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_24fe73d4da3248a0eb6184a2ecce5728.setIcon(div_icon_2a3fa3b6a4280eaee5e3310fd55ec8e1);
+        
+    
+            marker_24fe73d4da3248a0eb6184a2ecce5728.bindTooltip(
+                `<div>
+                     1410 NORTH SHEVLIN CT<br>Xiaohu Huang (I): <b>21%</b><br>Teresa Huang (D): <b>15%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_8e084df0c6c6ed3b7cdf9b250ba0a049 = L.marker(
+                [40.5877182294798, -80.0898324383788],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_8314bc8100e8e8a2b952c16126df5e81 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e22\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_8e084df0c6c6ed3b7cdf9b250ba0a049.setIcon(div_icon_8314bc8100e8e8a2b952c16126df5e81);
+        
+    
+            marker_8e084df0c6c6ed3b7cdf9b250ba0a049.bindTooltip(
+                `<div>
+                     1406 NORTH SHEVLIN CT<br>Carol Franc (D): <b>89%</b><br>Katherine Franc (D): <b>3%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_cb5b54ef810989dd861ea5f538a3b2b6 = L.polyline(
+                [[40.5867562, -80.0902001], [40.5861154, -80.0901973], [40.5860947, -80.0902019], [40.586038, -80.0902145], [40.5859708, -80.0902461]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var marker_d78a71b5be333bd7de98ac2b74c63a3a = L.marker(
+                [40.5862339166023, -80.0898813291563],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_8782726000ca83cb44bc86eaa5ddd37f = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e23\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_d78a71b5be333bd7de98ac2b74c63a3a.setIcon(div_icon_8782726000ca83cb44bc86eaa5ddd37f);
+        
+    
+            marker_d78a71b5be333bd7de98ac2b74c63a3a.bindTooltip(
+                `<div>
+                     2386 SHEVLIN RD<br>Daniel Nehrer (D): <b>74%</b><br>Roger Nehrer (D): <b>96%</b><br>Linda Nehrer (D): <b>95%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_1b6feb960bc389abf40b39d8871f476a = L.polyline(
+                [[40.5859708, -80.0902461], [40.5860119, -80.0903121], [40.5860413, -80.090384], [40.5860625, -80.0904795], [40.5860722, -80.0905964], [40.5860698, -80.0906833], [40.5860592, -80.0908287], [40.58605421690303, -80.09086014518458]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var marker_de2980404ac3530b527c1f98ce012741 = L.marker(
+                [40.5857741415674, -80.0907837814238],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_3017eec66875d8b503e004081b566053 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e24\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_de2980404ac3530b527c1f98ce012741.setIcon(div_icon_3017eec66875d8b503e004081b566053);
+        
+    
+            marker_de2980404ac3530b527c1f98ce012741.bindTooltip(
+                `<div>
+                     2383 ROCHESTER RD<br>Sara Chapman (D): <b>49%</b><br>David Chapman (D): <b>21%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_d30ad8be01ce5d74caa1cc34e75776af = L.polyline(
+                [[40.58605421690303, -80.09086014518458], [40.5860592, -80.0908287], [40.5860698, -80.0906833], [40.5860722, -80.0905964], [40.5860625, -80.0904795], [40.5860413, -80.090384], [40.5860119, -80.0903121], [40.5859708, -80.0902461]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var marker_ad85dd3f4f578102a7f08610c0c410cf = L.marker(
+                [40.5863753217379, -80.0908871672718],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_080b1c3fcb0c4a451299dd293b8f28d6 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e25\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_ad85dd3f4f578102a7f08610c0c410cf.setIcon(div_icon_080b1c3fcb0c4a451299dd293b8f28d6);
+        
+    
+            marker_ad85dd3f4f578102a7f08610c0c410cf.bindTooltip(
+                `<div>
+                     2384 A ROCHESTER RD<br>Hema Sundararaman (D): <b>21%</b><br>Venkataraman Sundararaman (D): <b>24%</b><br>Malati Krishnan (D): <b>3%</b><br>Bhamini Sundararaman (D): <b>13%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_ad1698554a512a6499a792b16cfc7922 = L.polyline(
+                [[40.5859708, -80.0902461], [40.585915, -80.0901834], [40.5851303, -80.0895579], [40.5845445, -80.0890697]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var marker_c56939b9d9bc5e230f2d46e45b13c5e2 = L.marker(
+                [40.5856146467087, -80.090224653809],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_ddfbc0018af1011d34f152916559e382 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e26\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_c56939b9d9bc5e230f2d46e45b13c5e2.setIcon(div_icon_ddfbc0018af1011d34f152916559e382);
+        
+    
+            marker_c56939b9d9bc5e230f2d46e45b13c5e2.bindTooltip(
+                `<div>
+                     2381 ROCHESTER RD<br>Richard Drozynski (D): <b>74%</b><br>Ryan Drozynski (D): <b>26%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_98cdb73bb25c9401c739345ff97d87d0 = L.marker(
+                [40.585400954573, -80.0900375009786],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_c064502bd60da6da79dfd596c2e7bb2f = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e27\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_98cdb73bb25c9401c739345ff97d87d0.setIcon(div_icon_c064502bd60da6da79dfd596c2e7bb2f);
+        
+    
+            marker_98cdb73bb25c9401c739345ff97d87d0.bindTooltip(
+                `<div>
+                     2379 ROCHESTER RD<br>Rachel Ballance (D): <b>90%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_8caf51b3005363de54e73e1b28ace89c = L.marker(
+                [40.5856441091111, -80.089554682744],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_c761d2ae6bc7b034f183deb2cce7e991 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e28\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_8caf51b3005363de54e73e1b28ace89c.setIcon(div_icon_c761d2ae6bc7b034f183deb2cce7e991);
+        
+    
+            marker_8caf51b3005363de54e73e1b28ace89c.bindTooltip(
+                `<div>
+                     2384 ROCHESTER RD<br>Jonathan Veri (D): <b>20%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_12eca382a5e173b881d29c80b559c8b3 = L.polyline(
+                [[40.5845445, -80.0890697], [40.5846735, -80.0889878], [40.585099158003054, -80.08882622763085]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var marker_cf0c21bf7fea946dcce1bd97d7c182c1 = L.marker(
+                [40.5850410970164, -80.0885630753542],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_14d5a62a231d987d07b557e49181fd8f = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e29\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_cf0c21bf7fea946dcce1bd97d7c182c1.setIcon(div_icon_14d5a62a231d987d07b557e49181fd8f);
+        
+    
+            marker_cf0c21bf7fea946dcce1bd97d7c182c1.bindTooltip(
+                `<div>
+                     1584 MORROW LN<br>Donna Roche (D): <b>41%</b><br>Lawrence Roche (D): <b>42%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_97133f486eb74b6b09e6cbb829422783 = L.polyline(
+                [[40.585099158003054, -80.08882622763085], [40.5846735, -80.0889878], [40.5845445, -80.0890697]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var poly_line_e0acc53bca0135c8fc4521fd36de50ce = L.polyline(
+                [[40.5845445, -80.0890697], [40.5844186, -80.0889603], [40.5842658, -80.0888144], [40.583884, -80.0884186], [40.5837949, -80.0883262]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var marker_832deefaf3c4338f3c5102885c40750d = L.marker(
+                [40.5841614278241, -80.0890198126062],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_5f08dbac7d35a9ecac90889af1d13267 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e30\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_832deefaf3c4338f3c5102885c40750d.setIcon(div_icon_5f08dbac7d35a9ecac90889af1d13267);
+        
+    
+            marker_832deefaf3c4338f3c5102885c40750d.bindTooltip(
+                `<div>
+                     2369 ROCHESTER RD<br>Eric Cassidy (D): <b>19%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_fed6296e39df5c3d6b8a7186cdd49b27 = L.polyline(
+                [[40.5837949, -80.0883262], [40.5834513, -80.0888912], [40.5833617, -80.089036], [40.5832987, -80.0891126], [40.5832476, -80.0891594], [40.583162, -80.0892077], [40.5830561, -80.0892184], [40.582938, -80.0892023], [40.5827668, -80.0891594], [40.5817972, -80.0888644]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var marker_7c56b88b344dca3c36db2baa34c8f10a = L.marker(
+                [40.5835284132371, -80.0883851885152],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_51b036ad624ab189a6f8307e49c3a8c2 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e31\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_7c56b88b344dca3c36db2baa34c8f10a.setIcon(div_icon_51b036ad624ab189a6f8307e49c3a8c2);
+        
+    
+            marker_7c56b88b344dca3c36db2baa34c8f10a.bindTooltip(
+                `<div>
+                     2351 SYLMAR DR<br>Amy Shepard (D): <b>72%</b><br>Stephen Shepard (I): <b>22%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_2b5fd63343cc2cd462cc241383b22b6c = L.marker(
+                [40.5829676245579, -80.0888241849905],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_710ed6ec2e721b155a0d44d099ab048a = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e32\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_2b5fd63343cc2cd462cc241383b22b6c.setIcon(div_icon_710ed6ec2e721b155a0d44d099ab048a);
+        
+    
+            marker_2b5fd63343cc2cd462cc241383b22b6c.bindTooltip(
+                `<div>
+                     2353 SYLMAR DR<br>Jorden Simpson (D): <b>2%</b><br>Michelle Stanek (I): <b>45%</b><br>David Stanek (I): <b>46%</b><br>Amanda Komoroski (I): <b>21%</b><br>Joshua Stanek (D): <b>2%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_68b3f07d7d1f232e6ddc7198d937b581 = L.marker(
+                [40.5824875733189, -80.088718908207],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_90391e807d76bf35f85f77dc43ddafb6 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e33\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_68b3f07d7d1f232e6ddc7198d937b581.setIcon(div_icon_90391e807d76bf35f85f77dc43ddafb6);
+        
+    
+            marker_68b3f07d7d1f232e6ddc7198d937b581.bindTooltip(
+                `<div>
+                     2357 SYLMAR DR<br>Chelsie Stair (I): <b>16%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_0e095adeca12c34bc1dae39c8ee4c092 = L.marker(
+                [40.5820635420305, -80.0886134179975],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_95a9b3b396d5216c40ed2da733201a63 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e34\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_0e095adeca12c34bc1dae39c8ee4c092.setIcon(div_icon_95a9b3b396d5216c40ed2da733201a63);
+        
+    
+            marker_0e095adeca12c34bc1dae39c8ee4c092.bindTooltip(
+                `<div>
+                     2361 SYLMAR DR<br>Brandon Gilbert (D): <b>51%</b><br>Keith Gilbert (I): <b>22%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_5def881ce7da721b55e925c2eaa51bd7 = L.marker(
+                [40.5816215343592, -80.0886502835629],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_1979aef6c33eded68b5201932cd970a6 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e35\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_5def881ce7da721b55e925c2eaa51bd7.setIcon(div_icon_1979aef6c33eded68b5201932cd970a6);
+        
+    
+            marker_5def881ce7da721b55e925c2eaa51bd7.bindTooltip(
+                `<div>
+                     2363 SYLMAR DR<br>Betty Lou Mckinney (D): <b>89%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_e81561f108cdf32dcb7861bec2a8616a = L.marker(
+                [40.5820797892159, -80.08926369352],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_2d5e8b1916d0624fe12aef1d60177b4b = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e36\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_e81561f108cdf32dcb7861bec2a8616a.setIcon(div_icon_2d5e8b1916d0624fe12aef1d60177b4b);
+        
+    
+            marker_e81561f108cdf32dcb7861bec2a8616a.bindTooltip(
+                `<div>
+                     2359 SYLMAR DR<br>Richard Buha Ii (I): <b>78%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_508b94106cbfc3be5933cee60e98cea4 = L.marker(
+                [40.5823401381162, -80.0893433307796],
+                {}
+            ).addTo(map_d98e0234c60f3ef9146ef78d14f02909);
+        
+    
+            var div_icon_77beb8948c89bc5ce8975fe92ff87880 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e37\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_508b94106cbfc3be5933cee60e98cea4.setIcon(div_icon_77beb8948c89bc5ce8975fe92ff87880);
+        
+    
+            marker_508b94106cbfc3be5933cee60e98cea4.bindTooltip(
+                `<div>
+                     2358 SYLMAR DR<br>Jonathan Sobon (I): <b>14%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            map_d98e0234c60f3ef9146ef78d14f02909.fitBounds(
+                [[40.5816215343592, -80.0908871672718], [40.5903178917472, -80.0883262]],
+                {}
+            );
+        
+</script>
+</html>

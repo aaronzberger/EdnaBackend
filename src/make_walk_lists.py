@@ -274,7 +274,8 @@ if GROUP_CANVAS_FULL:
             optimizer_points=optimizer.points,
             requested_blocks=requested_blocks,
             viz_path=viz_dir,
-            problem_path=problem_dir
+            problem_path=problem_dir,
+            id=str(i)
         )
 
         # TEMPORARY NOTE
