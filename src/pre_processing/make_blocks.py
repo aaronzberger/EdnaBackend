@@ -35,7 +35,9 @@ from src.config import (
     addresses_file,
     node_coords_file,
     node_list_t,
-    ALD_BUFFER, reverse_geocode_file, id_to_addresses_file,
+    ALD_BUFFER,
+    reverse_geocode_file,
+    id_to_addresses_file,
 )
 from src.gps_utils import (
     along_track_distance,
@@ -122,8 +124,10 @@ def distance_along_path(path: node_list_t) -> float:
     distance = 0
     for first, second in itertools.pairwise(path):
         distance += great_circle_distance(
-            Point(lat=first["lat"], lon=first["lon"], type=NodeType.other, id='first'),
-            Point(lat=second["lat"], lon=second["lon"], type=NodeType.other, id='second')
+            Point(lat=first["lat"], lon=first["lon"], type=NodeType.other, id="first"),
+            Point(
+                lat=second["lat"], lon=second["lon"], type=NodeType.other, id="second"
+            ),
         )  # type: ignore
     return distance
 
@@ -138,14 +142,14 @@ min_lat, min_lon, max_lat, max_lon = (
     -80.0632736,
 )
 
-origin = Point(lat=min_lat, lon=min_lon, type=NodeType.other, id='origin')
+origin = Point(lat=min_lat, lon=min_lon, type=NodeType.other, id="origin")
 
 # Calculate the number of chunks in each direction
 lat_distance = great_circle_distance(
-    origin, Point(lat=max_lat, lon=min_lon, type=NodeType.other, id='max_lat')
+    origin, Point(lat=max_lat, lon=min_lon, type=NodeType.other, id="max_lat")
 )
 lon_distance = great_circle_distance(
-    origin, Point(lat=min_lat, lon=max_lon, type=NodeType.other, id='max_lon')
+    origin, Point(lat=min_lat, lon=max_lon, type=NodeType.other, id="max_lon")
 )
 
 num_lat_chunks = int(math.ceil(lat_distance / CHUNK_SIZE))
@@ -160,10 +164,10 @@ block_matrix: list[list[list[str]]] = [
 # Get matrix indices for a given node
 def get_matrix_index(node: Point, origin: Point, chunk_size: float) -> tuple[int, int]:
     lat_distance = great_circle_distance(
-        Point(lat=origin["lat"], lon=node["lon"], type=NodeType.other, id=''), node
+        Point(lat=origin["lat"], lon=node["lon"], type=NodeType.other, id=""), node
     )
     lon_distance = great_circle_distance(
-        Point(lat=node["lat"], lon=origin["lon"], type=NodeType.other, id=''), node
+        Point(lat=node["lat"], lon=origin["lon"], type=NodeType.other, id=""), node
     )
     return int(lat_distance // chunk_size), int(lon_distance // chunk_size)
 
@@ -171,10 +175,10 @@ def get_matrix_index(node: Point, origin: Point, chunk_size: float) -> tuple[int
 print("Created empty matrix, starting to place blocks into matrix")
 
 with tqdm(
-        total=len(blocks),
-        desc="Creating block location matrix",
-        unit="rows",
-        colour="green",
+    total=len(blocks),
+    desc="Creating block location matrix",
+    unit="rows",
+    colour="green",
 ) as progress:
     for start_node in blocks:
         for block in blocks[start_node]:
@@ -209,7 +213,7 @@ with open("block_matrix.json", "w") as outfile:
 
 # First, load every block, find subsegments, and save all data besides actual addresses to segments_by_id
 with tqdm(
-        total=len(blocks), desc="Reading blocks", unit="rows", colour="green"
+    total=len(blocks), desc="Reading blocks", unit="rows", colour="green"
 ) as progress:
     for start_node in blocks:
         for block in blocks[start_node]:
@@ -236,7 +240,7 @@ with tqdm(
         progress.update(1)
 
 with tqdm(
-        total=len(blocks), desc="Sanitizing street names", unit="rows", colour="green"
+    total=len(blocks), desc="Sanitizing street names", unit="rows", colour="green"
 ) as progress:
     for start_node in blocks:
         for block in blocks[start_node]:
@@ -332,9 +336,9 @@ def search_for_best_subsegment(segment, segment_id, best_segment, house_pt: Poin
 
         # If this segment is better than the best segment, insert it
         if (
-                best_segment is None
-                or house_offset < best_segment.ald_offset
-                or (house_offset == best_segment.ald_offset and abs(ctd) < best_segment.ctd)
+            best_segment is None
+            or house_offset < best_segment.ald_offset
+            or (house_offset == best_segment.ald_offset and abs(ctd) < best_segment.ctd)
         ):
             if DEBUG:
                 print(
@@ -396,7 +400,7 @@ def filter_segments(house_point):
 
 # Next, add the houses to the blocks
 with tqdm(
-        total=num_houses, desc="Associating houses", unit="rows", colour="green"
+    total=num_houses, desc="Associating houses", unit="rows", colour="green"
 ) as progress:
     for item in house_points_reader:
         progress.update(1)
@@ -406,10 +410,10 @@ with tqdm(
 
         # If this house is not in the area of interest, skip it
         if (
-                float(item["latitude"]) < min_lat
-                or float(item["latitude"]) > max_lat
-                or float(item["longitude"]) < min_lon
-                or float(item["longitude"]) > max_lon
+            float(item["latitude"]) < min_lat
+            or float(item["latitude"]) > max_lat
+            or float(item["longitude"]) < min_lon
+            or float(item["longitude"]) > max_lon
         ):
             continue
 
@@ -440,7 +444,9 @@ with tqdm(
             None,  # TODO: add function to sanitize state names
             item["zip_code"],
         )
-        reverse_geocode.append((house_pt["lat"], house_pt["lon"], dataclasses.asdict(formatted_address)))
+        reverse_geocode.append(
+            (house_pt["lat"], house_pt["lon"], dataclasses.asdict(formatted_address))
+        )
 
         best_segment: Optional[
             Segment
@@ -502,17 +508,17 @@ with tqdm(
                 print(block_names_set, file=buffer)
 
             for choice in process.extract_iter(
-                    query=sanitized_street_name,
-                    choices=block_names_set,
-                    scorer=address_match_score,
-                    score_cutoff=45,
+                query=sanitized_street_name,
+                choices=block_names_set,
+                scorer=address_match_score,
+                score_cutoff=45,
             ):
                 if DEBUG:
                     print("Choice ---------", file=buffer)
                     print(choice, file=buffer)
                     print("Details of blocks with matching names:", file=buffer)
                 for block_id in keys_with_value(
-                        filtered_block_to_street_names, choice[0]
+                    filtered_block_to_street_names, choice[0]
                 ):
                     if DEBUG:
                         print("---------block---------", file=buffer)
@@ -543,14 +549,20 @@ with tqdm(
             distances = along_track_distance(
                 p1=house_pt,
                 p2=Point(
-                    lat=sub_start["lat"], lon=sub_start["lon"], type=NodeType.node, id=''),
-                p3=Point(lat=sub_end["lat"], lon=sub_end["lon"], type=NodeType.node, id=''),
+                    lat=sub_start["lat"],
+                    lon=sub_start["lon"],
+                    type=NodeType.node,
+                    id="",
+                ),
+                p3=Point(
+                    lat=sub_end["lat"], lon=sub_end["lon"], type=NodeType.node, id=""
+                ),
             )
             distance_to_start += distances[0]
             distance_to_end += distances[1]
 
             # Lastly, calculate the distance from the end of this house's sub-segment to the end of the block
-            distance_to_end += distance_along_path(all_points[min(sub_nodes) + 1:])
+            distance_to_end += distance_along_path(all_points[min(sub_nodes) + 1 :])
 
             output_house = HouseInfo(
                 display_address=item["full_address"],
@@ -564,7 +576,7 @@ with tqdm(
                 side=best_segment.side,
                 distance_to_road=round(best_segment.ctd),
                 subsegment=(min(sub_nodes), max(sub_nodes)),
-                value=-1
+                value=-1,
             )
 
             # TODO: resolve best_segment type issues, these casts should not be needed

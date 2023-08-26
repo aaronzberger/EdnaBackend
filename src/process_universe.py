@@ -14,6 +14,7 @@ import pprint
 import sys
 from copy import deepcopy
 from datetime import datetime
+import uuid
 
 import jsonpickle
 from rapidfuzz import fuzz, process
@@ -22,6 +23,7 @@ from tqdm import tqdm
 
 from src.address import Address, addresses_file_t
 from src.config import (
+    UUID_NAMESPACE,
     HouseInfo,
     HousePeople,
     Person,
@@ -37,7 +39,7 @@ from src.config import (
     voter_file_mapping,
     turnout_predictions_file,
     voter_value,
-    house_value
+    house_value,
 )
 
 
@@ -63,28 +65,29 @@ def address_match_score(s1: Address, s2: Address, threshold=90, score_cutoff=0.0
 
     if s1.house_number != s2.house_number:
         return 0
+    if s1.street_name and s2.street_name:
+        s1_words = s1.street_name.split()
+        s2_words = s2.street_name.split()
 
-    s1_words = s1.street_name.split()
-    s2_words = s2.street_name.split()
+        whole_str_ratio = fuzz.ratio(s1.street_name, s2.street_name)
+        if whole_str_ratio > threshold and whole_str_ratio > score_cutoff:
+            return whole_str_ratio
 
-    whole_str_ratio = fuzz.ratio(s1.street_name, s2.street_name)
-    if whole_str_ratio > threshold and whole_str_ratio > score_cutoff:
-        return whole_str_ratio
+        matched_words = 0
 
-    matched_words = 0
+        for word1 in s1_words:
+            for word2 in s2_words:
+                # Compute the Jaro distance between word1 and word2
+                jaro_score = fuzz.ratio(word1, word2)
+                if jaro_score >= threshold:
+                    matched_words += 1
 
-    for word1 in s1_words:
-        for word2 in s2_words:
-            # Compute the Jaro distance between word1 and word2
-            jaro_score = fuzz.ratio(word1, word2)
-            if jaro_score >= threshold:
-                matched_words += 1
+        total_words = max(len(s1_words), len(s2_words))
 
-    total_words = max(len(s1_words), len(s2_words))
+        score = (matched_words / total_words) * 100
 
-    score = (matched_words / total_words) * 100
-
-    return score if score >= score_cutoff else 0.0
+        return score if score >= score_cutoff else 0.0
+    return 0.0
 
 
 class Associater:
@@ -125,7 +128,9 @@ class Associater:
             "failed": 0,
         }
 
-    def search_manual_associations(self, address: Address) -> Address | None:
+    def search_manual_associations(
+        self, address: Address
+    ) -> tuple[Address, str] | None:
         for match in self.manual_matches:
             if match["universe"] == dataclasses.asdict(address):
                 if match["match"] == "DNE":
@@ -148,12 +153,12 @@ class Associater:
                         )
                         if as_address in self.addresses_to_id:
                             self.result_counter["manual match"] += 1
-                            return as_address
+                            return (as_address, match["unit_num"])
                         else:
                             self.result_counter["key error"] += 1
         return None
 
-    def associate(self, address: Address) -> tuple[str, str] | None:
+    def associate(self, address: Address) -> tuple[str, str, str] | None:
         """
         Associate an address with a house and get the house info.
 
@@ -168,6 +173,7 @@ class Associater:
 
         matched_uuid: str | None = None
         matched_block_id: str | None = None
+        custom_unit_num = ""
         choices = []
         precise_match_found = False
         if address in self.addresses_to_id:
@@ -204,17 +210,24 @@ class Associater:
         if not precise_match_found:
             result = self.search_manual_associations(address)
             if result:
-                matched_block_id, matched_uuid = self.addresses_to_id[result]
+                matched_block_id, matched_uuid = self.addresses_to_id[result[0]]
+                if result[1] != "":
+                    custom_unit_num = result[1]
             else:
                 self.need_manual_review.append(
                     {"universe": dataclasses.asdict(address), "choices": choices}
                 )
                 self.result_counter["failed"] += 1
                 return None
-        return matched_block_id, matched_uuid
+        if matched_block_id and matched_uuid:
+            return matched_block_id, matched_uuid, custom_unit_num
+        else:
+            return None
 
 
-def handle_universe_file(universe_file: str, blocks: blocks_file_t, turnouts: dict[str, float]):
+def handle_universe_file(
+    universe_file: str, blocks: blocks_file_t, turnouts: dict[str, float]
+):
     universe_file_opened = open(universe_file)
     num_voters = -1
     for _ in universe_file_opened:
@@ -227,7 +240,9 @@ def handle_universe_file(universe_file: str, blocks: blocks_file_t, turnouts: di
     requested_blocks: blocks_file_t = {}
     requested_voters: voters_file_t = {}
 
-    def add_voter(universe_row: dict, uuid: str, block_id: str):
+    def add_voter(
+        universe_row: dict, uuid: str, block_id: str, custom_unit_num, custom_uuid
+    ):
         """
         Add a voter to the requested voters dictionary.
 
@@ -247,9 +262,14 @@ def handle_universe_file(universe_file: str, blocks: blocks_file_t, turnouts: di
         )
 
         try:
-            turnout: float = turnouts[universe_row["ID"]]
+            turnout: float = turnouts[universe_row["ID Number"]]
         except KeyError:
-            print(colored(f"Could not find turnout prediction for ID {universe_row['ID']}. Quitting.", "red}"))
+            print(
+                colored(
+                    f"Could not find turnout prediction for ID {universe_row['ID']}. Quitting.",
+                    "red}",
+                )
+            )
             sys.exit()
 
         value = voter_value(party=party, turnout=turnout)
@@ -258,19 +278,35 @@ def handle_universe_file(universe_file: str, blocks: blocks_file_t, turnouts: di
             # If we do not want to visit this voter at all, do not add them
             return False
 
-        if uuid not in requested_voters:
+        if custom_uuid not in requested_voters:
             house_info: HouseInfo = blocks[block_id]["addresses"][uuid]
             # TODO: When the manual association returns a unit number, create a new entry in requested_blocks with that unit number
-            requested_voters[uuid] = HousePeople(
-                display_address=house_info["display_address"],
-                city=house_info["city"],
-                state=house_info["state"],
-                zip=house_info["zip"],
-                latitude=house_info["lat"],
-                longitude=house_info["lon"],
-                voter_info=[],
-                value=-1,
-            )
+            if custom_unit_num != "":
+                requested_voters[custom_uuid] = HousePeople(
+                    # TODO: instead of using display_address, use the custom unit number properly
+                    # TODO: actually check if there is a custom unit num instead of always showing this lol
+                    display_address=f"{house_info['display_address']} Unit {custom_unit_num}",
+                    city=house_info["city"],
+                    state=house_info["state"],
+                    zip=house_info["zip"],
+                    latitude=house_info["lat"],
+                    longitude=house_info["lon"],
+                    voter_info=[],
+                    value=-1,
+                )
+            else:
+                requested_voters[custom_uuid] = HousePeople(
+                    # TODO: instead of using display_address, use the custom unit number properly
+                    # TODO: actually check if there is a custom unit num instead of always showing this lol
+                    display_address=house_info["display_address"],
+                    city=house_info["city"],
+                    state=house_info["state"],
+                    zip=house_info["zip"],
+                    latitude=house_info["lat"],
+                    longitude=house_info["lon"],
+                    voter_info=[],
+                    value=-1,
+                )
 
         name = f"{universe_row['First Name']} {universe_row['Last Name']}"
         if universe_row["Suffix"] != "":
@@ -289,18 +325,32 @@ def handle_universe_file(universe_file: str, blocks: blocks_file_t, turnouts: di
             voting_history[election_key.name] = voted
             voting_history[election_key.name + "_mail"] = by_mail
 
-        person = Person(name=name, age=age, party=party, voting_history=voting_history, voter_id=universe_row["ID"],
-                        value=value)
+        person = Person(
+            name=name,
+            age=age,
+            party=party,
+            voting_history=voting_history,
+            voter_id=universe_row["ID Number"],
+            value=value,
+        )
 
-        requested_voters[uuid]["voter_info"].append(person)
+        requested_voters[custom_uuid]["voter_info"].append(person)
 
         # Re-calculate the house value with the updated person
-        requested_voters[uuid]["value"] = house_value([person["value"] for person in requested_voters[uuid]["voter_info"]])
+        requested_voters[custom_uuid]["value"] = house_value(
+            [person["value"] for person in requested_voters[custom_uuid]["voter_info"]]
+        )
 
         return True
 
     # Process each requested house
-    for entry in tqdm(reader, total=num_voters, desc="Processing universe file", unit="voters", colour="green"):
+    for entry in tqdm(
+        reader,
+        total=num_voters,
+        desc="Processing universe file",
+        unit="voters",
+        colour="green",
+    ):
         if (
             "Address" not in entry
             and "House Number" in entry
@@ -325,28 +375,42 @@ def handle_universe_file(universe_file: str, blocks: blocks_file_t, turnouts: di
 
         result = associater.associate(formatted_address)
         if result is not None:
-            block_id, uuid = result
+            block_id, house_uuid, custom_unit_num = result
 
             # TODO: Currently, this puts everyone whos uuid is the same in the same house,
             # but people can have different apartment numbers. Add a new entry to requested_blocks
             # with a new uuid with the unit number, and use this. Post-processing only uses these two files anyway.
-            added: bool = add_voter(entry, uuid, block_id)
+
+            if custom_unit_num == "":
+                custom_uuid = house_uuid
+            else:
+                custom_uuid = str(
+                    uuid.uuid5(
+                        UUID_NAMESPACE, str(blocks[block_id]["addresses"][house_uuid])
+                    )
+                )
+
+            added: bool = add_voter(
+                entry, house_uuid, block_id, custom_unit_num, custom_uuid
+            )
 
             if not added:
                 continue
 
             if block_id in requested_blocks:
-                requested_blocks[block_id]["addresses"][uuid] = blocks[block_id][
+                requested_blocks[block_id]["addresses"][custom_uuid] = blocks[block_id][
                     "addresses"
-                ][uuid]
+                ][house_uuid]
 
             else:
                 requested_blocks[block_id] = deepcopy(blocks[block_id])
                 requested_blocks[block_id]["addresses"] = {
-                    uuid: blocks[block_id]["addresses"][uuid]
+                    custom_uuid: blocks[block_id]["addresses"][house_uuid]
                 }
 
-            requested_blocks[block_id]["addresses"][uuid]["value"] = requested_voters[uuid]["value"]
+            requested_blocks[block_id]["addresses"][custom_uuid][
+                "value"
+            ] = requested_voters[custom_uuid]["value"]
 
     print(
         colored(
