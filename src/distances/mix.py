@@ -10,6 +10,7 @@ from src.config import (
     NodeType,
     Point,
     blocks_file,
+    requested_blocks_file,
     blocks_file_t,
     house_id_to_block_id_file,
     pt_id,
@@ -24,6 +25,7 @@ class MixDistances:
     @classmethod
     def __init__(cls):
         cls.blocks: blocks_file_t = json.load(open(blocks_file))
+        cls.requested_blocks: blocks_file_t = json.load(open(requested_blocks_file))
         cls.house_id_to_block_id: dict[str, str] = json.load(open(house_id_to_block_id_file))
 
     @classmethod
@@ -48,14 +50,14 @@ class MixDistances:
         through_start = NodeDistances.get_distance(node, block_start)
 
         if through_start is not None:
-            through_start += cls.blocks[block_id]["addresses"][pt_id(house)][
+            through_start += cls.requested_blocks[block_id]["addresses"][pt_id(house)][
                 "distance_to_start"
             ]
 
         block_end = Point(lat=cls.blocks[block_id]["nodes"][-1]["lat"], lon=cls.blocks[block_id]["nodes"][-1]["lon"], type=NodeType.node, id="block_end")
         through_end = NodeDistances.get_distance(node, block_end)
         if through_end is not None:
-            through_end += cls.blocks[block_id]["addresses"][pt_id(house)][
+            through_end += cls.requested_blocks[block_id]["addresses"][pt_id(house)][
                 "distance_to_end"
             ]
         return through_start, through_end

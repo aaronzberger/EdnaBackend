@@ -559,9 +559,8 @@ class Optimizer:
 
         optim_cost = Costs(fixed=1, distance=0, time=1)
 
-        # About 60 houses per list
-        # TODO: Figure out how to use the actual minimize_tours to decide this.
-        num_vehicles = len(self.points) // 60 + 1
+        # Some arbitrary number certainly larger than the number needed
+        num_vehicles = 10
 
         fleet = self.build_fleet(
             shift_time=(end_time - start_time),
@@ -572,7 +571,7 @@ class Optimizer:
         optim_objectives = [
             [Objective(type="minimize-unassigned")],
             [Objective(type="minimize-tours")],
-            [Objective(type="minimize-cost")]]
+            [Objective(type="minimize-distance")]]
 
         problem = Problem(
             plan=Plan(jobs=jobs), fleet=fleet, objectives=optim_objectives

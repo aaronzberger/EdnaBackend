@@ -378,8 +378,8 @@ def display_walk_list(walk_list: list[SubBlock], color: str) -> folium.Map:
                 display_num = str(house_counter)
                 last_point = point
 
-                # Add the address to the tooltip
-                tooltip = voter_info["display_address"]
+                # Add the address to the tooltip, but delete any unit number
+                tooltip = voter_info["display_address"].split("Unit")[0]
 
             # Add the voter names to the tooltip
             for person in voter_info["voter_info"]:

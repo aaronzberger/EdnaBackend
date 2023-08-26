@@ -40,6 +40,7 @@ from src.config import (
     turnout_predictions_file,
     voter_value,
     house_value,
+    house_id_to_block_id_file
 )
 
 
@@ -240,6 +241,14 @@ def handle_universe_file(
     requested_blocks: blocks_file_t = {}
     requested_voters: voters_file_t = {}
 
+    # To check for duplicate IDs
+    voter_ids: set[str] = set()
+
+    # Read in house_id_to_block_id_file to write the new entries
+    house_id_to_block_id: dict[str, str] = json.load(
+        open(house_id_to_block_id_file)
+    )
+
     def add_voter(
         universe_row: dict, uuid: str, block_id: str, custom_unit_num, custom_uuid
     ):
@@ -255,6 +264,15 @@ def handle_universe_file(
         -------
             bool: whether or not the voter was added
         """
+        if universe_row["ID Number"] in voter_ids:
+            print(
+                colored(
+                    f"Duplicate ID {universe_row['ID Number']} found. Quitting.", "red"
+                )
+            )
+            sys.exit(1)
+        voter_ids.add(universe_row["ID Number"])
+
         party = (
             "D"
             if universe_row["Party Code"] == "D"
@@ -332,6 +350,7 @@ def handle_universe_file(
             voting_history=voting_history,
             voter_id=universe_row["ID Number"],
             value=value,
+            turnout=turnout,
         )
 
         requested_voters[custom_uuid]["voter_info"].append(person)
@@ -390,6 +409,8 @@ def handle_universe_file(
                     )
                 )
 
+                house_id_to_block_id[custom_uuid] = block_id
+
             added: bool = add_voter(
                 entry, house_uuid, block_id, custom_unit_num, custom_uuid
             )
@@ -436,6 +457,10 @@ def handle_universe_file(
         json.dump(requested_blocks, f)
     with open(house_to_voters_file, "w") as f:
         json.dump(requested_voters, f)
+
+    # Write the house_id_to_block_id file
+    with open(house_id_to_block_id_file, "w") as f:
+        json.dump(house_id_to_block_id, f)
 
 
 if __name__ == "__main__":

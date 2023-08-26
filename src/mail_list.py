@@ -123,6 +123,7 @@ def handle_universe_file(
                                 party="I",
                                 voting_history={},
                                 value=turnout,
+                                turnout=turnout,
                                 voter_id=universe_row["ID"],
                             )
                         )
@@ -141,6 +142,7 @@ def handle_universe_file(
                             party="I",
                             voting_history={},
                             value=turnout,
+                            turnout=turnout,
                             voter_id=universe_row["ID"],
                         )
                     ],

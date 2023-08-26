@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_25a3c1737f9fe028840e6a50560d748b {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+        
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_25a3c1737f9fe028840e6a50560d748b" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_25a3c1737f9fe028840e6a50560d748b = L.map(
+                "map_25a3c1737f9fe028840e6a50560d748b",
+                {
+                    center: [0, 0],
+                    crs: L.CRS.EPSG3857,
+                    zoom: 1,
+                    zoomControl: true,
+                    preferCanvas: false,
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_f09584587e6faf9f73e9461e7bb3a717 = L.tileLayer(
+                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {"attribution": "Data by \u0026copy; \u003ca target=\"_blank\" href=\"http://openstreetmap.org\"\u003eOpenStreetMap\u003c/a\u003e, under \u003ca target=\"_blank\" href=\"http://www.openstreetmap.org/copyright\"\u003eODbL\u003c/a\u003e.", "detectRetina": false, "maxNativeZoom": 18, "maxZoom": 18, "minZoom": 0, "noWrap": false, "opacity": 1, "subdomains": "abc", "tms": false}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var poly_line_f4e8e221dbae3817a1b6c82684e5d429 = L.polyline(
+                [[40.6076378, -80.1747323], [40.6075955, -80.1744739], [40.60755, -80.1742126], [40.607485, -80.1738957], [40.6074297, -80.1736801], [40.6073365, -80.1733447], [40.606903, -80.1719142]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var marker_be986aaee9860db875e913dfb86fe9e4 = L.marker(
+                [40.6072974235847, -80.1741520911819],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_217e110f53e40bed799480fbb9c506ec = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e1\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_be986aaee9860db875e913dfb86fe9e4.setIcon(div_icon_217e110f53e40bed799480fbb9c506ec);
+        
+    
+            marker_be986aaee9860db875e913dfb86fe9e4.bindTooltip(
+                `<div>
+                     1636 BIG SEWICKLEY CREEK RD<br>Leslie Mcgee (D): <b>92%</b><br>Brian Mcgee (D): <b>94%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_fb9e4752650dd6be0c45e176f3a8787e = L.marker(
+                [40.606974381182, -80.1732653011588],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_4c54aa353273f1c34f7362b342724b06 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e2\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_fb9e4752650dd6be0c45e176f3a8787e.setIcon(div_icon_4c54aa353273f1c34f7362b342724b06);
+        
+    
+            marker_fb9e4752650dd6be0c45e176f3a8787e.bindTooltip(
+                `<div>
+                     1650 BIG SEWICKLEY CREEK RD<br>Adrianne Connelly (D): <b>25%</b><br>David Mcpherson Jr (D): <b>22%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_ca09f43b715987822ea5e2dd73636443 = L.marker(
+                [40.6068203910622, -80.1726061860566],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_275e180bc33785ccea5b7fdcf196bd50 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e3\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_ca09f43b715987822ea5e2dd73636443.setIcon(div_icon_275e180bc33785ccea5b7fdcf196bd50);
+        
+    
+            marker_ca09f43b715987822ea5e2dd73636443.bindTooltip(
+                `<div>
+                     1664 BIG SEWICKLEY CREEK RD<br>Aaron Blair (D): <b>19%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_9a72a6c743d6a5e50d3631904bd00ea5 = L.marker(
+                [40.6067173752566, -80.1723455891586],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_80c6ac9cc2f6424a11ffea74246243fe = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e4\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_9a72a6c743d6a5e50d3631904bd00ea5.setIcon(div_icon_80c6ac9cc2f6424a11ffea74246243fe);
+        
+    
+            marker_9a72a6c743d6a5e50d3631904bd00ea5.bindTooltip(
+                `<div>
+                     1674 BIG SEWICKLEY CREEK RD<br>Kerry Patuc (D): <b>61%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_e8ca78cf86bdee6ebfb99397bb49dbc8 = L.polyline(
+                [[40.606903, -80.1719142], [40.6057109, -80.1718577], [40.6056009, -80.1718525], [40.6050875, -80.1718281]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var marker_1b476a10b76fed8b51449de228bea77b = L.marker(
+                [40.60556399116, -80.1713385585998],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_92410d9875074876569ecfc452ac4aa9 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e5\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_1b476a10b76fed8b51449de228bea77b.setIcon(div_icon_92410d9875074876569ecfc452ac4aa9);
+        
+    
+            marker_1b476a10b76fed8b51449de228bea77b.bindTooltip(
+                `<div>
+                     119 BARLEY RD<br>Shelby Bursic (D): <b>18%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_ed26c7018a988e2ca8ef7dfb966fcbae = L.polyline(
+                [[40.6050875, -80.1718281], [40.605067316629544, -80.17273619860985]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var marker_3d294e2e76e2c580ac3f20666adbb41e = L.marker(
+                [40.6049014112426, -80.1727298493299],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_7bcc27f4c289018e61748135a523f41a = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e6\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_3d294e2e76e2c580ac3f20666adbb41e.setIcon(div_icon_7bcc27f4c289018e61748135a523f41a);
+        
+    
+            marker_3d294e2e76e2c580ac3f20666adbb41e.bindTooltip(
+                `<div>
+                     143 BARLEY RD<br>Eric Kimmy (D): <b>20%</b><br>Kelly Kimmy (D): <b>40%</b><br>Tessa Kimmy (I): <b>15%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_eeacd7e6a826f33598b764978ce0f127 = L.polyline(
+                [[40.605067316629544, -80.17273619860985], [40.6050875, -80.1718281]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var marker_82258c7a66c07902222eaa9492853dde = L.marker(
+                [40.6055216100255, -80.17251186891],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_df1c55976c50fbbeecf00cb9ef212fa8 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e7\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_82258c7a66c07902222eaa9492853dde.setIcon(div_icon_df1c55976c50fbbeecf00cb9ef212fa8);
+        
+    
+            marker_82258c7a66c07902222eaa9492853dde.bindTooltip(
+                `<div>
+                     124 BARLEY RD<br>Lisa Powner (D): <b>91%</b><br>Justin Powner (D): <b>42%</b><br>Robert Powner (D): <b>96%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_a8e5299fd818db56f92cb72729a5ca2e = L.polyline(
+                [[40.6050875, -80.1718281], [40.6048179, -80.1717933], [40.6045996, -80.1717587], [40.6043271, -80.1717312], [40.6041404, -80.1717205], [40.6041274672936, -80.17172072570203]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var marker_1d0d77509d5de7823f6a4f879f0bd7bd = L.marker(
+                [40.6041298301955, -80.1719537730167],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_f349352856b6d58b77018bd8a2d6cced = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e8\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_1d0d77509d5de7823f6a4f879f0bd7bd.setIcon(div_icon_f349352856b6d58b77018bd8a2d6cced);
+        
+    
+            marker_1d0d77509d5de7823f6a4f879f0bd7bd.bindTooltip(
+                `<div>
+                     121 BARLEY RD<br>Thomas Janicki Jr (D): <b>92%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_f20188ce1ef3eae68124a3531daa80ef = L.polyline(
+                [[40.6041274672936, -80.17172072570203], [40.6041404, -80.1717205], [40.6043271, -80.1717312], [40.6045996, -80.1717587], [40.6048179, -80.1717933], [40.6050875, -80.1718281]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var poly_line_613b4360fa7004240c26569ef62a86ca = L.polyline(
+                [[40.6050875, -80.1718281], [40.6056009, -80.1718525], [40.6057109, -80.1718577], [40.606903, -80.1719142]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var poly_line_59793c014695987b6e81a9b9221a58f6 = L.polyline(
+                [[40.606903, -80.1719142], [40.606826, -80.1716515], [40.6067274, -80.1713203], [40.606619, -80.1709863], [40.6065128, -80.1707022], [40.6063156, -80.1701954], [40.6059666, -80.1693417]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var marker_47acc4b87a4e0104fef4ac042923e335 = L.marker(
+                [40.6071000195822, -80.1717349760186],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_97209066975fbd73ad3c05ae762eac57 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e9\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_47acc4b87a4e0104fef4ac042923e335.setIcon(div_icon_97209066975fbd73ad3c05ae762eac57);
+        
+    
+            marker_47acc4b87a4e0104fef4ac042923e335.bindTooltip(
+                `<div>
+                     1713 BIG SEWICKLEY CREEK RD<br>Charles Grove (D): <b>41%</b><br>Debra Grove (D): <b>35%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_fa706e771fe61319fd0103f4e1675f71 = L.marker(
+                [40.6070272206171, -80.1714080917002],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_93bd2672f6c522a78ff9d660adb1921d = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e10\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_fa706e771fe61319fd0103f4e1675f71.setIcon(div_icon_93bd2672f6c522a78ff9d660adb1921d);
+        
+    
+            marker_fa706e771fe61319fd0103f4e1675f71.bindTooltip(
+                `<div>
+                     1737 BIG SEWICKLEY CREEK RD<br>Sean Frederick (I): <b>55%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_dfd05bb2db202f1ed423b2559c94b635 = L.marker(
+                [40.6065195093799, -80.1714337774882],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_de587557a19d79310742b348471d3a47 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e11\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_dfd05bb2db202f1ed423b2559c94b635.setIcon(div_icon_de587557a19d79310742b348471d3a47);
+        
+    
+            marker_dfd05bb2db202f1ed423b2559c94b635.bindTooltip(
+                `<div>
+                     1730 BIG SEWICKLEY CREEK RD<br>Winifred Sipe (D): <b>47%</b><br>George Sipe (D): <b>26%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_a6137f5a2bbb68988f733653b9785157 = L.marker(
+                [40.606545525577, -80.1702151308351],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_dc756c5ae13f1028e72ba09f7a8b2c67 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e12\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_a6137f5a2bbb68988f733653b9785157.setIcon(div_icon_dc756c5ae13f1028e72ba09f7a8b2c67);
+        
+    
+            marker_a6137f5a2bbb68988f733653b9785157.bindTooltip(
+                `<div>
+                     1767 BIG SEWICKLEY CREEK RD<br>Erin Grimm (I): <b>40%</b><br>David Grimm (I): <b>21%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_f65365e833c5ee27082b7f92ed79a65f = L.marker(
+                [40.6064262583566, -80.1699435062564],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_5e972f8b39b47d36866fe7eadbd1f629 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e13\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_f65365e833c5ee27082b7f92ed79a65f.setIcon(div_icon_5e972f8b39b47d36866fe7eadbd1f629);
+        
+    
+            marker_f65365e833c5ee27082b7f92ed79a65f.bindTooltip(
+                `<div>
+                     1789 BIG SEWICKLEY CREEK RD<br>Cynthia Mcclain (D): <b>92%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_627fc1637201cd130be0dda15fb9c474 = L.polyline(
+                [[40.6059666, -80.1693417], [40.6059124, -80.1691875], [40.6058473, -80.1689891], [40.605791, -80.1687678], [40.6057444, -80.1685694], [40.6057119, -80.1683495], [40.6056858, -80.1681225], [40.6056653, -80.1678584], [40.6056609, -80.1676143], [40.605662, -80.1674401], [40.6056707, -80.1672831], [40.6056707, -80.1672831], [40.6056945, -80.166979], [40.6057335, -80.1666935], [40.605791, -80.166388], [40.6058842, -80.1660211], [40.6059741, -80.1657427], [40.6060554, -80.1655186], [40.606153, -80.1652987], [40.6062429, -80.1651146], [40.6063632, -80.1649004], [40.6064651, -80.164742], [40.6067838, -80.1642966], [40.6070211, -80.1639697], [40.607229, -80.1636644], [40.607367, -80.1634504], [40.6074863, -80.1632417], [40.6074957, -80.1632253], [40.6075815, -80.1630507], [40.6076566, -80.1628821], [40.6077678, -80.1625974], [40.6078524, -80.1623335], [40.6078613, -80.1623057], [40.6080363, -80.1617017], [40.6081186, -80.1614178], [40.6082407, -80.1609963], [40.6083073, -80.1607663], [40.6085307, -80.1600026], [40.6085561, -80.159916], [40.6086192, -80.1597003], [40.60867611152381, -80.15951740246007]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var marker_7d9012397346d51dfc14efe26267485c = L.marker(
+                [40.6058932581785, -80.1669321577062],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_f9263ae430db86125c010b365b7cefae = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e14\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_7d9012397346d51dfc14efe26267485c.setIcon(div_icon_f9263ae430db86125c010b365b7cefae);
+        
+    
+            marker_7d9012397346d51dfc14efe26267485c.bindTooltip(
+                `<div>
+                     1859 BIG SEWICKLEY CREEK RD<br>Emily Scherer (D): <b>81%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_30f5c19a6150d12dff283f1dc7d2784c = L.marker(
+                [40.608072153384, -80.1624796760267],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_83092e4d0ef33a68eca9d05988d1dc68 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e15\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_30f5c19a6150d12dff283f1dc7d2784c.setIcon(div_icon_83092e4d0ef33a68eca9d05988d1dc68);
+        
+    
+            marker_30f5c19a6150d12dff283f1dc7d2784c.bindTooltip(
+                `<div>
+                     1923 BIG SEWICKLEY CREEK RD<br>Bernard Slusser (I): <b>15%</b><br>Stacie Fisher (I): <b>21%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_a26355405979117230df4af3ec809ba1 = L.marker(
+                [40.6082345123954, -80.1620145874984],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_0c922cab318aea09e82edf0a553570a0 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e16\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_a26355405979117230df4af3ec809ba1.setIcon(div_icon_0c922cab318aea09e82edf0a553570a0);
+        
+    
+            marker_a26355405979117230df4af3ec809ba1.bindTooltip(
+                `<div>
+                     1935 BIG SEWICKLEY CREEK RD<br>Christina Buffalini (I): <b>16%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_5305ec8442791ab18244fe4564b7725a = L.marker(
+                [40.6085911253793, -80.1612930783785],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_3690f35c69312ef67a7e8b26dae463c8 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e17\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_5305ec8442791ab18244fe4564b7725a.setIcon(div_icon_3690f35c69312ef67a7e8b26dae463c8);
+        
+    
+            marker_5305ec8442791ab18244fe4564b7725a.bindTooltip(
+                `<div>
+                     1953 BIG SEWICKLEY CREEK RD<br>Victoria Scott (I): <b>76%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_03c470b3cd9cd221622c28ea6370569f = L.marker(
+                [40.6092381970076, -80.1601387949965],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_4bfbb12899a560800ecfc3a9dc13682e = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e18\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_03c470b3cd9cd221622c28ea6370569f.setIcon(div_icon_4bfbb12899a560800ecfc3a9dc13682e);
+        
+    
+            marker_03c470b3cd9cd221622c28ea6370569f.bindTooltip(
+                `<div>
+                     1983 BIG SEWICKLEY CREEK RD<br>Rita Krein (D): <b>24%</b><br>Christine Myers (D): <b>87%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_a31813f75bbbb9d5e512126a47543569 = L.marker(
+                [40.6090203477071, -80.1597018179628],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_d028c9519d6e4cf1c708e4c9994cf48b = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e19\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_a31813f75bbbb9d5e512126a47543569.setIcon(div_icon_d028c9519d6e4cf1c708e4c9994cf48b);
+        
+    
+            marker_a31813f75bbbb9d5e512126a47543569.bindTooltip(
+                `<div>
+                     1993 BIG SEWICKLEY CREEK RD<br>Elizabeth Fyne (D): <b>90%</b><br>Werner Thiel (I): <b>21%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_c3ec527f84b48a74d4b7cedc9ac01bdd = L.polyline(
+                [[40.60867611152381, -80.15951740246007], [40.6086192, -80.1597003], [40.6085561, -80.159916], [40.6085307, -80.1600026], [40.6083073, -80.1607663], [40.6082407, -80.1609963], [40.6081186, -80.1614178], [40.6080363, -80.1617017], [40.6078613, -80.1623057], [40.6078524, -80.1623335], [40.6077678, -80.1625974], [40.6076566, -80.1628821], [40.6075815, -80.1630507], [40.6074957, -80.1632253], [40.6074863, -80.1632417], [40.607367, -80.1634504], [40.607229, -80.1636644], [40.6070211, -80.1639697], [40.6067838, -80.1642966], [40.6064651, -80.164742], [40.6063632, -80.1649004], [40.6062429, -80.1651146], [40.606153, -80.1652987], [40.6060554, -80.1655186], [40.6059741, -80.1657427], [40.6058842, -80.1660211], [40.605791, -80.166388], [40.6057335, -80.1666935], [40.6056945, -80.166979], [40.6056707, -80.1672831], [40.6056707, -80.1672831], [40.605662, -80.1674401], [40.6056609, -80.1676143], [40.6056653, -80.1678584], [40.6056858, -80.1681225], [40.6057119, -80.1683495], [40.6057444, -80.1685694], [40.605791, -80.1687678], [40.6058473, -80.1689891], [40.6059124, -80.1691875], [40.6059666, -80.1693417]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var marker_9ee4f62a8eda624c958b74f9dd6b490c = L.marker(
+                [40.6080217213746, -80.160773661733],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_3db5a962da370e3deb743773f82b0b1c = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e20\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_9ee4f62a8eda624c958b74f9dd6b490c.setIcon(div_icon_3db5a962da370e3deb743773f82b0b1c);
+        
+    
+            marker_9ee4f62a8eda624c958b74f9dd6b490c.bindTooltip(
+                `<div>
+                     1972 BIG SEWICKLEY CREEK RD<br>Dennis Redmond (D): <b>61%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_0987c1b16ef7d3ced2c842a6f2c2bc0d = L.marker(
+                [40.6079068486401, -80.1611871299412],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_958a650738a6a129a53d98f12307beb0 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e21\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_0987c1b16ef7d3ced2c842a6f2c2bc0d.setIcon(div_icon_958a650738a6a129a53d98f12307beb0);
+        
+    
+            marker_0987c1b16ef7d3ced2c842a6f2c2bc0d.bindTooltip(
+                `<div>
+                     1966 BIG SEWICKLEY CREEK RD<br>Katherine Azadian (D): <b>87%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_32761b7b490ba8b4cbc4c02349926d7e = L.marker(
+                [40.6078139838658, -80.1615062678019],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_3e8c47d827d80f6442839c096bc79cc0 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e22\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_32761b7b490ba8b4cbc4c02349926d7e.setIcon(div_icon_3e8c47d827d80f6442839c096bc79cc0);
+        
+    
+            marker_32761b7b490ba8b4cbc4c02349926d7e.bindTooltip(
+                `<div>
+                     1944 BIG SEWICKLEY CREEK RD<br>Deborah Macgill (D): <b>21%</b><br>Neil Macgill (D): <b>40%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_b0d84bf64808cf3140df1bfdce5ec48f = L.marker(
+                [40.6075579348102, -80.161934488171],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_4990cf101fe2d27a80a3c9b7000455d1 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e23\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_b0d84bf64808cf3140df1bfdce5ec48f.setIcon(div_icon_4990cf101fe2d27a80a3c9b7000455d1);
+        
+    
+            marker_b0d84bf64808cf3140df1bfdce5ec48f.bindTooltip(
+                `<div>
+                     1932 BIG SEWICKLEY CREEK RD<br>Kimberly Besong (D): <b>21%</b><br>Alexander Besong (D): <b>21%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_fdbb8a934a69101666e4b3093372a733 = L.polyline(
+                [[40.6059666, -80.1693417], [40.6059004, -80.1693203], [40.6058658, -80.169306], [40.6058127, -80.1692774], [40.605695, -80.1691777], [40.60556809876774, -80.16907371163656]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var marker_93cd395d66311078adf5df4832058d67 = L.marker(
+                [40.6054521745774, -80.169317248656],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_5830858138a3b950c82b64ae747cecc2 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e24\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_93cd395d66311078adf5df4832058d67.setIcon(div_icon_5830858138a3b950c82b64ae747cecc2);
+        
+    
+            marker_93cd395d66311078adf5df4832058d67.bindTooltip(
+                `<div>
+                     104 HITZEL HILL RD<br>Kelly Linn (D): <b>23%</b><br>Robert Linn (I): <b>21%</b><br>Ryan Linn (D): <b>25%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_5ff26b8f0fdb43347c64dfdf19736c70 = L.polyline(
+                [[40.60556809876774, -80.16907371163656], [40.605695, -80.1691777], [40.6058127, -80.1692774], [40.6058658, -80.169306], [40.6059004, -80.1693203], [40.6059666, -80.1693417]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var poly_line_c77cf68d1d67d33c35f3d7bd9465f989 = L.polyline(
+                [[40.6059666, -80.1693417], [40.6063156, -80.1701954], [40.6065128, -80.1707022], [40.606619, -80.1709863], [40.6067274, -80.1713203], [40.606826, -80.1716515], [40.606903, -80.1719142]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var marker_957b326504fc8d1256dae9ca8167b4e9 = L.marker(
+                [40.6058172686958, -80.1702166789583],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_696d5db01e9d38b8e28d092613fe1dbe = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e25\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_957b326504fc8d1256dae9ca8167b4e9.setIcon(div_icon_696d5db01e9d38b8e28d092613fe1dbe);
+        
+    
+            marker_957b326504fc8d1256dae9ca8167b4e9.bindTooltip(
+                `<div>
+                     1760 BIG SEWICKLEY CREEK RD<br>Donna Cooper (D): <b>86%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_fc203e5b772878b23eac0fe3e7fb0133 = L.polyline(
+                [[40.606903, -80.1719142], [40.6073365, -80.1733447], [40.6074297, -80.1736801], [40.607485, -80.1738957], [40.60755, -80.1742126], [40.6075955, -80.1744739], [40.6076378, -80.1747323]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var marker_4b994467c8b47506cf42027f0800c6c9 = L.marker(
+                [40.6073287356118, -80.1726684444851],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_4b6811ac9c0f91ac77556be7912edde7 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e26\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_4b994467c8b47506cf42027f0800c6c9.setIcon(div_icon_4b6811ac9c0f91ac77556be7912edde7);
+        
+    
+            marker_4b994467c8b47506cf42027f0800c6c9.bindTooltip(
+                `<div>
+                     1673 BIG SEWICKLEY CREEK RD<br>Harry Lavelle (D): <b>71%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_32d801003fe54b08fadb6dde419d99a8 = L.marker(
+                [40.6073616551521, -80.1728800413311],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_8e1e2fa17158f4354606eaaafbcae69c = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e27\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_32d801003fe54b08fadb6dde419d99a8.setIcon(div_icon_8e1e2fa17158f4354606eaaafbcae69c);
+        
+    
+            marker_32d801003fe54b08fadb6dde419d99a8.bindTooltip(
+                `<div>
+                     1667 BIG SEWICKLEY CREEK RD<br>Sharon Woodman (D): <b>82%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_1a9d8023d50c9ba3fa9afdedc931557d = L.marker(
+                [40.6077493488451, -80.174522184106],
+                {}
+            ).addTo(map_25a3c1737f9fe028840e6a50560d748b);
+        
+    
+            var div_icon_79a92de37611d6e476fb4b5c84445a4c = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e28\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_1a9d8023d50c9ba3fa9afdedc931557d.setIcon(div_icon_79a92de37611d6e476fb4b5c84445a4c);
+        
+    
+            marker_1a9d8023d50c9ba3fa9afdedc931557d.bindTooltip(
+                `<div>
+                     1631 BIG SEWICKLEY CREEK RD<br>Stephen Grise (I): <b>61%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            map_25a3c1737f9fe028840e6a50560d748b.fitBounds(
+                [[40.6041274672936, -80.1747323], [40.6092381970076, -80.15951740246007]],
+                {}
+            );
+        
+</script>
+</html>

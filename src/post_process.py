@@ -27,6 +27,7 @@ from src.config import (
     house_to_voters_file,
     pt_id,
     requested_blocks_file,
+    details_file
 )
 from src.distances.blocks import BlockDistances
 from src.distances.mix import MixDistances
@@ -97,7 +98,7 @@ class PostProcess:
         if through_start is None and through_end is None:
             print(
                 colored(
-                    "Unable to find distance through start or end of block in post-processing. Quitting.",
+                    f"Unable to find distance through start or end of block in post-processing Final house {final_house} and next house {next_house}. Quitting.",
                     "red",
                 )
             )
@@ -787,9 +788,9 @@ def process_solution(
                 (optimizer_points[stop["location"]["index"]], stop["location"]["index"])
             )
 
-    display_distance_matrix(
-        optimizer_points, os.path.join(problem_path, "distances.json")
-    ).save(os.path.join(viz_path, "distances.html"))
+    # display_distance_matrix(
+    #     optimizer_points, os.path.join(problem_path, "distances.json")
+    # ).save(os.path.join(viz_path, "distances.html"))
 
     # house_dcs = [[HouseDistances.get_distance(i, j) for (i, j) in itertools.pairwise(list)] for list in point_orders]
     distances_file = os.path.join(problem_path, "distances.json")
@@ -804,8 +805,13 @@ def process_solution(
     points = [[i[0] for i in list] for list in point_orders]
 
     display_house_orders(points, dcs=house_dcs).save(
-        os.path.join(viz_path, "optimal.html")
+        os.path.join(viz_path, "direct_output.html")
     )
+
+    if os.path.exists(details_file):
+        details = json.load(open(details_file))
+    else:
+        details = {}
 
     post_processor = PostProcess(requested_blocks, optimizer_points=optimizer_points)
     walk_lists: list[list[SubBlock]] = []
@@ -819,16 +825,36 @@ def process_solution(
 
         walk_lists.append(post_processor.post_process(tour))
 
+        list_id = f"{AREA_ID}-{id}-{i}"
+        assert list_id not in details, f"List {list_id} already exists in details"
+
+        num_houses = sum([len(sub_block.houses) for sub_block in walk_lists[-1]])
+        distance = 0
+        for sub_block in walk_lists[-1]:
+            distance += sub_block.length
+        start_point = {
+            "lat": walk_lists[-1][0].start["lat"],
+            "lon": walk_lists[-1][0].start["lon"]
+        }
+
+        details[list_id] = {
+            "distance": distance,
+            "num_houses": num_houses,
+            "start_point": start_point,
+        }
+
+    json.dump(details, open(details_file, "w"))
+
     list_visualizations = display_individual_walk_lists(walk_lists)
     for i, walk_list in enumerate(list_visualizations):
-        walk_list.save(os.path.join(viz_path, f"walk_lists_{i}.html"))
+        walk_list.save(os.path.join(viz_path, f"{AREA_ID}-{id}-{i}.html"))
 
     form = json.load(open(os.path.join("regions", AREA_ID, "input", "form.json"), "r"))
 
     for i in range(len(walk_lists)):
-        list_id = AREA_ID + "-cluster-" + id + "-" + str(i)
+        list_id = f"{AREA_ID}-{id}-{i}"
         post_processor.generate_file(
-            walk_lists[i], os.path.join(viz_path, f"files_{i}.json"), id=list_id, form=form
+            walk_lists[i], os.path.join(viz_path, f"{list_id}.json"), id=list_id, form=form
         )
 
 

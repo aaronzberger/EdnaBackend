@@ -47,7 +47,7 @@ addresses: list[str] = []
 uuids: list[str] = []
 for block in walk_list['blocks']:
     for house in block['houses']:
-        addresses.append(f"{house['display_address'], {house['city']}, {house['state']}, {house['zip']}}".replace('None', ''))
+        addresses.append(f"{house['display_address']}, {house['city']}, {house['state']}, {house['zip']}".replace('None', ''))
         uuids.append(house["uuid"])
 
 # endregion
@@ -82,11 +82,15 @@ for image in tqdm.tqdm(needed_images, desc='Downloading images', total=len(neede
 
     results = google_streetview.api.results(params)
 
-    # Download image
+    # Download image to the house_images directory
     results.download_links(list_file_name)
 
     # Rename the image to the key
-    os.rename('{}/gsv_0.jpg'.format(list_file_name), '{}.jpg'.format(image[0]))
+    try:
+        os.rename('{}/gsv_0.jpg'.format(list_file_name), '{}.jpg'.format(image[0]))
+    except FileNotFoundError:
+        print('Error: Failed to find downloaded image for {}: {}'.format(image[0], image[1]))
+        continue
 
     # Crop the image a bit (remove 10 pixels from bottom)
     img = cv2.imread('{}.jpg'.format(image[0]))

@@ -86,6 +86,10 @@ problem_path = os.path.join(BASE_DIR, "optimize", "problem.json")
 solution_path = os.path.join(BASE_DIR, "optimize", "solution.json")
 distances_path = os.path.join(BASE_DIR, "optimize", "distances.json")
 
+clustering_pickle_file = os.path.join(BASE_DIR, "regions", AREA_ID, "clustering.pkl")
+
+details_file = os.path.join(BASE_DIR, "regions", AREA_ID, "areas", "details.json")
+
 VIZ_PATH = os.path.join(BASE_DIR, "viz")
 PROBLEM_PATH = os.path.join(VIZ_PATH, "problem")
 
@@ -121,6 +125,9 @@ def voter_value(party: Literal["D", "R", "I"], turnout: float) -> float:
     #     sigmoid(1, 10, 0.4) - sigmoid(0, 10, 0.4))
     base_value = exponential(turnout, 5)
 
+    if turnout < 0.1:
+        base_value = 0
+
     return base_value if party in ["D", "I"] else 0
 
 
@@ -155,8 +162,8 @@ GROUP_CANVAS_FULL = True
 ARBITRARY_LARGE_DISTANCE = 10000
 MAX_TOURING_TIME = timedelta(minutes=180)
 MAX_TOURING_DISTANCE = 10000
-WALKING_M_PER_S = 0.85
-MINS_PER_HOUSE = 1.65
+WALKING_M_PER_S = 1.2
+MINS_PER_HOUSE = 1.5
 CLUSTERING_CONNECTED_THRESHOLD = 100  # Meters where blocks are connected
 KEEP_APARTMENTS = True
 DISTANCE_TO_ROAD_MULTIPLIER = 0.5
@@ -325,6 +332,7 @@ class Person(TypedDict):
     voting_history: dict[str, bool]
     voter_id: str
     value: float
+    turnout: float
 
 
 class HousePeople(TypedDict):

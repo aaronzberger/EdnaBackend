@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_fe125c75c7414a1a46fe552a11c8ceda {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+        
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_fe125c75c7414a1a46fe552a11c8ceda" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_fe125c75c7414a1a46fe552a11c8ceda = L.map(
+                "map_fe125c75c7414a1a46fe552a11c8ceda",
+                {
+                    center: [0, 0],
+                    crs: L.CRS.EPSG3857,
+                    zoom: 1,
+                    zoomControl: true,
+                    preferCanvas: false,
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_725cf1e8c27f9febaa42062c4509c71f = L.tileLayer(
+                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {"attribution": "Data by \u0026copy; \u003ca target=\"_blank\" href=\"http://openstreetmap.org\"\u003eOpenStreetMap\u003c/a\u003e, under \u003ca target=\"_blank\" href=\"http://www.openstreetmap.org/copyright\"\u003eODbL\u003c/a\u003e.", "detectRetina": false, "maxNativeZoom": 18, "maxZoom": 18, "minZoom": 0, "noWrap": false, "opacity": 1, "subdomains": "abc", "tms": false}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var poly_line_f37df20c2eba7602071737d2a7edcb89 = L.polyline(
+                [[40.6131119, -80.1049599], [40.6132122, -80.1049184], [40.6133132, -80.1049004], [40.6134425, -80.1048949], [40.6135287, -80.1049087], [40.6135899, -80.1049373], [40.6136413, -80.1049614], [40.6137527, -80.1050306], [40.6138106, -80.1051054]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var marker_28e9be4c801358d7ef641ce8fdf74f1e = L.marker(
+                [40.6132878997448, -80.1044393213317],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_c7443aa82f0488d49c7119dcd230088d = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e1\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_28e9be4c801358d7ef641ce8fdf74f1e.setIcon(div_icon_c7443aa82f0488d49c7119dcd230088d);
+        
+    
+            marker_28e9be4c801358d7ef641ce8fdf74f1e.bindTooltip(
+                `<div>
+                     1618 STONE MANSION DR<br>Susan Hartwig (D): <b>80%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_780327dbb1b8c53828e2e0a81bb8196e = L.marker(
+                [40.613359761603, -80.1044432770283],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_757e73566fc2c6d8a49e834feb9f5463 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e2\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_780327dbb1b8c53828e2e0a81bb8196e.setIcon(div_icon_757e73566fc2c6d8a49e834feb9f5463);
+        
+    
+            marker_780327dbb1b8c53828e2e0a81bb8196e.bindTooltip(
+                `<div>
+                     1620 STONE MANSION DR<br>Diana Svoboda (D): <b>27%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_5d04e922b96199e43a6b88fda358ddf3 = L.marker(
+                [40.6135038906883, -80.1044447173525],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_dd5effd1c86f593da08a17c1bfd97c53 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e3\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_5d04e922b96199e43a6b88fda358ddf3.setIcon(div_icon_dd5effd1c86f593da08a17c1bfd97c53);
+        
+    
+            marker_5d04e922b96199e43a6b88fda358ddf3.bindTooltip(
+                `<div>
+                     1624 STONE MANSION DR<br>Frank Sestric (I): <b>21%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_badc985d8b7385ad0adb0fbbaf97f9cb = L.marker(
+                [40.6137196686777, -80.104622700542],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_44d4ed04b07e5ba8d0620076915b5f87 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e4\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_badc985d8b7385ad0adb0fbbaf97f9cb.setIcon(div_icon_44d4ed04b07e5ba8d0620076915b5f87);
+        
+    
+            marker_badc985d8b7385ad0adb0fbbaf97f9cb.bindTooltip(
+                `<div>
+                     1626 STONE MANSION DR<br>Bernard Lutz (D): <b>24%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_8de6d7c3e2827413c2d48b9687c330ac = L.marker(
+                [40.6137921045383, -80.1046389272308],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_7b2accc77307735b12cc6969b01398e6 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e5\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_8de6d7c3e2827413c2d48b9687c330ac.setIcon(div_icon_7b2accc77307735b12cc6969b01398e6);
+        
+    
+            marker_8de6d7c3e2827413c2d48b9687c330ac.bindTooltip(
+                `<div>
+                     1628 STONE MANSION DR<br>Joseph Rafail (I): <b>15%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_c59d505e0fb1151bf94655bc6391e193 = L.marker(
+                [40.613860417166, -80.1046553713963],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_fde86bfd0c7cb12ca19183b7594067cd = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e6\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_c59d505e0fb1151bf94655bc6391e193.setIcon(div_icon_fde86bfd0c7cb12ca19183b7594067cd);
+        
+    
+            marker_c59d505e0fb1151bf94655bc6391e193.bindTooltip(
+                `<div>
+                     1630 STONE MANSION DR<br>Farhad Tavangar (D): <b>43%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_e73e0c12dad739a8d40a07fbefd0986d = L.polyline(
+                [[40.6138106, -80.1051054], [40.6139504, -80.1051054], [40.6141102, -80.1050847], [40.6143731, -80.1050403], [40.6144331, -80.1050251], [40.6146749, -80.10496], [40.6149202, -80.1048868], [40.6149181, -80.1048478], [40.6149246, -80.104812], [40.6149357, -80.1047856], [40.614946, -80.1047699], [40.614962, -80.1047534], [40.6149813, -80.1047413], [40.6150065, -80.1047347], [40.6150209, -80.1047351], [40.6150458, -80.1047428], [40.6150658, -80.1047568], [40.6150813, -80.1047747], [40.6150944, -80.1047987], [40.6151042, -80.1048338], [40.6151055, -80.1048728], [40.6151022, -80.1048941], [40.6150947, -80.1049179]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var marker_73f2dd8359d00c5e11e7cf3efadf5fb0 = L.marker(
+                [40.6141966248733, -80.1053928297112],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_34ebc75436621f2f2e1d14259ad8ff2f = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e7\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_73f2dd8359d00c5e11e7cf3efadf5fb0.setIcon(div_icon_34ebc75436621f2f2e1d14259ad8ff2f);
+        
+    
+            marker_73f2dd8359d00c5e11e7cf3efadf5fb0.bindTooltip(
+                `<div>
+                     1639 STONE MANSION DR<br>Kim Fitzpatrick (D): <b>37%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_d02f89e8a89fad3e2a16c8c580c109d7 = L.marker(
+                [40.6146100724187, -80.1046808858161],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_9909a205bd16228b689f66fa70a7c6bc = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e8\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_d02f89e8a89fad3e2a16c8c580c109d7.setIcon(div_icon_9909a205bd16228b689f66fa70a7c6bc);
+        
+    
+            marker_d02f89e8a89fad3e2a16c8c580c109d7.bindTooltip(
+                `<div>
+                     1644 STONE MANSION DR<br>Howard Vonschaven (D): <b>59%</b><br>Carol Vonschaven (D): <b>57%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_b4448b36036f78d926a65077e5767d2a = L.marker(
+                [40.6152925297334, -80.1052160782583],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_51f44362e248f4e3e2a8c85e9fe1749e = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e9\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_b4448b36036f78d926a65077e5767d2a.setIcon(div_icon_51f44362e248f4e3e2a8c85e9fe1749e);
+        
+    
+            marker_b4448b36036f78d926a65077e5767d2a.bindTooltip(
+                `<div>
+                     1661 STONE MANSION DR<br>Mary Mcclintock (I): <b>21%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_f660f0ea8046a1626966f4dffb41996f = L.marker(
+                [40.6153735428404, -80.1047562499438],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_dbf21e14d7290e127b983ff0f7d5554b = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e10\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_f660f0ea8046a1626966f4dffb41996f.setIcon(div_icon_dbf21e14d7290e127b983ff0f7d5554b);
+        
+    
+            marker_f660f0ea8046a1626966f4dffb41996f.bindTooltip(
+                `<div>
+                     1662 STONE MANSION DR<br>Laura Ott (D): <b>92%</b><br>Lawrence Ott (D): <b>92%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_fc9c913ca7be614e4bb41a723f00dd33 = L.polyline(
+                [[40.6150947, -80.1049179], [40.6151022, -80.1048941], [40.6151055, -80.1048728], [40.6151042, -80.1048338], [40.6150944, -80.1047987], [40.6150813, -80.1047747], [40.6150658, -80.1047568], [40.6150458, -80.1047428], [40.6150209, -80.1047351], [40.6150065, -80.1047347], [40.6149813, -80.1047413], [40.614962, -80.1047534], [40.614946, -80.1047699], [40.6149357, -80.1047856], [40.6149246, -80.104812], [40.6149181, -80.1048478], [40.6149202, -80.1048868], [40.6146749, -80.10496], [40.6144331, -80.1050251], [40.6143731, -80.1050403], [40.6141102, -80.1050847], [40.6139504, -80.1051054], [40.6138106, -80.1051054]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var marker_bdd77125e3146ef0c8e230f5d86c9446 = L.marker(
+                [40.6153572596457, -80.1051790684752],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_6c4e97b61dfff97ce1a6a30984c55931 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e11\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_bdd77125e3146ef0c8e230f5d86c9446.setIcon(div_icon_6c4e97b61dfff97ce1a6a30984c55931);
+        
+    
+            marker_bdd77125e3146ef0c8e230f5d86c9446.bindTooltip(
+                `<div>
+                     1663 STONE MANSION DR<br>Robert Phillips (I): <b>22%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_c137fb206e1ed929f71d3369b12b8a49 = L.marker(
+                [40.61507785413, -80.105362063462],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_4aa3589235ee86b1187a586f9131e477 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e12\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_c137fb206e1ed929f71d3369b12b8a49.setIcon(div_icon_4aa3589235ee86b1187a586f9131e477);
+        
+    
+            marker_c137fb206e1ed929f71d3369b12b8a49.bindTooltip(
+                `<div>
+                     1657 STONE MANSION DR<br>Daniel Klaus (D): <b>94%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_edf8fd62b9dadbda281147053df4820e = L.marker(
+                [40.6150917355371, -80.1044494757876],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_e5e58178f5c5d1aae6fea28d25f9be9c = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e13\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_edf8fd62b9dadbda281147053df4820e.setIcon(div_icon_e5e58178f5c5d1aae6fea28d25f9be9c);
+        
+    
+            marker_edf8fd62b9dadbda281147053df4820e.bindTooltip(
+                `<div>
+                     1654 STONE MANSION DR<br>Melanie Popovich (D): <b>80%</b><br>Thaddeus Popovich (D): <b>92%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_a70fbf97ae24e6eb57475d7cb2897407 = L.marker(
+                [40.6149488092521, -80.1044563657458],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_5801a028e077ee83c19a773ce8aa74be = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e14\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_a70fbf97ae24e6eb57475d7cb2897407.setIcon(div_icon_5801a028e077ee83c19a773ce8aa74be);
+        
+    
+            marker_a70fbf97ae24e6eb57475d7cb2897407.bindTooltip(
+                `<div>
+                     1650 STONE MANSION DR<br>Charlotte Kubinski (D): <b>92%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_3a050b94a6aad2cdac82bb3b1c962204 = L.marker(
+                [40.6145386400393, -80.1046964021436],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_baefe6468e371bec4d0f90e502d14caa = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e15\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_3a050b94a6aad2cdac82bb3b1c962204.setIcon(div_icon_baefe6468e371bec4d0f90e502d14caa);
+        
+    
+            marker_3a050b94a6aad2cdac82bb3b1c962204.bindTooltip(
+                `<div>
+                     1642 STONE MANSION DR<br>Mary Donatelli Kahn (I): <b>22%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_fe6e9e5cba28d23a01e993211c839f61 = L.marker(
+                [40.6146024456826, -80.1053533483213],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_d330d7799dcf44ff4da867077e553f9e = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e16\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_fe6e9e5cba28d23a01e993211c839f61.setIcon(div_icon_d330d7799dcf44ff4da867077e553f9e);
+        
+    
+            marker_fe6e9e5cba28d23a01e993211c839f61.bindTooltip(
+                `<div>
+                     1647 STONE MANSION DR<br>Dorothy Johnson (D): <b>52%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_076e8530958cae113d79527622dc92d1 = L.marker(
+                [40.6142691793913, -80.1053762729829],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_4512b2a47568fafb8559c82f4509aa10 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e17\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_076e8530958cae113d79527622dc92d1.setIcon(div_icon_4512b2a47568fafb8559c82f4509aa10);
+        
+    
+            marker_076e8530958cae113d79527622dc92d1.bindTooltip(
+                `<div>
+                     1641 STONE MANSION DR<br>Richard Chiocchi (I): <b>16%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_2d6fa01fe169507b7e2b9e22bc29ce3d = L.marker(
+                [40.6141115811203, -80.1047405490069],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_ac7980023743b453c00cb50e76a444df = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e18\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_2d6fa01fe169507b7e2b9e22bc29ce3d.setIcon(div_icon_ac7980023743b453c00cb50e76a444df);
+        
+    
+            marker_2d6fa01fe169507b7e2b9e22bc29ce3d.bindTooltip(
+                `<div>
+                     1634 STONE MANSION DR<br>Patricia Schaller (D): <b>75%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_e046998dc04a56d74aff4415c404af80 = L.marker(
+                [40.6141282310355, -80.1054073710674],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_799e4ec0c811ddd208ee2ed63aefb0f1 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e19\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_e046998dc04a56d74aff4415c404af80.setIcon(div_icon_799e4ec0c811ddd208ee2ed63aefb0f1);
+        
+    
+            marker_e046998dc04a56d74aff4415c404af80.bindTooltip(
+                `<div>
+                     1637 STONE MANSION DR<br>Julie Babler (D): <b>58%</b><br>Joseph Marnell Jr (D): <b>27%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_dcafdf183ebc79a4bde112d9d8d646db = L.polyline(
+                [[40.6138106, -80.1051054], [40.6136907, -80.1051775], [40.6135939, -80.1051982], [40.6135287, -80.1051996], [40.6134615, -80.1051761], [40.6132175, -80.1050486], [40.6131119, -80.1049599]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var marker_2b33a3333ca05163b7b2edcced07556c = L.marker(
+                [40.6136944499502, -80.1054040755802],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_37e6534bd514dfdf88c50666a89646d0 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e20\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_2b33a3333ca05163b7b2edcced07556c.setIcon(div_icon_37e6534bd514dfdf88c50666a89646d0);
+        
+    
+            marker_2b33a3333ca05163b7b2edcced07556c.bindTooltip(
+                `<div>
+                     1629 STONE MANSION DR<br>Robert Wyckoff (I): <b>42%</b><br>Donna Lee Wyckoff (I): <b>76%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_2efd97788a701597c599172225ab44bc = L.marker(
+                [40.6132401694955, -80.1053150283451],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_f61523a070d745b82479bdf8a5848046 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e21\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_2efd97788a701597c599172225ab44bc.setIcon(div_icon_f61523a070d745b82479bdf8a5848046);
+        
+    
+            marker_2efd97788a701597c599172225ab44bc.bindTooltip(
+                `<div>
+                     1621 STONE MANSION DR<br>Joanne Phillips (I): <b>43%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_00864bb340fbe86be88cf2fd93f72815 = L.polyline(
+                [[40.6131119, -80.1049599], [40.6129778, -80.1049102], [40.6126767, -80.1047807], [40.6126598, -80.1047734], [40.61265, -80.1047686], [40.6125056, -80.1046984], [40.6124454, -80.1046794], [40.6123904, -80.1046712], [40.6123279, -80.1046752], [40.6122902, -80.104683]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var marker_81627c59d17129a5179009d638fe9229 = L.marker(
+                [40.61288896937, -80.1051395103047],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_09f6340b76b663764a5128587e5cd4c7 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e22\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_81627c59d17129a5179009d638fe9229.setIcon(div_icon_09f6340b76b663764a5128587e5cd4c7);
+        
+    
+            marker_81627c59d17129a5179009d638fe9229.bindTooltip(
+                `<div>
+                     1615 STONE MANSION DR<br>Rachel Mariano (I): <b>17%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_f2ba9fd4da78414ac9c339f926afd623 = L.marker(
+                [40.6128212094929, -80.1051093936957],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_667299f7c48764ad6a5fd60df5e1c903 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e23\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_f2ba9fd4da78414ac9c339f926afd623.setIcon(div_icon_667299f7c48764ad6a5fd60df5e1c903);
+        
+    
+            marker_f2ba9fd4da78414ac9c339f926afd623.bindTooltip(
+                `<div>
+                     1613 STONE MANSION DR<br>Sandra Dickson (D): <b>83%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_32c39eb17953eb7c5d0b4810acce60b1 = L.marker(
+                [40.613003376033, -80.1044553083532],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_65ee2b2e6920a44e433790a48cbde8cf = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e24\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_32c39eb17953eb7c5d0b4810acce60b1.setIcon(div_icon_65ee2b2e6920a44e433790a48cbde8cf);
+        
+    
+            marker_32c39eb17953eb7c5d0b4810acce60b1.bindTooltip(
+                `<div>
+                     1614 STONE MANSION DR<br>John Morin (D): <b>69%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_88f32f1e0a600da65c30f20b5206ec4c = L.marker(
+                [40.6129323296881, -80.1044517405729],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_d566b223918b3c37ca41108efe6b3d71 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e25\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_88f32f1e0a600da65c30f20b5206ec4c.setIcon(div_icon_d566b223918b3c37ca41108efe6b3d71);
+        
+    
+            marker_88f32f1e0a600da65c30f20b5206ec4c.bindTooltip(
+                `<div>
+                     1612 STONE MANSION DR<br>Sheryl Simon (D): <b>94%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_bd030f55ee75baf410759f4948350a7f = L.marker(
+                [40.6128600448817, -80.1044416442452],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_c1721441df3b35bc8a65e3ec57f40ac6 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e26\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_bd030f55ee75baf410759f4948350a7f.setIcon(div_icon_c1721441df3b35bc8a65e3ec57f40ac6);
+        
+    
+            marker_bd030f55ee75baf410759f4948350a7f.bindTooltip(
+                `<div>
+                     1610 STONE MANSION DR<br>Joseph Muller Jr (D): <b>37%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_ae2568afbd0038430c39a2b914210352 = L.marker(
+                [40.6124858235958, -80.1043719806913],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_f47ae0d417c0f5cc789104fed5a34ee3 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e27\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_ae2568afbd0038430c39a2b914210352.setIcon(div_icon_f47ae0d417c0f5cc789104fed5a34ee3);
+        
+    
+            marker_ae2568afbd0038430c39a2b914210352.bindTooltip(
+                `<div>
+                     1604 STONE MANSION DR<br>Amelia Sadar (I): <b>88%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_a3f92c7be2c715b7358b491e844865b4 = L.marker(
+                [40.6124292564969, -80.1050340604806],
+                {}
+            ).addTo(map_fe125c75c7414a1a46fe552a11c8ceda);
+        
+    
+            var div_icon_077a757feb6987713e011da5366d879f = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e28\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_a3f92c7be2c715b7358b491e844865b4.setIcon(div_icon_077a757feb6987713e011da5366d879f);
+        
+    
+            marker_a3f92c7be2c715b7358b491e844865b4.bindTooltip(
+                `<div>
+                     1607 STONE MANSION DR<br>Sara Zimnox (D): <b>88%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            map_fe125c75c7414a1a46fe552a11c8ceda.fitBounds(
+                [[40.6122902, -80.1054073710674], [40.6153735428404, -80.1043719806913]],
+                {}
+            );
+        
+</script>
+</html>

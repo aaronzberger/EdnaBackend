@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_ed216cffe51525e195e6a72d8d433f0a {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+        
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_ed216cffe51525e195e6a72d8d433f0a" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_ed216cffe51525e195e6a72d8d433f0a = L.map(
+                "map_ed216cffe51525e195e6a72d8d433f0a",
+                {
+                    center: [0, 0],
+                    crs: L.CRS.EPSG3857,
+                    zoom: 1,
+                    zoomControl: true,
+                    preferCanvas: false,
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_baf92e292902c6271cb371dc91104cd5 = L.tileLayer(
+                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {"attribution": "Data by \u0026copy; \u003ca target=\"_blank\" href=\"http://openstreetmap.org\"\u003eOpenStreetMap\u003c/a\u003e, under \u003ca target=\"_blank\" href=\"http://www.openstreetmap.org/copyright\"\u003eODbL\u003c/a\u003e.", "detectRetina": false, "maxNativeZoom": 18, "maxZoom": 18, "minZoom": 0, "noWrap": false, "opacity": 1, "subdomains": "abc", "tms": false}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var poly_line_448909b1d14eb05e5bc41792c0cbf79f = L.polyline(
+                [[40.5886811, -80.0711054], [40.589005, -80.0714005], [40.58909621924154, -80.07148230508167]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var marker_db94c139f05b7561cd6bad0e0af5b812 = L.marker(
+                [40.5895738201504, -80.0705659284386],
+                {}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var div_icon_17b29bd5c970dbb0e7b3ab9a029e5cce = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e1\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_db94c139f05b7561cd6bad0e0af5b812.setIcon(div_icon_17b29bd5c970dbb0e7b3ab9a029e5cce);
+        
+    
+            marker_db94c139f05b7561cd6bad0e0af5b812.bindTooltip(
+                `<div>
+                     2410 BRANDT SCHOOL RD<br>Kevin Martin (I): <b>16%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_b1b038f9d7a27e8c617c8bb0f23f70e8 = L.polyline(
+                [[40.58909621924154, -80.07148230508167], [40.589005, -80.0714005], [40.5886811, -80.0711054]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var poly_line_18bcf5048c9d9cd0d1c9802a0eaef59f = L.polyline(
+                [[40.5886811, -80.0711054], [40.588727, -80.0707541], [40.5887555, -80.0704054], [40.588784, -80.070105], [40.588837, -80.0698529], [40.5888712, -80.069699], [40.5888934, -80.0695958], [40.5889155, -80.0694773], [40.5889263, -80.0693086], [40.5889265, -80.0691557], [40.5889266, -80.069118], [40.5889225, -80.0688229], [40.5889388, -80.0686566], [40.5889755, -80.0685011], [40.5890111, -80.0684178], [40.589057, -80.0683777], [40.5891344, -80.068324], [40.5891867, -80.0682976], [40.5892484, -80.0682757], [40.5894236, -80.0682597], [40.589560095588276, -80.06824792617333]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var marker_a2829bc7e6e3e1cda454a37da84a3118 = L.marker(
+                [40.5896034678963, -80.0691132295056],
+                {}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var div_icon_19eac65c95c40973d29ad94e43e7d831 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e2\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_a2829bc7e6e3e1cda454a37da84a3118.setIcon(div_icon_19eac65c95c40973d29ad94e43e7d831);
+        
+    
+            marker_a2829bc7e6e3e1cda454a37da84a3118.bindTooltip(
+                `<div>
+                     1511 WEST VIEW LN<br>Bruce Walter (D): <b>22%</b><br>Alisa Walter (D): <b>56%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_1192b995e65b76ec396729302fc9a97a = L.polyline(
+                [[40.589560095588276, -80.06824792617333], [40.5894236, -80.0682597], [40.5892484, -80.0682757], [40.5891867, -80.0682976], [40.5891344, -80.068324], [40.589057, -80.0683777], [40.5890111, -80.0684178], [40.5889755, -80.0685011], [40.5889388, -80.0686566], [40.5889225, -80.0688229], [40.5889266, -80.069118], [40.5889265, -80.0691557], [40.5889263, -80.0693086], [40.5889155, -80.0694773], [40.5888934, -80.0695958], [40.5888712, -80.069699], [40.588837, -80.0698529], [40.588784, -80.070105], [40.5887555, -80.0704054], [40.588727, -80.0707541], [40.5886811, -80.0711054]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var poly_line_15524e402530217deca8d503ea409639 = L.polyline(
+                [[40.5886811, -80.0711054], [40.5885406, -80.0710035]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var poly_line_e5a2b17f38a27b9da4b47ae573997cab = L.polyline(
+                [[40.5885406, -80.0710035], [40.5887483, -80.0713575], [40.5888828, -80.0715936], [40.5889846, -80.0717921], [40.5890783, -80.0720227], [40.5891679, -80.072248], [40.5892209, -80.0724304], [40.5892616, -80.0725914], [40.5892901, -80.0727094], [40.589339, -80.0728113], [40.5893696, -80.0728623], [40.5894042, -80.0728971], [40.5895223, -80.07294], [40.5896608, -80.072983], [40.5897586, -80.073042], [40.589889, -80.0731278], [40.5900112, -80.0732351], [40.5901538, -80.0733907], [40.5902597, -80.073514], [40.5903534, -80.0736428], [40.590443, -80.0738091], [40.5905, -80.0739539], [40.5905652, -80.0741256], [40.5906467, -80.0744206], [40.5906752, -80.0745655], [40.5906793, -80.0746674], [40.5906548, -80.0747586], [40.5905896, -80.0749249], [40.5905652, -80.0749678], [40.5905246, -80.0749943], [40.5905104, -80.0750036], [40.5904654, -80.0750188], [40.5903574, -80.0750375], [40.5902312, -80.0750375], [40.5901538, -80.0750375], [40.5901089, -80.0750483], [40.5900804, -80.075059], [40.5899175, -80.0749624], [40.5898218, -80.0748846], [40.5896894, -80.0747774], [40.5895285, -80.0746593], [40.5894266, -80.0745681], [40.5893003, -80.0744313], [40.589174, -80.0742034], [40.5890905, -80.0740532], [40.5890253, -80.0739673], [40.58902530000001, -80.0739673]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var marker_e71754ef37e54315ba9014ba7985553f = L.marker(
+                [40.5899818081022, -80.0744570905058],
+                {}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var div_icon_999d3306539e22fb1c0184bb8665165b = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e3\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_e71754ef37e54315ba9014ba7985553f.setIcon(div_icon_999d3306539e22fb1c0184bb8665165b);
+        
+    
+            marker_e71754ef37e54315ba9014ba7985553f.bindTooltip(
+                `<div>
+                     1557 QUARRY RD<br>Kathleen Gaichas (D): <b>84%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_f4de902c5dd53a617ca29cd949b31e30 = L.polyline(
+                [[40.58902530000001, -80.0739673], [40.5890253, -80.0739673], [40.5890905, -80.0740532], [40.589174, -80.0742034], [40.5893003, -80.0744313], [40.5894266, -80.0745681], [40.5895285, -80.0746593], [40.5896894, -80.0747774], [40.5898218, -80.0748846], [40.5899175, -80.0749624], [40.5900804, -80.075059], [40.5901089, -80.0750483], [40.5901538, -80.0750375], [40.5902312, -80.0750375], [40.5903574, -80.0750375], [40.5904654, -80.0750188], [40.5905104, -80.0750036], [40.5905246, -80.0749943], [40.5905652, -80.0749678], [40.5905896, -80.0749249], [40.5906548, -80.0747586], [40.5906793, -80.0746674], [40.5906752, -80.0745655], [40.5906467, -80.0744206], [40.5905652, -80.0741256], [40.5905, -80.0739539], [40.590443, -80.0738091], [40.5903534, -80.0736428], [40.5902597, -80.073514], [40.5901538, -80.0733907], [40.5900112, -80.0732351], [40.589889, -80.0731278], [40.5897586, -80.073042], [40.5896608, -80.072983], [40.5895223, -80.07294], [40.5894042, -80.0728971], [40.5893696, -80.0728623], [40.589339, -80.0728113], [40.5892901, -80.0727094], [40.5892616, -80.0725914], [40.5892209, -80.0724304], [40.5891679, -80.072248], [40.5890783, -80.0720227], [40.5889846, -80.0717921], [40.5888828, -80.0715936], [40.5887483, -80.0713575], [40.5885406, -80.0710035]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var marker_cc47db6391015844cc995dbc474b34a3 = L.marker(
+                [40.5886973815078, -80.0740284174259],
+                {}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var div_icon_085cdc665e505f5a36242882f03395a9 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e4\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_cc47db6391015844cc995dbc474b34a3.setIcon(div_icon_085cdc665e505f5a36242882f03395a9);
+        
+    
+            marker_cc47db6391015844cc995dbc474b34a3.bindTooltip(
+                `<div>
+                     1560 QUARRY RD<br>Barbara Solter (D): <b>90%</b><br>Alan Solter (I): <b>87%</b><br>Matt Solter (I): <b>84%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_72c0a6b921b29579069dfc1d5124a50e = L.marker(
+                [40.5898729033569, -80.0754503370885],
+                {}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var div_icon_3e1c92310485b4c40f122ce6340e9331 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e5\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_72c0a6b921b29579069dfc1d5124a50e.setIcon(div_icon_3e1c92310485b4c40f122ce6340e9331);
+        
+    
+            marker_72c0a6b921b29579069dfc1d5124a50e.bindTooltip(
+                `<div>
+                     1558 QUARRY RD<br>Thomas Houchin (I): <b>56%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_cba2ca26a5c186a8ae0c92f921e5d654 = L.marker(
+                [40.5908649760628, -80.0750268037708],
+                {}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var div_icon_3f9fb1bca15d46f9eb729b985841aa4e = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e6\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_cba2ca26a5c186a8ae0c92f921e5d654.setIcon(div_icon_3f9fb1bca15d46f9eb729b985841aa4e);
+        
+    
+            marker_cba2ca26a5c186a8ae0c92f921e5d654.bindTooltip(
+                `<div>
+                     1550 QUARRY RD<br>Karen Kasper (D): <b>95%</b><br>Kenneth Sprague (D): <b>92%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_9b23b9619d3b5ad82fce8350238e0158 = L.polyline(
+                [[40.5885406, -80.0710035], [40.5881679, -80.0707293], [40.5881067, -80.0706843]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var poly_line_faffa54ea3e4522878100c3855bb648a = L.polyline(
+                [[40.5881067, -80.0706843], [40.5881515, -80.0698314], [40.5882065, -80.0683669], [40.588221184859236, -80.06772866942458]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var marker_fb0fec3b1783efd4d3105b432e8cbdc0 = L.marker(
+                [40.588408263472, -80.070288744159],
+                {}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var div_icon_ce976be58340ccb863dc0ab5226ec2fe = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e7\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_fb0fec3b1783efd4d3105b432e8cbdc0.setIcon(div_icon_ce976be58340ccb863dc0ab5226ec2fe);
+        
+    
+            marker_fb0fec3b1783efd4d3105b432e8cbdc0.bindTooltip(
+                `<div>
+                     1517 VAN DR<br>John Billetdeaux (I): <b>64%</b><br>Erica Billetdeaux (D): <b>21%</b><br>Theresa Bernardi (I): <b>19%</b><br>Norman Bernardi Iii (D): <b>16%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_381cd547bf66376d37e7d5d1820d027d = L.marker(
+                [40.5884321997798, -80.0697655037605],
+                {}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var div_icon_fa6bdc1cedf43b46f6ef2b131c7b107a = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e8\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_381cd547bf66376d37e7d5d1820d027d.setIcon(div_icon_fa6bdc1cedf43b46f6ef2b131c7b107a);
+        
+    
+            marker_381cd547bf66376d37e7d5d1820d027d.bindTooltip(
+                `<div>
+                     1515 VAN DR<br>David Platt (D): <b>92%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_fcb419977636b6fac01d1a7ac8e7a99b = L.marker(
+                [40.5884428077474, -80.0689752694046],
+                {}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var div_icon_f3d5e8bca95f7cfaa38d8f2994cfa824 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e9\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_fcb419977636b6fac01d1a7ac8e7a99b.setIcon(div_icon_f3d5e8bca95f7cfaa38d8f2994cfa824);
+        
+    
+            marker_fcb419977636b6fac01d1a7ac8e7a99b.bindTooltip(
+                `<div>
+                     1511 VAN DR<br>Tracy Heisel (D): <b>41%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_21c6be7e0f05ea8b8b8afdca7c643ede = L.marker(
+                [40.5884387315857, -80.0682050588883],
+                {}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var div_icon_0951bac7c95bfd12db3b8467a945e33b = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e10\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_21c6be7e0f05ea8b8b8afdca7c643ede.setIcon(div_icon_0951bac7c95bfd12db3b8467a945e33b);
+        
+    
+            marker_21c6be7e0f05ea8b8b8afdca7c643ede.bindTooltip(
+                `<div>
+                     1507 VAN DR<br>Barbara Mehring (D): <b>92%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_ed76491876e655c7442fe068bf370e9c = L.marker(
+                [40.5884895173075, -80.0677392913615],
+                {}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var div_icon_7a0b4e89d8c31ef152c6801f6bc467d5 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e11\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_ed76491876e655c7442fe068bf370e9c.setIcon(div_icon_7a0b4e89d8c31ef152c6801f6bc467d5);
+        
+    
+            marker_ed76491876e655c7442fe068bf370e9c.bindTooltip(
+                `<div>
+                     1505 VAN DR<br>Patricia Chalovich (D): <b>41%</b><br>George Chalovich (D): <b>35%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_374e349107e7b7be2aed8bf5da0dc141 = L.polyline(
+                [[40.588221184859236, -80.06772866942458], [40.5882065, -80.0683669], [40.5881515, -80.0698314], [40.5881067, -80.0706843]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var poly_line_e543fc0a9c01bf23d4d816085c61161d = L.polyline(
+                [[40.5881067, -80.0706843], [40.5874071, -80.0702177]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var poly_line_59d63b1e253b5d4e1bea37b8db5ca965 = L.polyline(
+                [[40.5874071, -80.0702177], [40.5869335, -80.0699126], [40.586796, -80.069824], [40.585973, -80.0692938], [40.5856444, -80.069082], [40.5855853, -80.0690439]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var marker_a31e2491bb415841245fd4451448bf48 = L.marker(
+                [40.5870476247215, -80.0706754917727],
+                {}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var div_icon_172dcddb20fc66bc4f2c66e4bf24f118 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e12\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_a31e2491bb415841245fd4451448bf48.setIcon(div_icon_172dcddb20fc66bc4f2c66e4bf24f118);
+        
+    
+            marker_a31e2491bb415841245fd4451448bf48.bindTooltip(
+                `<div>
+                     2395 BRANDT SCHOOL RD<br>Deirdre Browne (D): <b>77%</b><br>Benjamin Ledonne (I): <b>22%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_2879faa8b27523364094a48e3ca4ecb0 = L.marker(
+                [40.5866708859989, -80.0701413331478],
+                {}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var div_icon_c3fbb5115ff01519e93a5e1058f18da5 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e13\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_2879faa8b27523364094a48e3ca4ecb0.setIcon(div_icon_c3fbb5115ff01519e93a5e1058f18da5);
+        
+    
+            marker_2879faa8b27523364094a48e3ca4ecb0.bindTooltip(
+                `<div>
+                     2393 BRANDT SCHOOL RD<br>Tammy King (D): <b>45%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_5cde2d8a9d34573b72542d82a594a6c9 = L.marker(
+                [40.5861316264452, -80.0697560923903],
+                {}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var div_icon_784a50b8138c06f9dc3327bc23746b1d = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e14\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_5cde2d8a9d34573b72542d82a594a6c9.setIcon(div_icon_784a50b8138c06f9dc3327bc23746b1d);
+        
+    
+            marker_5cde2d8a9d34573b72542d82a594a6c9.bindTooltip(
+                `<div>
+                     2387 BRANDT SCHOOL RD<br>Melissa Solar (D): <b>70%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_b613d05573b227540c7ef0492c9c063f = L.polyline(
+                [[40.5855853, -80.0690439], [40.5854827, -80.0689772], [40.5851801, -80.0687806]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var poly_line_67635320726489726e4b927e51c3cacf = L.polyline(
+                [[40.5851801, -80.0687806], [40.5850974, -80.0687162], [40.5850631, -80.0686826], [40.5850291, -80.0686493], [40.5849739, -80.0685727], [40.5849275, -80.0685098], [40.5848733, -80.0684312], [40.5847916, -80.0682704], [40.58453703925853, -80.06772168413879]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var marker_c78a310b67a7a1f2dc3c3a468272ccca = L.marker(
+                [40.5842709901748, -80.0679340296289],
+                {}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var div_icon_b6902525066922619d939d670e9b3115 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e15\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_c78a310b67a7a1f2dc3c3a468272ccca.setIcon(div_icon_b6902525066922619d939d670e9b3115);
+        
+    
+            marker_c78a310b67a7a1f2dc3c3a468272ccca.bindTooltip(
+                `<div>
+                     1503 W INGOMAR RD<br>Cynthia Bloise (D): <b>92%</b><br>Frank Bloise (D): <b>91%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_ddbdb5b1acf1ad620a24d445e7d73082 = L.polyline(
+                [[40.58453703925853, -80.06772168413879], [40.5847916, -80.0682704], [40.5848733, -80.0684312], [40.5849275, -80.0685098], [40.5849739, -80.0685727], [40.5850291, -80.0686493], [40.5850631, -80.0686826], [40.5850974, -80.0687162], [40.5851801, -80.0687806]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var poly_line_3b049ffdd0d2755764d211dc7a2b7b1f = L.polyline(
+                [[40.5851801, -80.0687806], [40.5854827, -80.0689772], [40.5855853, -80.0690439]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var poly_line_87cc4c44fb2281f310f193e3434cb44a = L.polyline(
+                [[40.5855853, -80.0690439], [40.5855904, -80.0691592], [40.5855655, -80.0704252]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var poly_line_5e04d43b5d04f9e2ad5a3f05c16353ee = L.polyline(
+                [[40.5855655, -80.0704252], [40.5847797, -80.0703822], [40.5843585, -80.0703592], [40.5833031, -80.0703014], [40.5829602, -80.0702826], [40.5829002, -80.0702793], [40.5828249, -80.0703142], [40.582778, -80.0703705], [40.5827352, -80.0704375]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var poly_line_e5ee161db33f2ac3815b44a796862050 = L.polyline(
+                [[40.5827352, -80.0704375], [40.582778, -80.0703705], [40.5828249, -80.0703142], [40.5829002, -80.0702793], [40.5829602, -80.0702826], [40.5833031, -80.0703014], [40.5843585, -80.0703592], [40.5847797, -80.0703822], [40.5855655, -80.0704252]],
+                {"bubblingMouseEvents": true, "color": "#0F6BF5", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#0F6BF5", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 8}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var marker_158ae1bf297af20cbe4ad18d6b8aade0 = L.marker(
+                [40.582627823507, -80.0705958703288],
+                {}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var div_icon_ca90430ba63ad7cf2b02cc85e519ff41 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e16\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_158ae1bf297af20cbe4ad18d6b8aade0.setIcon(div_icon_ca90430ba63ad7cf2b02cc85e519ff41);
+        
+    
+            marker_158ae1bf297af20cbe4ad18d6b8aade0.bindTooltip(
+                `<div>
+                     2347 WILVAN LN<br>Mary Wilson (D): <b>86%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_4db01b6edd457942885cc8a9520663ae = L.marker(
+                [40.5836619561323, -80.0706761804318],
+                {}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var div_icon_f838357d7ec41125d0a928f9b962d664 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e17\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_4db01b6edd457942885cc8a9520663ae.setIcon(div_icon_f838357d7ec41125d0a928f9b962d664);
+        
+    
+            marker_4db01b6edd457942885cc8a9520663ae.bindTooltip(
+                `<div>
+                     2361 WILVAN LN<br>Lynn Bogel (D): <b>91%</b><br>Mark Bogel (D): <b>93%</b><br>Kelly Bogel Stokes (D): <b>73%</b><br>David Stokes (I): <b>61%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_3d1a909f0b86ca7ab017c38afa631578 = L.marker(
+                [40.584089777963, -80.0707028158237],
+                {}
+            ).addTo(map_ed216cffe51525e195e6a72d8d433f0a);
+        
+    
+            var div_icon_2fde851d31009ac9a4f04b1576760113 = L.divIcon({"className": "empty", "html": "\u003cdiv style=\"font-size: 15pt; color:#0F6BF5\"\u003e18\u003c/div\u003e", "iconAnchor": [10, 12], "iconSize": [60, 30]});
+            marker_3d1a909f0b86ca7ab017c38afa631578.setIcon(div_icon_2fde851d31009ac9a4f04b1576760113);
+        
+    
+            marker_3d1a909f0b86ca7ab017c38afa631578.bindTooltip(
+                `<div>
+                     2365 WILVAN LN<br>Susan Sieger (I): <b>35%</b><br>Adam Sieger (D): <b>17%</b>
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            map_ed216cffe51525e195e6a72d8d433f0a.fitBounds(
+                [[40.582627823507, -80.0754503370885], [40.5908649760628, -80.06772168413879]],
+                {}
+            );
+        
+</script>
+</html>

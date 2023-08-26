@@ -1,11 +1,11 @@
 {
   "statistic": {
-    "cost": 42878.0,
-    "distance": 19191,
-    "duration": 42874,
+    "cost": 7966.0,
+    "distance": 5453,
+    "duration": 7965,
     "times": {
-      "driving": 22579,
-      "serving": 20295,
+      "driving": 4545,
+      "serving": 3420,
       "waiting": 0,
       "break": 0,
       "commuting": 0,
@@ -14,13 +14,13 @@
   },
   "tours": [
     {
-      "vehicleId": "walker_2",
+      "vehicleId": "walker_1",
       "typeId": "person",
       "shiftIndex": 0,
       "stops": [
         {
           "location": {
-            "index": 223
+            "index": 38
           },
           "time": {
             "arrival": "3000-01-01T00:00:00Z",
@@ -39,2263 +39,57 @@
         },
         {
           "location": {
-            "index": 160
+            "index": 31
           },
           "time": {
-            "arrival": "3000-01-01T00:04:41Z",
-            "departure": "3000-01-01T00:06:20Z"
+            "arrival": "3000-01-01T00:00:37Z",
+            "departure": "3000-01-01T00:02:07Z"
           },
-          "distance": 239,
+          "distance": 44,
           "load": [
             0
           ],
           "activities": [
             {
-              "jobId": "1bc359fb-d13c-57a8-a817-0e8b4752921f",
+              "jobId": "9280efb5-11cc-5b17-be8b-5d403665823f",
               "type": "service"
             }
           ]
         },
         {
           "location": {
-            "index": 164
+            "index": 32
           },
           "time": {
-            "arrival": "3000-01-01T00:06:34Z",
-            "departure": "3000-01-01T00:08:13Z"
+            "arrival": "3000-01-01T00:03:29Z",
+            "departure": "3000-01-01T00:04:59Z"
           },
-          "distance": 251,
+          "distance": 142,
           "load": [
             0
           ],
           "activities": [
             {
-              "jobId": "367a3c4d-1ce0-5aad-87a1-98ddbcdfb6e0",
+              "jobId": "960334b4-d8ea-573a-ae7a-09373e5bccf8",
               "type": "service"
             }
           ]
         },
         {
           "location": {
-            "index": 163
+            "index": 30
           },
           "time": {
-            "arrival": "3000-01-01T00:08:28Z",
-            "departure": "3000-01-01T00:10:07Z"
+            "arrival": "3000-01-01T00:06:36Z",
+            "departure": "3000-01-01T00:08:06Z"
           },
-          "distance": 264,
+          "distance": 258,
           "load": [
             0
           ],
           "activities": [
             {
-              "jobId": "b095b2f1-5298-5d6b-a892-b71b0d5cdd5b",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 162
-          },
-          "time": {
-            "arrival": "3000-01-01T00:10:26Z",
-            "departure": "3000-01-01T00:12:05Z"
-          },
-          "distance": 280,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "f88341be-822c-59be-bba7-8659f22be26e",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 161
-          },
-          "time": {
-            "arrival": "3000-01-01T00:12:23Z",
-            "departure": "3000-01-01T00:14:02Z"
-          },
-          "distance": 295,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "e729bea4-4e23-5db6-b189-ac82bc5ee39f",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 166
-          },
-          "time": {
-            "arrival": "3000-01-01T00:14:20Z",
-            "departure": "3000-01-01T00:15:59Z"
-          },
-          "distance": 310,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "9c3ae1a6-63bd-5ffd-96d5-8a3aa222cb39",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 167
-          },
-          "time": {
-            "arrival": "3000-01-01T00:16:23Z",
-            "departure": "3000-01-01T00:18:02Z"
-          },
-          "distance": 330,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "4015e067-c77c-5630-8296-a5b0fd2b448d",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 165
-          },
-          "time": {
-            "arrival": "3000-01-01T00:18:18Z",
-            "departure": "3000-01-01T00:19:57Z"
-          },
-          "distance": 344,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "82ded5c0-7b7f-53c1-8433-bb2d8803ffe1",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 206
-          },
-          "time": {
-            "arrival": "3000-01-01T00:32:45Z",
-            "departure": "3000-01-01T00:34:24Z"
-          },
-          "distance": 997,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "e9302ef2-4f90-586e-aa5e-0778d4a2f194",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 205
-          },
-          "time": {
-            "arrival": "3000-01-01T00:34:28Z",
-            "departure": "3000-01-01T00:36:07Z"
-          },
-          "distance": 1000,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "fa4197f1-9cbc-5871-ac83-70e7aa29d6a6",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 117
-          },
-          "time": {
-            "arrival": "3000-01-01T00:43:53Z",
-            "departure": "3000-01-01T00:45:32Z"
-          },
-          "distance": 1396,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "b3e09844-8f63-52a7-90a6-89ade4b1771c",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 116
-          },
-          "time": {
-            "arrival": "3000-01-01T00:45:58Z",
-            "departure": "3000-01-01T00:47:37Z"
-          },
-          "distance": 1418,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "381220d0-4d4c-5e03-9f81-4a7f7cc2e110",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 114
-          },
-          "time": {
-            "arrival": "3000-01-01T00:47:50Z",
-            "departure": "3000-01-01T00:49:29Z"
-          },
-          "distance": 1429,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "8ea3081a-9bfe-5afc-80ec-789147a4a2a2",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 115
-          },
-          "time": {
-            "arrival": "3000-01-01T00:49:42Z",
-            "departure": "3000-01-01T00:51:21Z"
-          },
-          "distance": 1440,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "f2efee57-f7ec-50be-8e66-c7b3be86c8e2",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 85
-          },
-          "time": {
-            "arrival": "3000-01-01T00:54:16Z",
-            "departure": "3000-01-01T00:55:55Z"
-          },
-          "distance": 1589,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "23927e96-d769-5a51-ae83-0cf0083b50ab",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 80
-          },
-          "time": {
-            "arrival": "3000-01-01T00:56:06Z",
-            "departure": "3000-01-01T00:57:45Z"
-          },
-          "distance": 1598,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "6c3e58b8-829a-5560-95ba-faacd09b4cfe",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 90
-          },
-          "time": {
-            "arrival": "3000-01-01T00:57:57Z",
-            "departure": "3000-01-01T00:59:36Z"
-          },
-          "distance": 1608,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "b5f42ea2-016f-582f-b121-3f44d60bff25",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 87
-          },
-          "time": {
-            "arrival": "3000-01-01T00:59:47Z",
-            "departure": "3000-01-01T01:01:26Z"
-          },
-          "distance": 1617,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "1a444482-2bca-5f4f-ab82-34d9e4c91523",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 86
-          },
-          "time": {
-            "arrival": "3000-01-01T01:01:50Z",
-            "departure": "3000-01-01T01:03:29Z"
-          },
-          "distance": 1637,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "8f9504ad-91ca-5807-b75c-5d2576a82a7b",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 89
-          },
-          "time": {
-            "arrival": "3000-01-01T01:03:51Z",
-            "departure": "3000-01-01T01:05:30Z"
-          },
-          "distance": 1656,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "f1b8ab0e-cf33-5177-a7af-6186958a26d9",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 82
-          },
-          "time": {
-            "arrival": "3000-01-01T01:05:44Z",
-            "departure": "3000-01-01T01:07:23Z"
-          },
-          "distance": 1668,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "ad189870-64e6-51d6-88bf-2118b60b89c0",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 81
-          },
-          "time": {
-            "arrival": "3000-01-01T01:10:02Z",
-            "departure": "3000-01-01T01:11:41Z"
-          },
-          "distance": 1803,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "a226865c-e6d5-5aa3-96e2-2dbc14610e41",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 91
-          },
-          "time": {
-            "arrival": "3000-01-01T01:11:41Z",
-            "departure": "3000-01-01T01:13:20Z"
-          },
-          "distance": 1803,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "a288b7a3-9c59-5986-913b-e244e245ad0a",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 84
-          },
-          "time": {
-            "arrival": "3000-01-01T01:13:20Z",
-            "departure": "3000-01-01T01:14:59Z"
-          },
-          "distance": 1803,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "a902d1ff-10eb-5cb5-8813-f06b9113fe5a",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 88
-          },
-          "time": {
-            "arrival": "3000-01-01T01:15:21Z",
-            "departure": "3000-01-01T01:17:00Z"
-          },
-          "distance": 1822,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "dafe1f39-a2bb-5342-906c-37d90341ffec",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 83
-          },
-          "time": {
-            "arrival": "3000-01-01T01:17:00Z",
-            "departure": "3000-01-01T01:18:39Z"
-          },
-          "distance": 1822,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "c14f717e-9cb5-595e-9bf1-bbe76bdde260",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 124
-          },
-          "time": {
-            "arrival": "3000-01-01T01:20:25Z",
-            "departure": "3000-01-01T01:22:04Z"
-          },
-          "distance": 1912,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "3434dc32-fdd7-5ecd-acd5-a77ad2842229",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 218
-          },
-          "time": {
-            "arrival": "3000-01-01T01:31:15Z",
-            "departure": "3000-01-01T01:32:54Z"
-          },
-          "distance": 2380,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "bb00a8fc-9579-5830-97b1-11db7824d6e4",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 216
-          },
-          "time": {
-            "arrival": "3000-01-01T01:32:54Z",
-            "departure": "3000-01-01T01:34:33Z"
-          },
-          "distance": 2380,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "74dfe6dd-05d5-557c-a263-c7870eed7bff",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 217
-          },
-          "time": {
-            "arrival": "3000-01-01T01:34:51Z",
-            "departure": "3000-01-01T01:36:30Z"
-          },
-          "distance": 2395,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "8f9a34f2-f2bf-50aa-bb22-72b604596277",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 92
-          },
-          "time": {
-            "arrival": "3000-01-01T01:39:30Z",
-            "departure": "3000-01-01T01:41:09Z"
-          },
-          "distance": 2548,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "e4733539-9916-5fc7-b231-32d35a71e99a",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 0
-          },
-          "time": {
-            "arrival": "3000-01-01T01:43:15Z",
-            "departure": "3000-01-01T01:44:54Z"
-          },
-          "distance": 2655,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "0e866eb7-9b86-58dc-ae6f-b5e9d368239e",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 1
-          },
-          "time": {
-            "arrival": "3000-01-01T01:45:40Z",
-            "departure": "3000-01-01T01:47:19Z"
-          },
-          "distance": 2694,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "f8d6b2f9-ca9e-511c-8763-934e80ac7eaa",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 128
-          },
-          "time": {
-            "arrival": "3000-01-01T01:50:08Z",
-            "departure": "3000-01-01T01:51:47Z"
-          },
-          "distance": 2838,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "d09a0040-f206-52ce-9c3c-0de05bbfa71b",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 132
-          },
-          "time": {
-            "arrival": "3000-01-01T01:52:38Z",
-            "departure": "3000-01-01T01:54:17Z"
-          },
-          "distance": 2881,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "28ce7d4a-5b6e-56d7-b281-f555bdb6e155",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 137
-          },
-          "time": {
-            "arrival": "3000-01-01T01:54:18Z",
-            "departure": "3000-01-01T01:55:57Z"
-          },
-          "distance": 2882,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "8f0dc3e4-be58-531f-8538-6a411223993d",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 130
-          },
-          "time": {
-            "arrival": "3000-01-01T01:56:06Z",
-            "departure": "3000-01-01T01:57:45Z"
-          },
-          "distance": 2890,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "cdc4da63-b90e-557c-aace-3387088c999a",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 139
-          },
-          "time": {
-            "arrival": "3000-01-01T01:58:04Z",
-            "departure": "3000-01-01T01:59:43Z"
-          },
-          "distance": 2906,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "fb186e3f-691a-5f21-bac5-651daa7f8037",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 138
-          },
-          "time": {
-            "arrival": "3000-01-01T01:59:43Z",
-            "departure": "3000-01-01T02:01:22Z"
-          },
-          "distance": 2906,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "eba08849-98d2-560c-97fa-bed7a5730317",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 140
-          },
-          "time": {
-            "arrival": "3000-01-01T02:01:48Z",
-            "departure": "3000-01-01T02:03:27Z"
-          },
-          "distance": 2928,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "a5b6f242-fa13-53ef-ad31-eb072123af7e",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 129
-          },
-          "time": {
-            "arrival": "3000-01-01T02:03:51Z",
-            "departure": "3000-01-01T02:05:30Z"
-          },
-          "distance": 2948,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "20d7ad2c-eafc-5a28-b228-1fa8223b7c9a",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 131
-          },
-          "time": {
-            "arrival": "3000-01-01T02:05:59Z",
-            "departure": "3000-01-01T02:07:38Z"
-          },
-          "distance": 2973,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "25a2e634-bbe2-51b1-a85f-6ae03e9d945c",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 142
-          },
-          "time": {
-            "arrival": "3000-01-01T02:07:45Z",
-            "departure": "3000-01-01T02:09:24Z"
-          },
-          "distance": 2979,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "066cf41a-9c79-5e25-aedb-831070d0f6ed",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 136
-          },
-          "time": {
-            "arrival": "3000-01-01T02:10:02Z",
-            "departure": "3000-01-01T02:11:41Z"
-          },
-          "distance": 3011,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "74f956e7-be39-5b0b-a302-4545d15f53b3",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 141
-          },
-          "time": {
-            "arrival": "3000-01-01T02:12:14Z",
-            "departure": "3000-01-01T02:13:53Z"
-          },
-          "distance": 3039,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "14e361a5-840a-5f07-8cd0-da5fd1b4711b",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 133
-          },
-          "time": {
-            "arrival": "3000-01-01T02:14:11Z",
-            "departure": "3000-01-01T02:15:50Z"
-          },
-          "distance": 3054,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "9ab50bb9-a6da-5f55-92ba-189c300f54f2",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 135
-          },
-          "time": {
-            "arrival": "3000-01-01T02:16:57Z",
-            "departure": "3000-01-01T02:18:36Z"
-          },
-          "distance": 3111,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "a1d3de81-d336-5791-ab29-cde61db96e64",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 134
-          },
-          "time": {
-            "arrival": "3000-01-01T02:18:45Z",
-            "departure": "3000-01-01T02:20:24Z"
-          },
-          "distance": 3119,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "be866f9d-4c80-5d93-add9-db33b412621f",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 222
-          },
-          "time": {
-            "arrival": "3000-01-01T02:22:59Z",
-            "departure": "3000-01-01T02:24:38Z"
-          },
-          "distance": 3251,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "c9ec33e5-f934-51a1-b06f-fd44408ed0e1",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 221
-          },
-          "time": {
-            "arrival": "3000-01-01T02:28:53Z",
-            "departure": "3000-01-01T02:30:32Z"
-          },
-          "distance": 3468,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "be641330-3ab1-595b-8373-3346cc947ae4",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 151
-          },
-          "time": {
-            "arrival": "3000-01-01T02:34:10Z",
-            "departure": "3000-01-01T02:35:49Z"
-          },
-          "distance": 3653,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "d6903050-7c9c-52e3-81b9-c2a2c7063fee",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 150
-          },
-          "time": {
-            "arrival": "3000-01-01T02:39:02Z",
-            "departure": "3000-01-01T02:40:41Z"
-          },
-          "distance": 3817,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "4d6ad2cb-5c8f-5cb8-aa3d-4fc967501b99",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 149
-          },
-          "time": {
-            "arrival": "3000-01-01T02:44:15Z",
-            "departure": "3000-01-01T02:45:54Z"
-          },
-          "distance": 3999,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "427c1f63-a236-5196-bcfa-99630d4c1809",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 148
-          },
-          "time": {
-            "arrival": "3000-01-01T02:48:02Z",
-            "departure": "3000-01-01T02:49:41Z"
-          },
-          "distance": 4108,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "83ee3045-20a4-5ff2-882c-8cd0391256b6",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 152
-          },
-          "time": {
-            "arrival": "3000-01-01T02:50:45Z",
-            "departure": "3000-01-01T02:52:24Z"
-          },
-          "distance": 4162,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "e28b1f90-729f-566c-aabe-c560cd949491",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 147
-          },
-          "time": {
-            "arrival": "3000-01-01T02:54:19Z",
-            "departure": "3000-01-01T02:55:58Z"
-          },
-          "distance": 4260,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "11ecf4ef-a49e-5609-8758-91dcd26883f1",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 223
-          },
-          "time": {
-            "arrival": "3000-01-01T02:59:49Z",
-            "departure": "3000-01-01T02:59:49Z"
-          },
-          "distance": 4456,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "arrival",
-              "type": "arrival"
-            }
-          ]
-        }
-      ],
-      "statistic": {
-        "cost": 10790.0,
-        "distance": 4456,
-        "duration": 10789,
-        "times": {
-          "driving": 5245,
-          "serving": 5544,
-          "waiting": 0,
-          "break": 0,
-          "commuting": 0,
-          "parking": 0
-        }
-      }
-    },
-    {
-      "vehicleId": "walker_3",
-      "typeId": "person",
-      "shiftIndex": 0,
-      "stops": [
-        {
-          "location": {
-            "index": 223
-          },
-          "time": {
-            "arrival": "3000-01-01T00:00:00Z",
-            "departure": "3000-01-01T00:00:00Z"
-          },
-          "distance": 0,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "departure",
-              "type": "departure"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 57
-          },
-          "time": {
-            "arrival": "3000-01-01T00:03:54Z",
-            "departure": "3000-01-01T00:05:33Z"
-          },
-          "distance": 199,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "12169ed6-b4d7-52f5-9e96-949920eb91c4",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 72
-          },
-          "time": {
-            "arrival": "3000-01-01T00:05:33Z",
-            "departure": "3000-01-01T00:07:12Z"
-          },
-          "distance": 199,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "942a4355-ea72-5528-a3a1-16bd40274332",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 71
-          },
-          "time": {
-            "arrival": "3000-01-01T00:08:48Z",
-            "departure": "3000-01-01T00:10:27Z"
-          },
-          "distance": 281,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "41ecc5c0-c026-555c-93dc-29c32d33fb4f",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 65
-          },
-          "time": {
-            "arrival": "3000-01-01T00:11:55Z",
-            "departure": "3000-01-01T00:13:34Z"
-          },
-          "distance": 356,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "c9064426-123e-5147-ae32-009a06ec85d0",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 63
-          },
-          "time": {
-            "arrival": "3000-01-01T00:14:25Z",
-            "departure": "3000-01-01T00:16:04Z"
-          },
-          "distance": 399,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "8bd37298-a16d-5005-b6e4-ef27933ef29f",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 77
-          },
-          "time": {
-            "arrival": "3000-01-01T00:17:40Z",
-            "departure": "3000-01-01T00:19:19Z"
-          },
-          "distance": 481,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "6d6bd4c5-dee9-5740-8894-f24f918bfd6b",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 75
-          },
-          "time": {
-            "arrival": "3000-01-01T00:19:50Z",
-            "departure": "3000-01-01T00:21:29Z"
-          },
-          "distance": 507,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "bdc1c3c2-acf6-5b83-86e4-5952676c2486",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 73
-          },
-          "time": {
-            "arrival": "3000-01-01T00:21:56Z",
-            "departure": "3000-01-01T00:23:35Z"
-          },
-          "distance": 530,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "2e1a3876-9a92-5495-b56e-7f388af563fc",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 79
-          },
-          "time": {
-            "arrival": "3000-01-01T00:23:54Z",
-            "departure": "3000-01-01T00:25:33Z"
-          },
-          "distance": 546,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "8ea97aa2-0c1d-5cc5-afc9-55452a9e29c6",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 66
-          },
-          "time": {
-            "arrival": "3000-01-01T00:26:53Z",
-            "departure": "3000-01-01T00:28:32Z"
-          },
-          "distance": 614,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "a77be00c-81f3-5c22-8e20-f1a7cc73b107",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 59
-          },
-          "time": {
-            "arrival": "3000-01-01T00:28:51Z",
-            "departure": "3000-01-01T00:30:30Z"
-          },
-          "distance": 630,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "c9fab36b-1645-5010-94fe-31e4562145aa",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 64
-          },
-          "time": {
-            "arrival": "3000-01-01T00:30:48Z",
-            "departure": "3000-01-01T00:32:27Z"
-          },
-          "distance": 645,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "d210b6ac-b8c1-5c04-84c1-9108cd6df078",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 61
-          },
-          "time": {
-            "arrival": "3000-01-01T00:32:42Z",
-            "departure": "3000-01-01T00:34:21Z"
-          },
-          "distance": 658,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "9180bae8-b137-5a99-a753-07c2a9699ee1",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 60
-          },
-          "time": {
-            "arrival": "3000-01-01T00:34:37Z",
-            "departure": "3000-01-01T00:36:16Z"
-          },
-          "distance": 672,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "8c8f032c-e780-5526-82f8-429228beff6d",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 56
-          },
-          "time": {
-            "arrival": "3000-01-01T00:37:24Z",
-            "departure": "3000-01-01T00:39:03Z"
-          },
-          "distance": 730,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "18eebc63-b960-5d2a-bc11-1d44f742eeb1",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 67
-          },
-          "time": {
-            "arrival": "3000-01-01T00:39:22Z",
-            "departure": "3000-01-01T00:41:01Z"
-          },
-          "distance": 746,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "bc0f06e9-1e39-5483-8844-f5090cb7c1e4",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 68
-          },
-          "time": {
-            "arrival": "3000-01-01T00:41:16Z",
-            "departure": "3000-01-01T00:42:55Z"
-          },
-          "distance": 759,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "61c37cf8-84dc-538a-ad8e-bf8ca1572a95",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 58
-          },
-          "time": {
-            "arrival": "3000-01-01T00:43:15Z",
-            "departure": "3000-01-01T00:44:54Z"
-          },
-          "distance": 776,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "d255e0cd-9df6-52d5-bb81-f65c4238496c",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 70
-          },
-          "time": {
-            "arrival": "3000-01-01T00:45:14Z",
-            "departure": "3000-01-01T00:46:53Z"
-          },
-          "distance": 793,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "d854e1a3-d089-5e5d-a824-81cfca753f72",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 74
-          },
-          "time": {
-            "arrival": "3000-01-01T00:47:17Z",
-            "departure": "3000-01-01T00:48:56Z"
-          },
-          "distance": 813,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "e8442ab5-0bf5-5c25-990a-26b5af2438e5",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 78
-          },
-          "time": {
-            "arrival": "3000-01-01T00:49:17Z",
-            "departure": "3000-01-01T00:50:56Z"
-          },
-          "distance": 831,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "a91a4369-f9b4-582c-ab5b-1014c9f12134",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 76
-          },
-          "time": {
-            "arrival": "3000-01-01T00:51:23Z",
-            "departure": "3000-01-01T00:53:02Z"
-          },
-          "distance": 854,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "99d6a446-b24c-5710-b163-5827836ef6b3",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 69
-          },
-          "time": {
-            "arrival": "3000-01-01T00:53:21Z",
-            "departure": "3000-01-01T00:55:00Z"
-          },
-          "distance": 870,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "32675ee4-8b9e-5b09-958f-161182673be9",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 62
-          },
-          "time": {
-            "arrival": "3000-01-01T00:55:36Z",
-            "departure": "3000-01-01T00:57:15Z"
-          },
-          "distance": 901,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "1f863f4c-dd59-5a71-be88-401986e73a1d",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 219
-          },
-          "time": {
-            "arrival": "3000-01-01T00:59:04Z",
-            "departure": "3000-01-01T01:00:43Z"
-          },
-          "distance": 994,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "3b8644ac-698a-5bc1-ba23-10bbed87c0de",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 123
-          },
-          "time": {
-            "arrival": "3000-01-01T01:03:24Z",
-            "departure": "3000-01-01T01:05:03Z"
-          },
-          "distance": 1131,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "908ed83d-2c2c-5d05-9d18-7f0701f199d6",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 127
-          },
-          "time": {
-            "arrival": "3000-01-01T01:05:31Z",
-            "departure": "3000-01-01T01:07:10Z"
-          },
-          "distance": 1155,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "5984af37-d5b7-5280-8d01-32b971ed1872",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 125
-          },
-          "time": {
-            "arrival": "3000-01-01T01:07:37Z",
-            "departure": "3000-01-01T01:09:16Z"
-          },
-          "distance": 1178,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "cee933f5-e09d-5fe0-a79c-7ed2a0451ad0",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 121
-          },
-          "time": {
-            "arrival": "3000-01-01T01:09:16Z",
-            "departure": "3000-01-01T01:10:55Z"
-          },
-          "distance": 1178,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "d711be4b-7217-5d24-936e-ca9e671579c7",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 122
-          },
-          "time": {
-            "arrival": "3000-01-01T01:11:23Z",
-            "departure": "3000-01-01T01:13:02Z"
-          },
-          "distance": 1202,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "a3a4674c-5465-5f52-ba62-1382b09e5659",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 118
-          },
-          "time": {
-            "arrival": "3000-01-01T01:13:33Z",
-            "departure": "3000-01-01T01:15:12Z"
-          },
-          "distance": 1228,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "413ec03e-9216-52e7-be9b-d74eb0acd357",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 120
-          },
-          "time": {
-            "arrival": "3000-01-01T01:15:31Z",
-            "departure": "3000-01-01T01:17:10Z"
-          },
-          "distance": 1244,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "10df2cc3-35a6-5a8e-a882-c37cee99e31e",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 126
-          },
-          "time": {
-            "arrival": "3000-01-01T01:17:45Z",
-            "departure": "3000-01-01T01:19:24Z"
-          },
-          "distance": 1274,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "37c80cd0-d63d-532f-8eef-8609c3b87198",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 119
-          },
-          "time": {
-            "arrival": "3000-01-01T01:19:51Z",
-            "departure": "3000-01-01T01:21:30Z"
-          },
-          "distance": 1297,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "bbb564f2-3127-57e6-aa78-9f1540343ed5",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 16
-          },
-          "time": {
-            "arrival": "3000-01-01T01:26:59Z",
-            "departure": "3000-01-01T01:28:38Z"
-          },
-          "distance": 1577,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "42cdcfba-2bc1-5200-9b24-daae9244769b",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 51
-          },
-          "time": {
-            "arrival": "3000-01-01T01:35:06Z",
-            "departure": "3000-01-01T01:36:45Z"
-          },
-          "distance": 1907,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "28d6e4a2-0ce6-5d9a-a2d0-5f97c4d8c82e",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 50
-          },
-          "time": {
-            "arrival": "3000-01-01T01:42:24Z",
-            "departure": "3000-01-01T01:44:03Z"
-          },
-          "distance": 2195,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "eef854d4-cade-552d-b345-01282c46741e",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 41
-          },
-          "time": {
-            "arrival": "3000-01-01T01:50:15Z",
-            "departure": "3000-01-01T01:51:54Z"
-          },
-          "distance": 2511,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "aa8ccb34-3d6a-5805-b940-eafdb237f79a",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 53
-          },
-          "time": {
-            "arrival": "3000-01-01T01:56:41Z",
-            "departure": "3000-01-01T01:58:20Z"
-          },
-          "distance": 2755,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "9a5bac61-087c-54bd-a445-16b235ba3c3f",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 191
-          },
-          "time": {
-            "arrival": "3000-01-01T02:01:01Z",
-            "departure": "3000-01-01T02:02:40Z"
-          },
-          "distance": 2892,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "ee95b72e-9270-51c2-b7a9-2e1fd8d20c18",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 193
-          },
-          "time": {
-            "arrival": "3000-01-01T02:04:21Z",
-            "departure": "3000-01-01T02:06:00Z"
-          },
-          "distance": 2978,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "9557fc8a-3824-5b13-b9c0-fd3e9ea4df4e",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 195
-          },
-          "time": {
-            "arrival": "3000-01-01T02:07:18Z",
-            "departure": "3000-01-01T02:08:57Z"
-          },
-          "distance": 3044,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "6d1c55bb-4c65-5ea1-8872-cb3a8286564b",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 196
-          },
-          "time": {
-            "arrival": "3000-01-01T02:10:38Z",
-            "departure": "3000-01-01T02:12:17Z"
-          },
-          "distance": 3130,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "8e81c34b-0298-5770-86c6-c9918c6d7b7d",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 194
-          },
-          "time": {
-            "arrival": "3000-01-01T02:13:58Z",
-            "departure": "3000-01-01T02:15:37Z"
-          },
-          "distance": 3216,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "f72742f1-384a-5147-90fe-cf5ed168049b",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 197
-          },
-          "time": {
-            "arrival": "3000-01-01T02:18:03Z",
-            "departure": "3000-01-01T02:19:42Z"
-          },
-          "distance": 3340,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "656bbf37-5f05-57ab-a0b3-7ace0f461c45",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 220
-          },
-          "time": {
-            "arrival": "3000-01-01T02:22:23Z",
-            "departure": "3000-01-01T02:24:02Z"
-          },
-          "distance": 3477,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "5e5779a4-93bc-5ffe-b4a4-dea1d2d15235",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 94
-          },
-          "time": {
-            "arrival": "3000-01-01T02:27:28Z",
-            "departure": "3000-01-01T02:29:07Z"
-          },
-          "distance": 3652,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "f6073c20-5fa4-59f4-8985-e19c8aa52ff3",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 202
-          },
-          "time": {
-            "arrival": "3000-01-01T02:30:55Z",
-            "departure": "3000-01-01T02:32:34Z"
-          },
-          "distance": 3744,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "58726a37-0ef8-5eaf-b647-00de4cd6355d",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 203
-          },
-          "time": {
-            "arrival": "3000-01-01T02:33:05Z",
-            "departure": "3000-01-01T02:34:44Z"
-          },
-          "distance": 3770,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "0f9eea38-18c8-5549-9a15-fa55533a6206",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 204
-          },
-          "time": {
-            "arrival": "3000-01-01T02:35:36Z",
-            "departure": "3000-01-01T02:37:15Z"
-          },
-          "distance": 3814,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "e2029a26-a361-513d-8d72-0374b8ff50b5",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 3
-          },
-          "time": {
-            "arrival": "3000-01-01T02:38:46Z",
-            "departure": "3000-01-01T02:40:25Z"
-          },
-          "distance": 3891,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "fde61d65-a685-5310-a932-1157eee0bff0",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 4
-          },
-          "time": {
-            "arrival": "3000-01-01T02:40:43Z",
-            "departure": "3000-01-01T02:42:22Z"
-          },
-          "distance": 3906,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "311b32de-10d3-5943-be07-db00b8569cc3",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 2
-          },
-          "time": {
-            "arrival": "3000-01-01T02:43:01Z",
-            "departure": "3000-01-01T02:44:40Z"
-          },
-          "distance": 3939,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "df87949a-c65a-5797-b7e4-45038a99b8f9",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 192
-          },
-          "time": {
-            "arrival": "3000-01-01T02:48:07Z",
-            "departure": "3000-01-01T02:49:46Z"
-          },
-          "distance": 4115,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "3a145dad-d48d-5b12-9cd0-1a3fe91f4e20",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 223
-          },
-          "time": {
-            "arrival": "3000-01-01T02:55:24Z",
-            "departure": "3000-01-01T02:55:24Z"
-          },
-          "distance": 4403,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "arrival",
-              "type": "arrival"
-            }
-          ]
-        }
-      ],
-      "statistic": {
-        "cost": 10525.0,
-        "distance": 4403,
-        "duration": 10524,
-        "times": {
-          "driving": 5178,
-          "serving": 5346,
-          "waiting": 0,
-          "break": 0,
-          "commuting": 0,
-          "parking": 0
-        }
-      }
-    },
-    {
-      "vehicleId": "walker_0",
-      "typeId": "person",
-      "shiftIndex": 0,
-      "stops": [
-        {
-          "location": {
-            "index": 223
-          },
-          "time": {
-            "arrival": "3000-01-01T00:00:00Z",
-            "departure": "3000-01-01T00:00:00Z"
-          },
-          "distance": 0,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "departure",
-              "type": "departure"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 93
-          },
-          "time": {
-            "arrival": "3000-01-01T00:02:36Z",
-            "departure": "3000-01-01T00:04:15Z"
-          },
-          "distance": 132,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "7e840f46-a1df-5b89-9f9f-ce2600335e4c",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 44
-          },
-          "time": {
-            "arrival": "3000-01-01T00:08:31Z",
-            "departure": "3000-01-01T00:10:10Z"
-          },
-          "distance": 350,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "aebd351b-cb7b-5cf5-a978-f0d17aa12721",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 43
-          },
-          "time": {
-            "arrival": "3000-01-01T00:12:29Z",
-            "departure": "3000-01-01T00:14:08Z"
-          },
-          "distance": 468,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "22a8e201-9763-5640-84ac-ffd6fc529cf8",
+              "jobId": "2a8a890f-4125-501f-a3e9-1da2a7e20f4e",
               "type": "service"
             }
           ]
@@ -2305,130 +99,35 @@
             "index": 37
           },
           "time": {
-            "arrival": "3000-01-01T00:19:07Z",
-            "departure": "3000-01-01T00:20:46Z"
+            "arrival": "3000-01-01T00:11:15Z",
+            "departure": "3000-01-01T00:12:45Z"
           },
-          "distance": 722,
+          "distance": 485,
           "load": [
             0
           ],
           "activities": [
             {
-              "jobId": "4936a42d-5b34-52bb-b09f-bb96bb658426",
+              "jobId": "1287d50b-8510-50b7-8b90-20c1ff2d1e1b",
               "type": "service"
             }
           ]
         },
         {
           "location": {
-            "index": 49
+            "index": 33
           },
           "time": {
-            "arrival": "3000-01-01T00:24:22Z",
-            "departure": "3000-01-01T00:26:01Z"
+            "arrival": "3000-01-01T00:16:04Z",
+            "departure": "3000-01-01T00:17:34Z"
           },
-          "distance": 906,
+          "distance": 724,
           "load": [
             0
           ],
           "activities": [
             {
-              "jobId": "2d00bc51-f6f9-5fec-ac6a-37065a9ef97e",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 42
-          },
-          "time": {
-            "arrival": "3000-01-01T00:28:48Z",
-            "departure": "3000-01-01T00:30:27Z"
-          },
-          "distance": 1048,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "ff6fd706-46b5-5247-9990-fc7b78354de2",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 9
-          },
-          "time": {
-            "arrival": "3000-01-01T00:34:22Z",
-            "departure": "3000-01-01T00:36:01Z"
-          },
-          "distance": 1248,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "94e7c543-e0a0-53f3-9441-f1e5720d47a7",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 31
-          },
-          "time": {
-            "arrival": "3000-01-01T00:39:10Z",
-            "departure": "3000-01-01T00:40:49Z"
-          },
-          "distance": 1409,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "6c7b1ea2-4598-5218-b67e-b8068e6c2727",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 38
-          },
-          "time": {
-            "arrival": "3000-01-01T00:45:13Z",
-            "departure": "3000-01-01T00:46:52Z"
-          },
-          "distance": 1633,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "1f1bfa5f-1707-56d4-ba2b-7db8aa106e71",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 28
-          },
-          "time": {
-            "arrival": "3000-01-01T00:52:23Z",
-            "departure": "3000-01-01T00:54:02Z"
-          },
-          "distance": 1914,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "d7b90453-d8f9-5721-9d4c-e4ebe0a523db",
+              "jobId": "a1d44d47-a8b0-507d-b4e9-54c9beaa2c13",
               "type": "service"
             }
           ]
@@ -2438,16 +137,35 @@
             "index": 34
           },
           "time": {
-            "arrival": "3000-01-01T00:59:33Z",
-            "departure": "3000-01-01T01:01:12Z"
+            "arrival": "3000-01-01T00:21:35Z",
+            "departure": "3000-01-01T00:23:05Z"
           },
-          "distance": 2195,
+          "distance": 1013,
           "load": [
             0
           ],
           "activities": [
             {
-              "jobId": "3e7261d6-1566-5e2f-a39b-ae24c58aa5f3",
+              "jobId": "c224dfd4-dca5-5dcc-b6e6-fd6a9030d717",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 35
+          },
+          "time": {
+            "arrival": "3000-01-01T00:42:05Z",
+            "departure": "3000-01-01T00:43:35Z"
+          },
+          "distance": 2381,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "c8b284ae-adf4-5cd9-99d2-7cb94d28c8b0",
               "type": "service"
             }
           ]
@@ -2457,35 +175,73 @@
             "index": 36
           },
           "time": {
-            "arrival": "3000-01-01T01:06:43Z",
-            "departure": "3000-01-01T01:08:22Z"
+            "arrival": "3000-01-01T00:47:14Z",
+            "departure": "3000-01-01T00:48:44Z"
           },
-          "distance": 2476,
+          "distance": 2644,
           "load": [
             0
           ],
           "activities": [
             {
-              "jobId": "d4fa41bc-5f84-53ed-8f1a-6a63e027781b",
+              "jobId": "2bb58b32-b307-5ab6-9977-5b08ad33a8aa",
               "type": "service"
             }
           ]
         },
         {
           "location": {
-            "index": 39
+            "index": 28
           },
           "time": {
-            "arrival": "3000-01-01T01:13:23Z",
-            "departure": "3000-01-01T01:15:02Z"
+            "arrival": "3000-01-01T01:02:06Z",
+            "departure": "3000-01-01T01:03:36Z"
           },
-          "distance": 2732,
+          "distance": 3607,
           "load": [
             0
           ],
           "activities": [
             {
-              "jobId": "7277de93-cdbf-5b5a-9ea8-c2190a51b2bb",
+              "jobId": "d2ea7c0d-e6c9-5807-aa04-e4a4cf1d9b21",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 29
+          },
+          "time": {
+            "arrival": "3000-01-01T01:04:13Z",
+            "departure": "3000-01-01T01:05:43Z"
+          },
+          "distance": 3651,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "9b440854-7b83-53f3-826b-3dd7ff537548",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 27
+          },
+          "time": {
+            "arrival": "3000-01-01T01:06:30Z",
+            "departure": "3000-01-01T01:08:00Z"
+          },
+          "distance": 3707,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "8c86eda9-0af4-5e92-8e02-3968e609e551",
               "type": "service"
             }
           ]
@@ -2495,168 +251,35 @@
             "index": 26
           },
           "time": {
-            "arrival": "3000-01-01T01:20:03Z",
-            "departure": "3000-01-01T01:21:42Z"
+            "arrival": "3000-01-01T01:08:52Z",
+            "departure": "3000-01-01T01:10:22Z"
           },
-          "distance": 2988,
+          "distance": 3770,
           "load": [
             0
           ],
           "activities": [
             {
-              "jobId": "4aea616b-df30-5244-a01b-6ce0a7e8d21b",
+              "jobId": "8eb8abb9-a2ba-5051-a2df-1074016f4d65",
               "type": "service"
             }
           ]
         },
         {
           "location": {
-            "index": 52
+            "index": 1
           },
           "time": {
-            "arrival": "3000-01-01T01:26:43Z",
-            "departure": "3000-01-01T01:28:22Z"
+            "arrival": "3000-01-01T01:12:15Z",
+            "departure": "3000-01-01T01:13:45Z"
           },
-          "distance": 3244,
+          "distance": 3906,
           "load": [
             0
           ],
           "activities": [
             {
-              "jobId": "928105fd-5831-5995-bb1b-8665c30d6c4d",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 45
-          },
-          "time": {
-            "arrival": "3000-01-01T01:33:23Z",
-            "departure": "3000-01-01T01:35:02Z"
-          },
-          "distance": 3500,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "32b45913-2603-5e41-b661-5f665b861a26",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 14
-          },
-          "time": {
-            "arrival": "3000-01-01T01:40:03Z",
-            "departure": "3000-01-01T01:41:42Z"
-          },
-          "distance": 3756,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "52e315e9-07de-5176-a6b6-898f78e021af",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 24
-          },
-          "time": {
-            "arrival": "3000-01-01T01:46:43Z",
-            "departure": "3000-01-01T01:48:22Z"
-          },
-          "distance": 4012,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "1624973c-eced-554d-9c55-0aa4dfc7547f",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 7
-          },
-          "time": {
-            "arrival": "3000-01-01T01:53:23Z",
-            "departure": "3000-01-01T01:55:02Z"
-          },
-          "distance": 4268,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "f915c847-c26d-5436-9699-a7595579e029",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 12
-          },
-          "time": {
-            "arrival": "3000-01-01T02:00:03Z",
-            "departure": "3000-01-01T02:01:42Z"
-          },
-          "distance": 4524,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "8dfb7ca6-51a2-58e9-a6e2-21acffd298c4",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 6
-          },
-          "time": {
-            "arrival": "3000-01-01T02:06:43Z",
-            "departure": "3000-01-01T02:08:22Z"
-          },
-          "distance": 4780,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "6f57059b-fe01-5244-97d5-b35b03f16480",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 18
-          },
-          "time": {
-            "arrival": "3000-01-01T02:11:23Z",
-            "departure": "3000-01-01T02:13:02Z"
-          },
-          "distance": 4934,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "de832c23-a764-5e05-ace5-56f0c1cd0658",
+              "jobId": "27ec0518-a3d7-51e8-83ed-6569bd23499c",
               "type": "service"
             }
           ]
@@ -2666,35 +289,206 @@
             "index": 5
           },
           "time": {
-            "arrival": "3000-01-01T02:16:03Z",
-            "departure": "3000-01-01T02:17:42Z"
+            "arrival": "3000-01-01T01:14:07Z",
+            "departure": "3000-01-01T01:15:37Z"
           },
-          "distance": 5088,
+          "distance": 3933,
           "load": [
             0
           ],
           "activities": [
             {
-              "jobId": "8efed934-dfc1-5c8d-b181-d043dfbe862b",
+              "jobId": "38593a5b-0228-56b1-8187-61950b41c0a2",
               "type": "service"
             }
           ]
         },
         {
           "location": {
-            "index": 13
+            "index": 3
           },
           "time": {
-            "arrival": "3000-01-01T02:22:43Z",
-            "departure": "3000-01-01T02:24:22Z"
+            "arrival": "3000-01-01T01:16:16Z",
+            "departure": "3000-01-01T01:17:46Z"
           },
-          "distance": 5344,
+          "distance": 3980,
           "load": [
             0
           ],
           "activities": [
             {
-              "jobId": "e03204aa-2f5d-5bfd-aa41-05b66e8ae040",
+              "jobId": "e8ee9967-d151-5ea2-a9f6-4ec992f7dba2",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 7
+          },
+          "time": {
+            "arrival": "3000-01-01T01:18:14Z",
+            "departure": "3000-01-01T01:19:44Z"
+          },
+          "distance": 4013,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "8b70f921-82fc-55c0-b7ab-5739f84a824c",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 6
+          },
+          "time": {
+            "arrival": "3000-01-01T01:20:02Z",
+            "departure": "3000-01-01T01:21:32Z"
+          },
+          "distance": 4034,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "45ce8251-4bb5-558b-b596-d94a58ec8291",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 0
+          },
+          "time": {
+            "arrival": "3000-01-01T01:22:07Z",
+            "departure": "3000-01-01T01:23:37Z"
+          },
+          "distance": 4076,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "18e2548e-3396-5dfb-a8fa-a03a5db93143",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 2
+          },
+          "time": {
+            "arrival": "3000-01-01T01:23:46Z",
+            "departure": "3000-01-01T01:25:16Z"
+          },
+          "distance": 4087,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "2c556447-b61b-5337-9d0d-d10025078f68",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 4
+          },
+          "time": {
+            "arrival": "3000-01-01T01:25:28Z",
+            "departure": "3000-01-01T01:26:58Z"
+          },
+          "distance": 4101,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "ef6c0a93-f3ac-5062-95bd-7e6a3cf92e9a",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 8
+          },
+          "time": {
+            "arrival": "3000-01-01T01:27:33Z",
+            "departure": "3000-01-01T01:29:03Z"
+          },
+          "distance": 4143,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "67e87031-9ebb-584a-a412-5c9a5d7eb6cd",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 9
+          },
+          "time": {
+            "arrival": "3000-01-01T01:31:25Z",
+            "departure": "3000-01-01T01:32:55Z"
+          },
+          "distance": 4314,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "4556f2c9-b32f-52da-bbd9-dc03305fe5e7",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 21
+          },
+          "time": {
+            "arrival": "3000-01-01T01:33:35Z",
+            "departure": "3000-01-01T01:35:05Z"
+          },
+          "distance": 4362,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "ea4a8934-fae2-5666-b6af-44fdf3a35d17",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 15
+          },
+          "time": {
+            "arrival": "3000-01-01T01:35:27Z",
+            "departure": "3000-01-01T01:36:57Z"
+          },
+          "distance": 4388,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "5302d2fa-ef01-5f58-8639-02fdab3fd6de",
               "type": "service"
             }
           ]
@@ -2704,35 +498,187 @@
             "index": 22
           },
           "time": {
-            "arrival": "3000-01-01T02:29:23Z",
-            "departure": "3000-01-01T02:31:02Z"
+            "arrival": "3000-01-01T01:37:22Z",
+            "departure": "3000-01-01T01:38:52Z"
           },
-          "distance": 5600,
+          "distance": 4418,
           "load": [
             0
           ],
           "activities": [
             {
-              "jobId": "dc1e2005-a5ed-55e4-8f2b-30762b4e6f4c",
+              "jobId": "efd1cbc6-c814-57e5-abf2-31b504962b13",
               "type": "service"
             }
           ]
         },
         {
           "location": {
-            "index": 55
+            "index": 16
           },
           "time": {
-            "arrival": "3000-01-01T02:36:03Z",
-            "departure": "3000-01-01T02:37:42Z"
+            "arrival": "3000-01-01T01:39:11Z",
+            "departure": "3000-01-01T01:40:41Z"
           },
-          "distance": 5856,
+          "distance": 4441,
           "load": [
             0
           ],
           "activities": [
             {
-              "jobId": "a53c4085-d641-559c-b36e-fb0ecc9dd57d",
+              "jobId": "7ab9b202-4eb1-596c-8a17-acdba3254f35",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 12
+          },
+          "time": {
+            "arrival": "3000-01-01T01:41:07Z",
+            "departure": "3000-01-01T01:42:37Z"
+          },
+          "distance": 4472,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "7cac9b4d-abc0-5cd5-8c9b-e1af4bde98ad",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 20
+          },
+          "time": {
+            "arrival": "3000-01-01T01:44:29Z",
+            "departure": "3000-01-01T01:45:59Z"
+          },
+          "distance": 4606,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "4f095c26-4e23-50e3-b16a-eb567604e065",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 25
+          },
+          "time": {
+            "arrival": "3000-01-01T01:47:38Z",
+            "departure": "3000-01-01T01:49:08Z"
+          },
+          "distance": 4725,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "c1e9b713-a027-5484-9751-3a24cc28bcd3",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 10
+          },
+          "time": {
+            "arrival": "3000-01-01T01:49:46Z",
+            "departure": "3000-01-01T01:51:16Z"
+          },
+          "distance": 4771,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "ea9e08c2-7169-5b2e-bd5c-b90072261c4c",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 14
+          },
+          "time": {
+            "arrival": "3000-01-01T01:52:10Z",
+            "departure": "3000-01-01T01:53:40Z"
+          },
+          "distance": 4836,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "340ce2d0-4d1c-5243-88e7-a6931a10b0aa",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 13
+          },
+          "time": {
+            "arrival": "3000-01-01T01:54:27Z",
+            "departure": "3000-01-01T01:55:57Z"
+          },
+          "distance": 4892,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "adaf30ad-b7be-563f-bb5d-206e1b0f76ad",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 17
+          },
+          "time": {
+            "arrival": "3000-01-01T01:56:19Z",
+            "departure": "3000-01-01T01:57:49Z"
+          },
+          "distance": 4918,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "be86391f-c335-501c-83f4-0c46ccc0e195",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 11
+          },
+          "time": {
+            "arrival": "3000-01-01T01:58:05Z",
+            "departure": "3000-01-01T01:59:35Z"
+          },
+          "distance": 4937,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "819aafb0-bf5f-5cfd-8f46-23ae3165276b",
               "type": "service"
             }
           ]
@@ -2742,16 +688,54 @@
             "index": 19
           },
           "time": {
-            "arrival": "3000-01-01T02:42:53Z",
-            "departure": "3000-01-01T02:44:32Z"
+            "arrival": "3000-01-01T02:00:36Z",
+            "departure": "3000-01-01T02:02:06Z"
           },
-          "distance": 6120,
+          "distance": 5010,
           "load": [
             0
           ],
           "activities": [
             {
-              "jobId": "16497a6e-98e5-55e0-bc1d-885e78e7aa7b",
+              "jobId": "dac599ed-950a-519a-b034-697c16b03d85",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 18
+          },
+          "time": {
+            "arrival": "3000-01-01T02:02:35Z",
+            "departure": "3000-01-01T02:04:05Z"
+          },
+          "distance": 5045,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "42dbc811-9275-5a12-a5a1-db997c36893b",
+              "type": "service"
+            }
+          ]
+        },
+        {
+          "location": {
+            "index": 24
+          },
+          "time": {
+            "arrival": "3000-01-01T02:04:27Z",
+            "departure": "3000-01-01T02:05:57Z"
+          },
+          "distance": 5072,
+          "load": [
+            0
+          ],
+          "activities": [
+            {
+              "jobId": "6072cabc-717d-5d19-ba78-fdda3a998480",
               "type": "service"
             }
           ]
@@ -2761,29 +745,29 @@
             "index": 23
           },
           "time": {
-            "arrival": "3000-01-01T02:50:11Z",
-            "departure": "3000-01-01T02:51:50Z"
+            "arrival": "3000-01-01T02:07:41Z",
+            "departure": "3000-01-01T02:09:11Z"
           },
-          "distance": 6408,
+          "distance": 5197,
           "load": [
             0
           ],
           "activities": [
             {
-              "jobId": "6d990f43-2e81-5cb6-871e-2af31372b88e",
+              "jobId": "ed1ff65e-4a1b-521f-88ec-16ee36028cbe",
               "type": "service"
             }
           ]
         },
         {
           "location": {
-            "index": 223
+            "index": 38
           },
           "time": {
-            "arrival": "3000-01-01T02:59:47Z",
-            "departure": "3000-01-01T02:59:47Z"
+            "arrival": "3000-01-01T02:12:45Z",
+            "departure": "3000-01-01T02:12:45Z"
           },
-          "distance": 6814,
+          "distance": 5453,
           "load": [
             0
           ],
@@ -2796,1837 +780,18 @@
         }
       ],
       "statistic": {
-        "cost": 10788.0,
-        "distance": 6814,
-        "duration": 10787,
+        "cost": 7966.0,
+        "distance": 5453,
+        "duration": 7965,
         "times": {
-          "driving": 8015,
-          "serving": 2772,
+          "driving": 4545,
+          "serving": 3420,
           "waiting": 0,
           "break": 0,
           "commuting": 0,
           "parking": 0
         }
       }
-    },
-    {
-      "vehicleId": "walker_1",
-      "typeId": "person",
-      "shiftIndex": 0,
-      "stops": [
-        {
-          "location": {
-            "index": 223
-          },
-          "time": {
-            "arrival": "3000-01-01T00:00:00Z",
-            "departure": "3000-01-01T00:00:00Z"
-          },
-          "distance": 0,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "departure",
-              "type": "departure"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 30
-          },
-          "time": {
-            "arrival": "3000-01-01T00:07:36Z",
-            "departure": "3000-01-01T00:09:15Z"
-          },
-          "distance": 388,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "9a7b3313-70f8-5641-b891-c348a6e6b57a",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 95
-          },
-          "time": {
-            "arrival": "3000-01-01T00:17:40Z",
-            "departure": "3000-01-01T00:19:19Z"
-          },
-          "distance": 817,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "71aaba2d-07ba-5328-8a02-a4d58e7b3832",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 188
-          },
-          "time": {
-            "arrival": "3000-01-01T00:21:41Z",
-            "departure": "3000-01-01T00:23:20Z"
-          },
-          "distance": 938,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "805ac72f-160c-545d-bf4e-efae34fb0021",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 187
-          },
-          "time": {
-            "arrival": "3000-01-01T00:23:53Z",
-            "departure": "3000-01-01T00:25:32Z"
-          },
-          "distance": 966,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "a6400cc8-6929-593b-9213-6b2098d0b26e",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 183
-          },
-          "time": {
-            "arrival": "3000-01-01T00:25:32Z",
-            "departure": "3000-01-01T00:27:11Z"
-          },
-          "distance": 966,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "ec0c1a53-b52f-5afe-8cee-02afd86a5d5a",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 186
-          },
-          "time": {
-            "arrival": "3000-01-01T00:27:11Z",
-            "departure": "3000-01-01T00:28:50Z"
-          },
-          "distance": 966,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "de801da1-5292-5f85-aa4f-2d920ff14e22",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 185
-          },
-          "time": {
-            "arrival": "3000-01-01T00:28:50Z",
-            "departure": "3000-01-01T00:30:29Z"
-          },
-          "distance": 966,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "277a0775-82f8-5829-8623-ba544576f295",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 190
-          },
-          "time": {
-            "arrival": "3000-01-01T00:30:29Z",
-            "departure": "3000-01-01T00:32:08Z"
-          },
-          "distance": 966,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "5d1e8bfe-c197-5bd7-9be9-a35a3b84bc0a",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 184
-          },
-          "time": {
-            "arrival": "3000-01-01T00:32:08Z",
-            "departure": "3000-01-01T00:33:47Z"
-          },
-          "distance": 966,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "73714d9f-0aff-5254-9873-beacb3dfafe6",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 189
-          },
-          "time": {
-            "arrival": "3000-01-01T00:34:28Z",
-            "departure": "3000-01-01T00:36:07Z"
-          },
-          "distance": 1001,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "006690b6-d367-5d72-8eab-aa5776971bac",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 179
-          },
-          "time": {
-            "arrival": "3000-01-01T00:38:27Z",
-            "departure": "3000-01-01T00:40:06Z"
-          },
-          "distance": 1120,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "8a920b15-da1e-57af-ac99-d63641355fd1",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 169
-          },
-          "time": {
-            "arrival": "3000-01-01T00:40:26Z",
-            "departure": "3000-01-01T00:42:05Z"
-          },
-          "distance": 1137,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "cdf629c1-febe-505d-b96e-93757943973a",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 173
-          },
-          "time": {
-            "arrival": "3000-01-01T00:43:06Z",
-            "departure": "3000-01-01T00:44:45Z"
-          },
-          "distance": 1189,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "c360f53b-d0ad-5804-9ff7-1fa8e2b2e06a",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 177
-          },
-          "time": {
-            "arrival": "3000-01-01T00:45:03Z",
-            "departure": "3000-01-01T00:46:42Z"
-          },
-          "distance": 1204,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "40a9b628-b6aa-529f-a627-d4a4658ef669",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 178
-          },
-          "time": {
-            "arrival": "3000-01-01T00:46:56Z",
-            "departure": "3000-01-01T00:48:35Z"
-          },
-          "distance": 1216,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "4862ce75-6e2e-577a-ae7a-cb404d28cd08",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 170
-          },
-          "time": {
-            "arrival": "3000-01-01T00:49:14Z",
-            "departure": "3000-01-01T00:50:53Z"
-          },
-          "distance": 1249,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "53c850ac-8af6-5db4-93f4-ff3aecee0698",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 174
-          },
-          "time": {
-            "arrival": "3000-01-01T00:51:11Z",
-            "departure": "3000-01-01T00:52:50Z"
-          },
-          "distance": 1264,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "26b9a5c5-93b6-5255-ac29-fb7786cf22ff",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 171
-          },
-          "time": {
-            "arrival": "3000-01-01T00:53:21Z",
-            "departure": "3000-01-01T00:55:00Z"
-          },
-          "distance": 1290,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "5fb6df79-9ef6-5024-806a-487c7b1be522",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 176
-          },
-          "time": {
-            "arrival": "3000-01-01T00:55:18Z",
-            "departure": "3000-01-01T00:56:57Z"
-          },
-          "distance": 1305,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "02c4d470-3d7a-54f9-9e1e-902395d7245c",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 168
-          },
-          "time": {
-            "arrival": "3000-01-01T00:57:46Z",
-            "departure": "3000-01-01T00:59:25Z"
-          },
-          "distance": 1347,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "e7f909f0-0b89-5511-bae0-4254582f19da",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 172
-          },
-          "time": {
-            "arrival": "3000-01-01T00:59:46Z",
-            "departure": "3000-01-01T01:01:25Z"
-          },
-          "distance": 1365,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "7934d607-1d9b-54a1-9dc8-d51f899443a8",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 175
-          },
-          "time": {
-            "arrival": "3000-01-01T01:01:40Z",
-            "departure": "3000-01-01T01:03:19Z"
-          },
-          "distance": 1378,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "95bdc7a7-deba-54b3-aebb-9c664f557a75",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 159
-          },
-          "time": {
-            "arrival": "3000-01-01T01:05:46Z",
-            "departure": "3000-01-01T01:07:25Z"
-          },
-          "distance": 1503,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "dba9b24f-4b1a-53e5-bc0a-4f89d71dad2e",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 208
-          },
-          "time": {
-            "arrival": "3000-01-01T01:09:51Z",
-            "departure": "3000-01-01T01:11:30Z"
-          },
-          "distance": 1627,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "a619a4f5-fba5-526c-ba43-43af93331d7c",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 207
-          },
-          "time": {
-            "arrival": "3000-01-01T01:11:52Z",
-            "departure": "3000-01-01T01:13:31Z"
-          },
-          "distance": 1646,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "e503eff9-9112-539f-a16f-c43fd0f21a11",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 96
-          },
-          "time": {
-            "arrival": "3000-01-01T01:15:42Z",
-            "departure": "3000-01-01T01:17:21Z"
-          },
-          "distance": 1757,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "352d2dc1-707e-5d2e-94fb-01043b384588",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 201
-          },
-          "time": {
-            "arrival": "3000-01-01T01:19:28Z",
-            "departure": "3000-01-01T01:21:07Z"
-          },
-          "distance": 1865,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "fdbb0642-6a36-524b-a491-7f51d5ea2846",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 198
-          },
-          "time": {
-            "arrival": "3000-01-01T01:21:49Z",
-            "departure": "3000-01-01T01:23:28Z"
-          },
-          "distance": 1901,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "ef54040b-289e-5384-85f6-e3d2dcc552a9",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 200
-          },
-          "time": {
-            "arrival": "3000-01-01T01:24:24Z",
-            "departure": "3000-01-01T01:26:03Z"
-          },
-          "distance": 1949,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "4da5d38b-de18-5353-9f6a-1da9c9ca40dd",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 199
-          },
-          "time": {
-            "arrival": "3000-01-01T01:26:45Z",
-            "departure": "3000-01-01T01:28:24Z"
-          },
-          "distance": 1985,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "c9edf01d-b8ac-5756-ad32-9ddc8a1b660e",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 212
-          },
-          "time": {
-            "arrival": "3000-01-01T01:30:49Z",
-            "departure": "3000-01-01T01:32:28Z"
-          },
-          "distance": 2108,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "4374d9ec-1aaa-581e-a299-4e7a36364e1f",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 214
-          },
-          "time": {
-            "arrival": "3000-01-01T01:33:10Z",
-            "departure": "3000-01-01T01:34:49Z"
-          },
-          "distance": 2144,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "b02d602d-09f5-52c0-9475-aabfdddcd692",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 213
-          },
-          "time": {
-            "arrival": "3000-01-01T01:35:07Z",
-            "departure": "3000-01-01T01:36:46Z"
-          },
-          "distance": 2159,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "2b70a4be-6a09-5886-abab-60a998429466",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 146
-          },
-          "time": {
-            "arrival": "3000-01-01T01:38:30Z",
-            "departure": "3000-01-01T01:40:09Z"
-          },
-          "distance": 2247,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "2a38a8be-e455-51ab-981a-1dfc3697ec34",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 144
-          },
-          "time": {
-            "arrival": "3000-01-01T01:40:15Z",
-            "departure": "3000-01-01T01:41:54Z"
-          },
-          "distance": 2252,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "f59e1188-6f9b-5f39-b7ac-af9f9c90984d",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 145
-          },
-          "time": {
-            "arrival": "3000-01-01T01:42:05Z",
-            "departure": "3000-01-01T01:43:44Z"
-          },
-          "distance": 2261,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "0e34f809-f36b-5ade-8203-b51e95e2c96b",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 153
-          },
-          "time": {
-            "arrival": "3000-01-01T01:44:56Z",
-            "departure": "3000-01-01T01:46:35Z"
-          },
-          "distance": 2322,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "a1a28e02-f531-50c9-b24b-4d75a590fc89",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 156
-          },
-          "time": {
-            "arrival": "3000-01-01T01:46:50Z",
-            "departure": "3000-01-01T01:48:29Z"
-          },
-          "distance": 2335,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "4280dbcd-a94c-52d3-88db-2e298785a948",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 157
-          },
-          "time": {
-            "arrival": "3000-01-01T01:48:45Z",
-            "departure": "3000-01-01T01:50:24Z"
-          },
-          "distance": 2349,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "53fd7a14-651e-5b4f-bb0d-7ed6c1d1314f",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 158
-          },
-          "time": {
-            "arrival": "3000-01-01T01:50:52Z",
-            "departure": "3000-01-01T01:52:31Z"
-          },
-          "distance": 2373,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "a063753d-82b7-5d6b-a82c-07f05705f6a5",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 155
-          },
-          "time": {
-            "arrival": "3000-01-01T01:52:59Z",
-            "departure": "3000-01-01T01:54:38Z"
-          },
-          "distance": 2397,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "8750bafc-2f96-5f9d-9835-2a49b41fcffe",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 154
-          },
-          "time": {
-            "arrival": "3000-01-01T01:54:58Z",
-            "departure": "3000-01-01T01:56:37Z"
-          },
-          "distance": 2414,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "7dc3331e-5f40-51b9-a328-c9c961ae3763",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 209
-          },
-          "time": {
-            "arrival": "3000-01-01T01:57:35Z",
-            "departure": "3000-01-01T01:59:14Z"
-          },
-          "distance": 2463,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "ab25ec18-7b49-5af2-95ad-726cb36d1e62",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 210
-          },
-          "time": {
-            "arrival": "3000-01-01T01:59:45Z",
-            "departure": "3000-01-01T02:01:24Z"
-          },
-          "distance": 2489,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "ade5db65-0e0c-5ed5-a551-92d5fa5148a5",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 211
-          },
-          "time": {
-            "arrival": "3000-01-01T02:01:48Z",
-            "departure": "3000-01-01T02:03:27Z"
-          },
-          "distance": 2509,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "23244091-d9dd-5eea-9e75-724e7bfbcecc",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 180
-          },
-          "time": {
-            "arrival": "3000-01-01T02:05:20Z",
-            "departure": "3000-01-01T02:06:59Z"
-          },
-          "distance": 2605,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "2d78f192-34fe-58e6-bc3f-8014d0cc2b5e",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 181
-          },
-          "time": {
-            "arrival": "3000-01-01T02:07:17Z",
-            "departure": "3000-01-01T02:08:56Z"
-          },
-          "distance": 2620,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "5f0ed9d3-1f0f-5c2d-95fb-2db6e1592b5e",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 182
-          },
-          "time": {
-            "arrival": "3000-01-01T02:09:14Z",
-            "departure": "3000-01-01T02:10:53Z"
-          },
-          "distance": 2635,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "4dadd7f8-a923-5268-91d7-a6107fb4db68",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 143
-          },
-          "time": {
-            "arrival": "3000-01-01T02:13:26Z",
-            "departure": "3000-01-01T02:15:05Z"
-          },
-          "distance": 2765,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "6be27d76-1124-5ae8-8e40-66d91e239689",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 215
-          },
-          "time": {
-            "arrival": "3000-01-01T02:17:50Z",
-            "departure": "3000-01-01T02:19:29Z"
-          },
-          "distance": 2905,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "980733e1-aaf3-5ac2-a86a-9807eec7c70b",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 112
-          },
-          "time": {
-            "arrival": "3000-01-01T02:21:30Z",
-            "departure": "3000-01-01T02:23:09Z"
-          },
-          "distance": 3008,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "f7b3b9e0-a228-5bf2-980e-f4df0049e15f",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 99
-          },
-          "time": {
-            "arrival": "3000-01-01T02:23:49Z",
-            "departure": "3000-01-01T02:25:28Z"
-          },
-          "distance": 3042,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "2162f7d3-8bcc-5dc8-8a1c-cb1dbff47145",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 107
-          },
-          "time": {
-            "arrival": "3000-01-01T02:25:59Z",
-            "departure": "3000-01-01T02:27:38Z"
-          },
-          "distance": 3068,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "36a4be3a-bedd-5c66-bf14-07f74b5a98d3",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 111
-          },
-          "time": {
-            "arrival": "3000-01-01T02:27:57Z",
-            "departure": "3000-01-01T02:29:36Z"
-          },
-          "distance": 3084,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "64356992-60ee-5d83-905f-b9553f610d44",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 110
-          },
-          "time": {
-            "arrival": "3000-01-01T02:29:51Z",
-            "departure": "3000-01-01T02:31:30Z"
-          },
-          "distance": 3097,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "a5e389a7-599c-5871-a876-4511a949b29e",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 106
-          },
-          "time": {
-            "arrival": "3000-01-01T02:31:48Z",
-            "departure": "3000-01-01T02:33:27Z"
-          },
-          "distance": 3112,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "da640111-64c7-597c-b81f-286b65b7a830",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 101
-          },
-          "time": {
-            "arrival": "3000-01-01T02:33:48Z",
-            "departure": "3000-01-01T02:35:27Z"
-          },
-          "distance": 3130,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "5e7588dc-cd8e-5610-9ba8-6eebda9bd52d",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 102
-          },
-          "time": {
-            "arrival": "3000-01-01T02:35:46Z",
-            "departure": "3000-01-01T02:37:25Z"
-          },
-          "distance": 3146,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "f7d7ad23-1c1e-570d-8035-aceac7a1cccd",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 104
-          },
-          "time": {
-            "arrival": "3000-01-01T02:37:40Z",
-            "departure": "3000-01-01T02:39:19Z"
-          },
-          "distance": 3159,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "7cbe9d16-55cc-505d-82d5-ae79b66e9adc",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 98
-          },
-          "time": {
-            "arrival": "3000-01-01T02:39:38Z",
-            "departure": "3000-01-01T02:41:17Z"
-          },
-          "distance": 3175,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "f587e25b-1daa-5861-9eb7-210dacf67a57",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 105
-          },
-          "time": {
-            "arrival": "3000-01-01T02:41:48Z",
-            "departure": "3000-01-01T02:43:27Z"
-          },
-          "distance": 3201,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "ea03ecd2-cdb8-5e0c-83d5-1fd1bd1d8fc4",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 109
-          },
-          "time": {
-            "arrival": "3000-01-01T02:44:25Z",
-            "departure": "3000-01-01T02:46:04Z"
-          },
-          "distance": 3250,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "3a99d01b-967b-58af-ada2-d32b8ca90841",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 97
-          },
-          "time": {
-            "arrival": "3000-01-01T02:46:18Z",
-            "departure": "3000-01-01T02:47:57Z"
-          },
-          "distance": 3262,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "2fbe4a4a-9455-5d1b-8a31-daa5e163908d",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 100
-          },
-          "time": {
-            "arrival": "3000-01-01T02:49:06Z",
-            "departure": "3000-01-01T02:50:45Z"
-          },
-          "distance": 3321,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "fe839fd0-ffc8-5a59-ba1c-b48388c2c5a8",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 103
-          },
-          "time": {
-            "arrival": "3000-01-01T02:50:59Z",
-            "departure": "3000-01-01T02:52:38Z"
-          },
-          "distance": 3333,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "5161dfaf-2478-5270-8641-265d9be6f066",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 108
-          },
-          "time": {
-            "arrival": "3000-01-01T02:53:14Z",
-            "departure": "3000-01-01T02:54:53Z"
-          },
-          "distance": 3364,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "5ccb836f-b1e2-5317-8394-10828798d95d",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 113
-          },
-          "time": {
-            "arrival": "3000-01-01T02:55:11Z",
-            "departure": "3000-01-01T02:56:50Z"
-          },
-          "distance": 3379,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "4a732ebc-2660-5d92-8287-d09f7b36d624",
-              "type": "service"
-            }
-          ]
-        },
-        {
-          "location": {
-            "index": 223
-          },
-          "time": {
-            "arrival": "3000-01-01T02:59:34Z",
-            "departure": "3000-01-01T02:59:34Z"
-          },
-          "distance": 3518,
-          "load": [
-            0
-          ],
-          "activities": [
-            {
-              "jobId": "arrival",
-              "type": "arrival"
-            }
-          ]
-        }
-      ],
-      "statistic": {
-        "cost": 10775.0,
-        "distance": 3518,
-        "duration": 10774,
-        "times": {
-          "driving": 4141,
-          "serving": 6633,
-          "waiting": 0,
-          "break": 0,
-          "commuting": 0,
-          "parking": 0
-        }
-      }
-    }
-  ],
-  "unassigned": [
-    {
-      "jobId": "f7fa7f96-5956-5129-b2de-f384f8540da4",
-      "reasons": [
-        {
-          "code": "TIME_WINDOW_CONSTRAINT",
-          "description": "cannot be visited within time window",
-          "details": [
-            {
-              "vehicleId": "walker_0",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_1",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_2",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_3",
-              "shiftIndex": 0
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "jobId": "bee48e7e-e510-5163-8fac-5c70808f17db",
-      "reasons": [
-        {
-          "code": "TIME_WINDOW_CONSTRAINT",
-          "description": "cannot be visited within time window",
-          "details": [
-            {
-              "vehicleId": "walker_0",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_1",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_2",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_3",
-              "shiftIndex": 0
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "jobId": "51909f74-e4ff-5a8e-9c0b-3cd48bec4901",
-      "reasons": [
-        {
-          "code": "TIME_WINDOW_CONSTRAINT",
-          "description": "cannot be visited within time window",
-          "details": [
-            {
-              "vehicleId": "walker_0",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_1",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_2",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_3",
-              "shiftIndex": 0
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "jobId": "62a0e669-8291-5c99-827b-47a1738dd1eb",
-      "reasons": [
-        {
-          "code": "TIME_WINDOW_CONSTRAINT",
-          "description": "cannot be visited within time window",
-          "details": [
-            {
-              "vehicleId": "walker_0",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_1",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_2",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_3",
-              "shiftIndex": 0
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "jobId": "e25c98b8-c4df-5580-9734-a7c078945ee4",
-      "reasons": [
-        {
-          "code": "TIME_WINDOW_CONSTRAINT",
-          "description": "cannot be visited within time window",
-          "details": [
-            {
-              "vehicleId": "walker_0",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_1",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_2",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_3",
-              "shiftIndex": 0
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "jobId": "40f28f0d-98f7-525e-9ff6-e0aba64e6b78",
-      "reasons": [
-        {
-          "code": "TIME_WINDOW_CONSTRAINT",
-          "description": "cannot be visited within time window",
-          "details": [
-            {
-              "vehicleId": "walker_0",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_1",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_2",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_3",
-              "shiftIndex": 0
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "jobId": "efd60d14-f8d4-5a7a-9618-8b621ec8dde9",
-      "reasons": [
-        {
-          "code": "TIME_WINDOW_CONSTRAINT",
-          "description": "cannot be visited within time window",
-          "details": [
-            {
-              "vehicleId": "walker_0",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_1",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_2",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_3",
-              "shiftIndex": 0
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "jobId": "335e2ce8-5954-538a-bd23-f36feb8e0a72",
-      "reasons": [
-        {
-          "code": "TIME_WINDOW_CONSTRAINT",
-          "description": "cannot be visited within time window",
-          "details": [
-            {
-              "vehicleId": "walker_0",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_1",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_2",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_3",
-              "shiftIndex": 0
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "jobId": "a7482d0e-db76-5333-ada9-03623395a007",
-      "reasons": [
-        {
-          "code": "TIME_WINDOW_CONSTRAINT",
-          "description": "cannot be visited within time window",
-          "details": [
-            {
-              "vehicleId": "walker_0",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_1",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_2",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_3",
-              "shiftIndex": 0
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "jobId": "1571c01d-78c0-5388-8bc7-929d0c9e21dd",
-      "reasons": [
-        {
-          "code": "TIME_WINDOW_CONSTRAINT",
-          "description": "cannot be visited within time window",
-          "details": [
-            {
-              "vehicleId": "walker_0",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_1",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_2",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_3",
-              "shiftIndex": 0
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "jobId": "a29994bb-ef3d-5ac5-8514-b82049628062",
-      "reasons": [
-        {
-          "code": "TIME_WINDOW_CONSTRAINT",
-          "description": "cannot be visited within time window",
-          "details": [
-            {
-              "vehicleId": "walker_0",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_1",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_2",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_3",
-              "shiftIndex": 0
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "jobId": "bbb03c0d-89e8-58da-8056-ad8aa17faf62",
-      "reasons": [
-        {
-          "code": "TIME_WINDOW_CONSTRAINT",
-          "description": "cannot be visited within time window",
-          "details": [
-            {
-              "vehicleId": "walker_0",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_1",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_2",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_3",
-              "shiftIndex": 0
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "jobId": "ef2eb92a-7766-56ba-9965-b97ce63c46af",
-      "reasons": [
-        {
-          "code": "TIME_WINDOW_CONSTRAINT",
-          "description": "cannot be visited within time window",
-          "details": [
-            {
-              "vehicleId": "walker_0",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_1",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_2",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_3",
-              "shiftIndex": 0
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "jobId": "c36500f6-82d8-5d42-886f-21c5f1ec9c1d",
-      "reasons": [
-        {
-          "code": "TIME_WINDOW_CONSTRAINT",
-          "description": "cannot be visited within time window",
-          "details": [
-            {
-              "vehicleId": "walker_0",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_1",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_2",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_3",
-              "shiftIndex": 0
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "jobId": "6ee635cc-3311-587a-927d-caccd972ca26",
-      "reasons": [
-        {
-          "code": "TIME_WINDOW_CONSTRAINT",
-          "description": "cannot be visited within time window",
-          "details": [
-            {
-              "vehicleId": "walker_0",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_1",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_2",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_3",
-              "shiftIndex": 0
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "jobId": "20bec32e-9395-56b9-a5f9-0b676e85a975",
-      "reasons": [
-        {
-          "code": "TIME_WINDOW_CONSTRAINT",
-          "description": "cannot be visited within time window",
-          "details": [
-            {
-              "vehicleId": "walker_0",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_1",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_2",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_3",
-              "shiftIndex": 0
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "jobId": "54450a82-539c-54b4-83f8-fe83df5bcc6a",
-      "reasons": [
-        {
-          "code": "TIME_WINDOW_CONSTRAINT",
-          "description": "cannot be visited within time window",
-          "details": [
-            {
-              "vehicleId": "walker_0",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_1",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_2",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_3",
-              "shiftIndex": 0
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "jobId": "d7b99bc4-243d-514d-a056-ff36663033e8",
-      "reasons": [
-        {
-          "code": "TIME_WINDOW_CONSTRAINT",
-          "description": "cannot be visited within time window",
-          "details": [
-            {
-              "vehicleId": "walker_0",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_1",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_2",
-              "shiftIndex": 0
-            },
-            {
-              "vehicleId": "walker_3",
-              "shiftIndex": 0
-            }
-          ]
-        }
-      ]
     }
   ]
 }
