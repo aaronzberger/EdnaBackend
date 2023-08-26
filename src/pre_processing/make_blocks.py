@@ -6,6 +6,7 @@ Associate houses with blocks. Take in block_output.json and generate blocks.json
 
 import csv
 import dataclasses
+from decimal import Decimal
 import itertools
 from itertools import chain
 import json
@@ -582,8 +583,12 @@ with tqdm(
             # TODO: resolve best_segment type issues, these casts should not be needed
 
             # Add this association to the houses file
-            house_uuid = uuid.uuid5(UUID_NAMESPACE, item["full_address"])
+            lat_rounded = Decimal(str(house_pt["lat"])).quantize(Decimal("0.0001"))
+            lon_rounded = Decimal(str(house_pt["lon"])).quantize(Decimal("0.0001"))
+            uuid_input = item["full_address"] + str(lat_rounded) + str(lon_rounded)
+            house_uuid = uuid.uuid5(UUID_NAMESPACE, uuid_input)
             addresses_to_id[formatted_address] = (str(best_segment.id), str(house_uuid))
+
             id_to_addresses[str(house_uuid)] = dataclasses.asdict(formatted_address)
 
             # Add the house to the segments output
@@ -628,6 +633,15 @@ print("Writing...")
 json.dump(id_to_addresses, open(id_to_addresses_file, "w"))
 
 json.dump(reverse_geocode, open(reverse_geocode_file, "w"))
+
+# Go through segments_by_id and look for duplicates
+uuids = set()
+for segment_id in segments_by_id:
+    for address in segments_by_id[segment_id]["addresses"]:
+        if address in uuids:
+            print("Duplicate UUID found: {}".format(address))
+        else:
+            uuids.add(address)
 
 json.dump(segments_by_id, open(blocks_file, "w"), indent=4)
 
