@@ -218,8 +218,8 @@ class RouteMaker:
             node = previous[node]
         path.reverse()
 
-        assert path[0] == start_node_id
-        assert path[-1] == end_node_id
+        assert path[0] == start_node_id, f"Path start {path[0]} does not match start node {start_node_id} (end node {end_node_id}, path{path})"
+        assert path[-1] == end_node_id, f"Path end {path[-1]} does not match end node {end_node_id}"
         # TODO: Can be removed later
         for first, second in itertools.pairwise(path):
             assert second in cls._adjacency_list[first]
@@ -276,12 +276,9 @@ class RouteMaker:
         # Limit the number of iterations to 5, so this runs in O(n) time
         try:
             path, distance = cls.djikstras(start_node[0], end_node[0])
-        except TypeError:
+        except (TypeError, AssertionError):
             print(colored(f"Failed to run djikstras from start node {start_node[0]} to end node {end_node[0]}", "red"))
-            print("104665366" in cls._node_table)
-            print(len(cls._node_table))
-            print(cls._node_table[start_node[0]], cls._node_table[end_node[0]])
-            sys.exit(1)
+            return None
 
         return path, distance
 

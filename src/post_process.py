@@ -529,7 +529,16 @@ class PostProcess:
 
             # If the end of the first subblock is not the same as the start of the second subblock, add a new subblock
             if pt_id(first.end) != pt_id(second.start):
-                block_ids, distance = RouteMaker.get_route(first.end, second.start)
+                route_info = RouteMaker.get_route(first.end, second.start)
+
+                if route_info is None:
+                    print(
+                        colored(
+                            "Not adding route between sub-blocks because no route was found",
+                        ), "yellow"
+                    )
+                    continue
+                block_ids, distance = route_info
 
                 running_node = first.end
                 for block_id in block_ids:
@@ -885,5 +894,6 @@ if __name__ == "__main__":
             optimizer_points=optimizer_points,
             requested_blocks=requested_blocks,
             viz_path=viz_dir,
-            problem_path=problem_dir
+            problem_path=problem_dir,
+            id=sys.argv[1]
         )

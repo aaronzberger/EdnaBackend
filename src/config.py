@@ -90,6 +90,8 @@ clustering_pickle_file = os.path.join(BASE_DIR, "regions", AREA_ID, "clustering.
 
 details_file = os.path.join(BASE_DIR, "regions", AREA_ID, "areas", "details.json")
 
+street_view_failed_uuids_file = os.path.join(BASE_DIR, "input", "street_view_failed_uuids.json")
+
 VIZ_PATH = os.path.join(BASE_DIR, "viz")
 PROBLEM_PATH = os.path.join(VIZ_PATH, "problem")
 
