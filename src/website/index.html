@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    #fileList {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+        padding: 20px;
+    }
+
+    /* Styling for each item/box */
+    .box {
+        background-color: #f1f1f1ef;
+        padding: 16px;
+        border-radius: 15px;
+        position: relative;
+        box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease; /* New */
+    }
+
+    /* On hover, increase the shadow size */
+    .box:hover {
+        box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2); /* New */
+        transform: scale(1.05); /* New */
+    }
+
+    /* Centering buttons and making them side by side */
+    .box .button-container {
+        display: flex;
+        justify-content: center;
+        gap: 8px;  /* Space between buttons */
+    }
+
+    /* Styling for the active tag */
+    .active-tag {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background: green;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 0 0 0 4px;
+    }
+
+    .hidden {
+        display: none;
+    }
+    /* Button Styling */
+    button {
+        background-color: #0F6BF5;
+        color: white;
+        border: none;
+        padding: 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        white-space: nowrap;
+    }
+    button:hover {
+        background-color: #004cbf;
+    }
+
+    /* Icons */
+    .icon {
+        width: 16px;
+        vertical-align: middle;
+    }
+
+    /* Full Screen Overlay */
+    /* Adjust overlay content */
+    #overlay-content {
+      width: 85%;
+      height: 85%;
+      position: relative;
+      border-radius: 12px; /* rounded corners */
+      background-color: white;
+      overflow: hidden;
+    }
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        display: none;
+    }
+    .overlay img, .overlay iframe {
+        width: 98%;
+        height: 98%;
+    }
+    .overlay.active {
+        display: flex;
+    }
+    .overlay button {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+    }
+    /* Adjust iframe within overlay */
+    .overlay iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    .button {
+        text-decoration: none;
+        display: inline-block;
+        padding: 0.75rem 0.75rem;
+        border-radius: 5rem;
+        color: #fff;
+        font-size: 1rem;
+        /* letter-spacing: 0.15rem; */
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+        white-space: nowrap;
+    }
+    .button:after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #0F6BF5;
+        border-radius: 5rem;
+        z-index: -2;
+    }
+    .button:before {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0%;
+        height: 100%;
+        background-color: #0cf;
+        transition: all 0.3s;
+        border-radius: 5rem;
+        z-index: -1;
+    }
+    .button:hover {
+        color: #fff;
+    }
+    .button:hover:before {
+        width: 100%;
+    }
+
+    .container {
+        padding-top: 50px;
+        margin: 0 auto;
+        width: 100%;
+        text-align: center;
+    }
+
+    .close {
+        position: absolute;
+        right: 32px;
+        top: 32px;
+        width: 32px;
+        height: 32px;
+        opacity: 0.5;
+        z-index: 1002;
+    }
+    .close:hover {
+        opacity: 1;
+    }
+    .close:before, .close:after {
+        position: absolute;
+        left: 15px;
+        content: ' ';
+        height: 33px;
+        width: 2px;
+        background-color: #333;
+        }
+    .close:before {
+        transform: rotate(45deg);
+    }
+    .close:after {
+        transform: rotate(-45deg);
+    }
+    h1 {
+        /* Center on the screen, make blue, padding, lexend font, bold, very large text */
+        text-align: center;
+        color: #0F6BF5;
+        padding: 10px;
+        font-family: 'Lexend Deca', sans-serif;
+        font-weight: 800;
+        font-size: 50px;
+    }
+    h2 {
+        /* Center on the screen, make black , medium weight, lexend font */
+        text-align: center;
+        color: black;
+        font-family: 'Lexend Deca', sans-serif;
+        font-weight: 600;
+    }
+</style>
+  </style>
+</head>
+<body>
+    <h1>Giuseppe Rosselli</h1>
+    <h2>Canvassing Dashboard</h2>
+  <div id="fileList"></div>
+<!-- Overlay for Full Screen Images and Visualization -->
+  <div id="overlay" class="overlay">
+    <div id="overlay-content">
+        <a href="#" class="close" onclick="closeOverlay()"></a>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function(event) {
+      placeElements();
+
+        // Event listener for closing overlay when clicking outside
+        document.getElementById('overlay').addEventListener('click', function(event) {
+            if (!document.getElementById('overlay-content').contains(event.target)) {
+                closeOverlay();
+            }
+        });
+    });
+
+    const HOUSE_ICON_URL = 'https://banner2.cleanpng.com/20180816/yvj/kisspng-clip-art-computer-icons-house-vector-graphics-home-ip-svg-png-icon-free-download-23-593-onlinewe-5b74fab0db6150.9526657015343930088986.jpg'
+    const DISTANCE_ICON_URL = 'https://cdn-icons-png.flaticon.com/512/484/484141.png'
+
+    async function placeElements() {
+        console.log("Place elements")
+        const details_file = "https://votefalcon.s3.amazonaws.com/lists/rosselli-details.json"
+
+        // Get the list of files from the details file
+        try {
+            const response = await fetch(details_file);
+            const lists = await response.json();
+
+            console.log("Lists", lists)
+            const fileListElement = document.getElementById('fileList');
+            fileListElement.innerHTML = '';
+
+            // Update the lists with the visualization and qr code urls
+            let index = 0;
+            for (const [id, details] of Object.entries(lists)) {
+                details.visualizationUrl = `https://votefalcon.s3.amazonaws.com/visualization/${id}.html`;
+                details.qrCodeUrl = `https://votefalcon.s3.amazonaws.com/qr/${id}.png`;
+
+                console.log(id, details)
+                const fileElement = document.createElement('div');
+                fileElement.className = 'box';
+
+                // Convert meters to miles
+                let miles = Math.round(details.distance * 0.000621371 * 100) / 100;
+                const distance_rounded = Math.round(miles * 10) / 10;
+
+                fileElement.innerHTML = `
+                    <div class="active-tag">Ready</div>
+                    <p><img class="icon" src="${HOUSE_ICON_URL}"> ${details.num_houses} houses</p>
+                        <p><img class="icon" src="${DISTANCE_ICON_URL}"> ${distance_rounded} miles</p>
+                        <div class="button-container">  <!-- New container for buttons -->
+                            <a href="#" class="button" onclick="openOverlay(event, '${details.visualizationUrl}', 'iframe')">View Route</a>
+                            <a href="#" class="button" onclick="window.open('${details.qrCodeUrl}', '_blank')">QR Code</a>
+                        </div>
+                `;
+                fileListElement.appendChild(fileElement);
+                index++;
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    // Functions to open/close overlay
+    function openOverlay(event, url, type) {
+        event.preventDefault();
+        const overlayContent = document.getElementById('overlay-content');
+        overlayContent.innerHTML = `<iframe src="${url}" frameborder="0"></iframe>`;
+        document.getElementById('overlay').classList.add('active');
+    }
+    
+    function closeOverlay() {
+        document.getElementById('overlay').classList.remove('active');
+    }
+  </script>
+</body>
+</html>
