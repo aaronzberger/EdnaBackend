@@ -54,7 +54,7 @@
         position: absolute;
         top: 0;
         right: 0;
-        background: #0f3d04;
+        background: #078891;
         color: white;
         padding: 4px 8px;
         border-radius: 0 0 0 4px;
@@ -266,11 +266,25 @@
 
     async function placeElements() {
         const details_file = "https://votefalcon.s3.amazonaws.com/lists/rosselli-details_new.json"
+        let lists;
+
+        const cachedData = getCache("lists");
+
+        if (cachedData) {
+            lists = cachedData;
+        } else {
+            // Get the list of files from the details file
+            try {
+                const response = await fetch(details_file);
+                lists = await response.json();
+                setCache("lists", lists);
+            } catch (error) {
+                console.error(error);
+            }
+        }
 
         // Get the list of files from the details file
         try {
-            const response = await fetch(details_file);
-            const lists = await response.json();
 
             const fileListElement = document.getElementById('fileList');
             fileListElement.innerHTML = '';
@@ -290,6 +304,34 @@
                 details.visualizationUrl = `https://votefalcon.s3.amazonaws.com/visualization/${id}.html`;
                 details.qrCodeUrl = `https://votefalcon.s3.amazonaws.com/qr/${id}.png`;
 
+                details.upload_url = `https://votefalcon-uploads.s3.amazonaws.com/${id}.json`;
+                let status = null;
+                let num_completed = 0;
+
+                // Attempt to fetch the upload file
+                let cachedUpload = getCache(`upload-${id}`);
+                if (cachedUpload) {
+                    status = cachedUpload.status;
+                    num_completed = cachedUpload.num_completed;
+                } else {
+                    try {
+                        const response = await fetch(details.upload_url);
+                        const upload = await response.json();
+
+                        // Check the number of houses in the upload file (dict, "blocks" is a list of dicts, which has "houses" as a list)
+                        let num_houses = 0;
+                        for (const block of upload.blocks) {
+                            num_houses += block.houses.length;
+                        }
+                        status = num_houses === details.num_houses ? 'completed' : 'active';
+                        num_completed = num_houses;
+                        setCache(`upload-${id}`, {status, num_completed});
+                    } catch (error) {
+                        // If the file was not there, set status to ready
+                        status = 'ready';
+                        setCache(`upload-${id}`, {status, num_completed});
+                    }
+                }
                 const fileElement = document.createElement('div');
                 fileElement.className = 'box';
 
@@ -298,7 +340,7 @@
                 const distance_rounded = Math.round(miles * 10) / 10;
 
                 fileElement.innerHTML = `
-                    <div class="ready-tag">Ready</div>
+                    <div class="${status}-tag">${status === 'active' ? `${num_completed}/${details.num_houses}` : status.charAt(0).toUpperCase() + status.slice(1)}</div>
                     <p><img class="icon" src="${HOUSE_ICON_URL}"> ${details.num_houses} houses</p>
                     <p><img class="icon" src="${DISTANCE_ICON_URL}"> ${distance_rounded} miles</p>
                     <p><img class="icon" src="${PERSON_ICON_URL}"> ${details.num_voters} voters</p>
@@ -367,16 +409,29 @@
         }, 0);
     }
 
-    fileElement.addEventListener('click', function(event) {
-        // If clicking a button within the box, also select the box
-        if (event.target.closest('.button')) {
-            this.classList.add('selected');
-            if (selectedBox && selectedBox !== this) {
-                selectedBox.classList.remove('selected');
-            }
-            selectedBox = this;
+    // Function to set cache
+    function setCache(key, value) {
+    const now = new Date();
+    const item = {
+        value: value,
+        expiry: now.getTime() + 1000 * 60 * 60,
+    };
+    localStorage.setItem(key, JSON.stringify(item));
+    }
+
+    function getCache(key) {
+        const itemStr = localStorage.getItem(key);
+        if (!itemStr) {
+            return null;
         }
-    });
+        const item = JSON.parse(itemStr);
+        const now = new Date();
+        if (now.getTime() > item.expiry) {
+            localStorage.removeItem(key);
+            return null;
+        }
+        return item.value;
+    }
   </script>
 </body>
 </html>
