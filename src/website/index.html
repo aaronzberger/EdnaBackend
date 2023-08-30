@@ -4,25 +4,26 @@
   <style>
     #fileList {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
         gap: 20px;
         padding: 20px;
     }
 
     /* Styling for each item/box */
     .box {
-        background-color: #f1f1f1ef;
+        background-color: #f2f7ff;
         padding: 16px;
         border-radius: 15px;
         position: relative;
         box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.2);
         transition: all 0.3s ease; /* New */
+        height: auto;
     }
 
     /* On hover, increase the shadow size */
     .box:hover {
         box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2); /* New */
-        transform: scale(1.05); /* New */
+        transform: scale(1.1); /* New */
     }
 
     /* Centering buttons and making them side by side */
@@ -32,12 +33,39 @@
         gap: 8px;  /* Space between buttons */
     }
 
+    .selected {
+        background-color: #cae7f5;
+        transform: scale(1.1);
+    }
+
+    /* Styling for the active tag */
+    .ready-tag {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background: #041B3D;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 0 0 0 4px;
+    }
+
     /* Styling for the active tag */
     .active-tag {
         position: absolute;
         top: 0;
         right: 0;
-        background: green;
+        background: #0f3d04;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 0 0 0 4px;
+    }
+
+    /* Styling for the active tag */
+    .completed-tag {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background: #1f9900;
         color: white;
         padding: 4px 8px;
         border-radius: 0 0 0 4px;
@@ -111,7 +139,7 @@
     .button {
         text-decoration: none;
         display: inline-block;
-        padding: 0.75rem 0.75rem;
+        padding: 8px 8px;
         border-radius: 5rem;
         color: #fff;
         font-size: 1rem;
@@ -121,6 +149,8 @@
         overflow: hidden;
         z-index: 1;
         white-space: nowrap;
+        min-width: 80px;
+        text-align: center;
     }
     .button:after {
         content: "";
@@ -227,29 +257,39 @@
         });
     });
 
-    const HOUSE_ICON_URL = 'https://banner2.cleanpng.com/20180816/yvj/kisspng-clip-art-computer-icons-house-vector-graphics-home-ip-svg-png-icon-free-download-23-593-onlinewe-5b74fab0db6150.9526657015343930088986.jpg'
-    const DISTANCE_ICON_URL = 'https://cdn-icons-png.flaticon.com/512/484/484141.png'
+    let selectedBox = null;
+    let isOverlayActive = false;
+
+    const HOUSE_ICON_URL = 'https://static.thenounproject.com/png/1439-200.png'
+    const DISTANCE_ICON_URL = 'https://static.thenounproject.com/png/1832-200.png'
+    const PERSON_ICON_URL = 'https://static.thenounproject.com/png/4851855-200.png'
 
     async function placeElements() {
-        console.log("Place elements")
-        const details_file = "https://votefalcon.s3.amazonaws.com/lists/rosselli-details.json"
+        const details_file = "https://votefalcon.s3.amazonaws.com/lists/rosselli-details_new.json"
 
         // Get the list of files from the details file
         try {
             const response = await fetch(details_file);
             const lists = await response.json();
 
-            console.log("Lists", lists)
             const fileListElement = document.getElementById('fileList');
             fileListElement.innerHTML = '';
 
+            // Sort the lists by efficiency (weight houses more than distance)
+            const sortedLists = Object.entries(lists).sort((a, b) => {
+                let a_efficiency = a[1].num_houses / a[1].distance;
+                let b_efficiency = b[1].num_houses / b[1].distance;
+                const scoreA = a[1].num_houses + 10 * a_efficiency;
+                const scoreB = b[1].num_houses + 10 * b_efficiency;
+                return scoreB - scoreA;
+            });
+
             // Update the lists with the visualization and qr code urls
             let index = 0;
-            for (const [id, details] of Object.entries(lists)) {
+            for (const [id, details] of sortedLists) {
                 details.visualizationUrl = `https://votefalcon.s3.amazonaws.com/visualization/${id}.html`;
                 details.qrCodeUrl = `https://votefalcon.s3.amazonaws.com/qr/${id}.png`;
 
-                console.log(id, details)
                 const fileElement = document.createElement('div');
                 fileElement.className = 'box';
 
@@ -258,15 +298,52 @@
                 const distance_rounded = Math.round(miles * 10) / 10;
 
                 fileElement.innerHTML = `
-                    <div class="active-tag">Ready</div>
+                    <div class="ready-tag">Ready</div>
                     <p><img class="icon" src="${HOUSE_ICON_URL}"> ${details.num_houses} houses</p>
-                        <p><img class="icon" src="${DISTANCE_ICON_URL}"> ${distance_rounded} miles</p>
+                    <p><img class="icon" src="${DISTANCE_ICON_URL}"> ${distance_rounded} miles</p>
+                    <p><img class="icon" src="${PERSON_ICON_URL}"> ${details.num_voters} voters</p>
                         <div class="button-container">  <!-- New container for buttons -->
                             <a href="#" class="button" onclick="openOverlay(event, '${details.visualizationUrl}', 'iframe')">View Route</a>
                             <a href="#" class="button" onclick="window.open('${details.qrCodeUrl}', '_blank')">QR Code</a>
                         </div>
                 `;
+
+                // This code will remove the selected class from all boxes if you click anywhere else on the document
+                document.addEventListener('click', function(event) {
+                    if (isOverlayActive) return;
+
+                    document.querySelectorAll('.box.selected').forEach(function(box) {
+                        box.classList.remove('selected');
+                    });
+
+                    // If clicking a box, select it
+                    const closestBox = event.target.closest('.box');
+                    if (closestBox) {
+                        closestBox.classList.add('selected');
+                        selectedBox = closestBox;
+                    } else {
+                        selectedBox = null;
+                    }
+                });
+
                 fileListElement.appendChild(fileElement);
+
+                // Add a click event to the "View Route" button inside this box
+                fileElement.querySelector(".button").addEventListener("click", function() {
+                    // If the box is not already selected, select it
+                    if (!fileElement.classList.contains("selected")) {
+                        fileElement.classList.add("selected");
+
+                        // If another box is already selected, unselect it
+                        if (selectedBox && selectedBox !== fileElement) {
+                            selectedBox.classList.remove("selected");
+                        }
+
+                        // Set the selectedBox to the current one
+                        selectedBox = fileElement;
+                    }
+                });
+
                 index++;
             }
         } catch (error) {
@@ -280,11 +357,26 @@
         const overlayContent = document.getElementById('overlay-content');
         overlayContent.innerHTML = `<iframe src="${url}" frameborder="0"></iframe>`;
         document.getElementById('overlay').classList.add('active');
+        isOverlayActive = true;
     }
     
     function closeOverlay() {
         document.getElementById('overlay').classList.remove('active');
+        setTimeout(() => {
+            isOverlayActive = false;
+        }, 0);
     }
+
+    fileElement.addEventListener('click', function(event) {
+        // If clicking a button within the box, also select the box
+        if (event.target.closest('.button')) {
+            this.classList.add('selected');
+            if (selectedBox && selectedBox !== this) {
+                selectedBox.classList.remove('selected');
+            }
+            selectedBox = this;
+        }
+    });
   </script>
 </body>
 </html>
