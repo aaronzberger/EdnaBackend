@@ -104,6 +104,45 @@
       border-radius: 12px; /* rounded corners */
       background-color: white;
       overflow: hidden;
+      display: flex;
+    }
+    #overlay-content.image-only img {
+        max-width: 100%;
+        height: auto;
+    }
+    #overlay-content.image-only {
+        justify-content: center;
+        align-items: center;
+    }
+    #overlay-content img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: auto;
+        object-fit: contain;
+    }
+    #overlay-content button {
+        position: absolute;
+    }
+    #copy-button {
+        top: 10px;
+        left: 10px;
+    }
+    #print-button {
+        top: 10px;
+        right: 10px;
+    }
+    #overlay-content .copy-button, #overlay-content .print-button {
+        background-color: #0F6BF5;
+        color: white;
+        border: none;
+        padding: 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        white-space: nowrap;
+        width: auto;
+        margin: 0 10px;
     }
     .overlay {
         position: fixed;
@@ -118,23 +157,12 @@
         z-index: 1000;
         display: none;
     }
-    .overlay img, .overlay iframe {
+    .overlay iframe {
         width: 98%;
         height: 98%;
     }
     .overlay.active {
         display: flex;
-    }
-    .overlay button {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-    }
-    /* Adjust iframe within overlay */
-    .overlay iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
     }
     .button {
         text-decoration: none;
@@ -219,7 +247,6 @@
         /* Center on the screen, make blue, padding, lexend font, bold, very large text */
         text-align: center;
         color: #0F6BF5;
-        padding: 10px;
         font-family: 'Lexend Deca', sans-serif;
         font-weight: 800;
         font-size: 50px;
@@ -227,9 +254,85 @@
     h2 {
         /* Center on the screen, make black , medium weight, lexend font */
         text-align: center;
-        color: black;
+        color: rgba(0, 0, 0, 0.919);
         font-family: 'Lexend Deca', sans-serif;
         font-weight: 600;
+    }
+    .radio {
+  display: block;
+  cursor: pointer;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  text-align: left;
+  padding-right: 20px;
+  font-size: medium;
+  font-weight: 500;
+}
+.radio + .radio {
+  margin-top: 12px;
+}
+.radio input {
+  display: none;
+}
+.radio input + span {
+  display: inline-block;
+  position: relative;
+  padding-left: 30px;
+}
+.radio input + span:before {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  border-radius: 50%;
+  margin-right: 5px;
+  width: 16px;
+  height: 16px;
+  border: 1px solid #ccc;
+  background: #fff;
+}
+.radio input + span:after {
+  content: '';
+  display: block;
+  width: 10px;
+  height: 10px;
+  background: #222;
+  position: absolute;
+  border-radius: 50%;
+  top: 3px;
+  left: 3px;
+  opacity: 0;
+  transform: scale(0, 0);
+  transition: all 0.2s cubic-bezier(0.64, 0.57, 0.67, 1.53);
+}
+.radio input:checked + span:after {
+  opacity: 1;
+  transform: scale(1, 1);
+}
+    .spinner {
+        display: none;
+        border: 4px solid rgba(0, 0, 0, 0.3);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border-top-color: #000;
+        animation: spin 1s ease-in-out infinite;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        margin-left: -20px;
+        margin-top: -20px;
+    }
+    @keyfranes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
     }
 </style>
   </style>
@@ -237,6 +340,25 @@
 <body>
     <h1>Giuseppe Rosselli</h1>
     <h2>Canvassing Dashboard</h2>
+    <div style="flex-direction: row; align-items: center; display: flex;">
+        <label class="radio">
+            <input name="radio" type="radio" value="all" onclick="setFilter('all')" checked>
+            <span>All</span>
+        </label>
+        <label class="radio">
+            <input name="radio" type="radio" value="active" onclick="setFilter('active')">
+            <span>Active</span>
+        </label>
+        <label class="radio">
+            <input name="radio" type="radio" value="completed" onclick="setFilter('completed')">
+            <span>Completed</span>
+        </label>
+        <label class="radio">
+            <input name="radio" type="radio" value="ready" onclick="setFilter('ready')">
+            <span>Ready</span>
+        </label>
+    </div>
+    <div id="spinner" class="spinner"></div>
   <div id="fileList"></div>
 <!-- Overlay for Full Screen Images and Visualization -->
   <div id="overlay" class="overlay">
@@ -257,6 +379,8 @@
         });
     });
 
+    let filter = 'all';
+
     let selectedBox = null;
     let isOverlayActive = false;
 
@@ -265,10 +389,15 @@
     const PERSON_ICON_URL = 'https://static.thenounproject.com/png/4851855-200.png'
 
     async function placeElements() {
+        // Show the spinner
+        document.getElementById('spinner').style.display = 'block';
+
         const details_file = "https://votefalcon.s3.amazonaws.com/lists/rosselli-details_new.json"
         let lists;
 
-        const cachedData = getCache("lists");
+        // const cachedData = getCache("lists");
+        // Temporarily disable caching to test loading speed
+        const cachedData = null;
 
         if (cachedData) {
             lists = cachedData;
@@ -283,55 +412,67 @@
             }
         }
 
+        // Get the uploads for each list
+        for (const [id, details] of Object.entries(lists)) {
+            details.visualizationUrl = `https://votefalcon.s3.amazonaws.com/visualization/${id}.html`;
+            details.qrCodeUrl = `https://votefalcon.s3.amazonaws.com/qr/${id}.png`;
+            details.uploadUrl = `https://votefalcon-uploads.s3.amazonaws.com/${id}.json`;
+            details.listUrl = `https://votefalcon.s3.amazonaws.com/lists/${id}.json`;
+            let status = null;
+            let num_completed = 0;
+
+            // Attempt to fetch the upload file
+            let cachedUpload = getCache(`upload-${id}`);
+            if (cachedUpload) {
+                status = cachedUpload.status;
+                num_completed = cachedUpload.num_completed;
+            } else {
+                try {
+                    const response = await fetch(details.uploadUrl);
+                    const upload = await response.json();
+
+                    // Check the number of houses in the upload file (dict, "blocks" is a list of dicts, which has "houses" as a list)
+                    let num_houses = 0;
+                    for (const block of upload.blocks) {
+                        num_houses += block.houses.length;
+                    }
+                    status = num_houses === details.num_houses ? 'completed' : 'active';
+                    num_completed = num_houses;
+                    setCache(`upload-${id}`, {status, num_completed});
+                } catch (error) {
+                    // If the file was not there, set status to ready
+                    status = 'ready';
+                    setCache(`upload-${id}`, {status, num_completed});
+                }
+            }
+            details.status = status;
+            details.num_completed = num_completed;
+        }
+
+        // Filter the lists
+        if (filter !== 'all') {
+            lists = Object.fromEntries(Object.entries(lists).filter(([id, details]) => {
+                return details.status === filter;
+            }));
+        }
+
+        // Sort the lists
+        const sortedLists = Object.entries(lists).sort((a, b) => {
+            let a_efficiency = a[1].num_houses / a[1].distance;
+            let b_efficiency = b[1].num_houses / b[1].distance;
+            const scoreA = a[1].num_houses + 10 * a_efficiency;
+            const scoreB = b[1].num_houses + 10 * b_efficiency;
+            return scoreB - scoreA;
+        });
+
         // Get the list of files from the details file
         try {
-
             const fileListElement = document.getElementById('fileList');
             fileListElement.innerHTML = '';
-
-            // Sort the lists by efficiency (weight houses more than distance)
-            const sortedLists = Object.entries(lists).sort((a, b) => {
-                let a_efficiency = a[1].num_houses / a[1].distance;
-                let b_efficiency = b[1].num_houses / b[1].distance;
-                const scoreA = a[1].num_houses + 10 * a_efficiency;
-                const scoreB = b[1].num_houses + 10 * b_efficiency;
-                return scoreB - scoreA;
-            });
 
             // Update the lists with the visualization and qr code urls
             let index = 0;
             for (const [id, details] of sortedLists) {
-                details.visualizationUrl = `https://votefalcon.s3.amazonaws.com/visualization/${id}.html`;
-                details.qrCodeUrl = `https://votefalcon.s3.amazonaws.com/qr/${id}.png`;
-
-                details.upload_url = `https://votefalcon-uploads.s3.amazonaws.com/${id}.json`;
-                let status = null;
-                let num_completed = 0;
-
-                // Attempt to fetch the upload file
-                let cachedUpload = getCache(`upload-${id}`);
-                if (cachedUpload) {
-                    status = cachedUpload.status;
-                    num_completed = cachedUpload.num_completed;
-                } else {
-                    try {
-                        const response = await fetch(details.upload_url);
-                        const upload = await response.json();
-
-                        // Check the number of houses in the upload file (dict, "blocks" is a list of dicts, which has "houses" as a list)
-                        let num_houses = 0;
-                        for (const block of upload.blocks) {
-                            num_houses += block.houses.length;
-                        }
-                        status = num_houses === details.num_houses ? 'completed' : 'active';
-                        num_completed = num_houses;
-                        setCache(`upload-${id}`, {status, num_completed});
-                    } catch (error) {
-                        // If the file was not there, set status to ready
-                        status = 'ready';
-                        setCache(`upload-${id}`, {status, num_completed});
-                    }
-                }
                 const fileElement = document.createElement('div');
                 fileElement.className = 'box';
 
@@ -340,13 +481,13 @@
                 const distance_rounded = Math.round(miles * 10) / 10;
 
                 fileElement.innerHTML = `
-                    <div class="${status}-tag">${status === 'active' ? `${num_completed}/${details.num_houses}` : status.charAt(0).toUpperCase() + status.slice(1)}</div>
+                    <div class="${details.status}-tag">${details.status === 'active' ? `${details.num_completed}/${details.num_houses}` : details.status.charAt(0).toUpperCase() + details.status.slice(1)}</div>
                     <p><img class="icon" src="${HOUSE_ICON_URL}"> ${details.num_houses} houses</p>
                     <p><img class="icon" src="${DISTANCE_ICON_URL}"> ${distance_rounded} miles</p>
                     <p><img class="icon" src="${PERSON_ICON_URL}"> ${details.num_voters} voters</p>
                         <div class="button-container">  <!-- New container for buttons -->
-                            <a href="#" class="button" onclick="openOverlay(event, '${details.visualizationUrl}', 'iframe')">View Route</a>
-                            <a href="#" class="button" onclick="window.open('${details.qrCodeUrl}', '_blank')">QR Code</a>
+                            <a href="#" class="button" onclick="openVizOverlay(event, '${details.visualizationUrl}')">View Route</a>
+                            <a href="#" class="button" onclick="openImageOverlay(event, '${details.qrCodeUrl}', '${details.listUrl}')">QR Code</a>
                         </div>
                 `;
 
@@ -391,15 +532,61 @@
         } catch (error) {
             console.error(error);
         }
+
+        // Hide the spinner
+        document.getElementById('spinner').style.display = 'none';
     }
 
     // Functions to open/close overlay
-    function openOverlay(event, url, type) {
+    function openVizOverlay(event, url) {
         event.preventDefault();
+        const overlay = document.getElementById('overlay');
         const overlayContent = document.getElementById('overlay-content');
+
+        overlayContent.classList.remove("image-only");
+
         overlayContent.innerHTML = `<iframe src="${url}" frameborder="0"></iframe>`;
-        document.getElementById('overlay').classList.add('active');
+        overlay.classList.add('active');
         isOverlayActive = true;
+    }
+
+    function openImageOverlay(event, url, listUrl) {
+        // event.preventDefault();
+        const overlay = document.getElementById('overlay');
+        const overlayContent = document.getElementById('overlay-content');
+        overlayContent.classList.add("image-only");
+
+        overlayContent.innerHTML = `
+            <img src="${url}" alt="QR Code" style="padding: 30px; padding-top: 50px;">
+            <button id="copy-button" class="button" onclick="copyLink('${listUrl}')">Copy Link</button>
+            <button id="print-button" class="button" onclick="printQRCode('${url}')">Print</button>
+        `;
+        // Manually set the width to auto
+        overlayContent.style.width = 'auto';
+        overlayContent.style.height = 'auto';
+        overlay.classList.add('active');
+        isOverlayActive = true;
+    }
+
+    function copyLink(link) {
+        // Copy link logic here.
+        navigator.clipboard.writeText(link).then(function() {
+            console.log('Link copied to clipboard');
+        }).catch(function(err) {
+            console.error('Could not copy text', err);
+        });
+    }
+
+    function printQRCode(url) {
+        // Print QR code logic here.
+            // Open a new window
+        // Print logic here.
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write('<html><head><title>Print QR Code</title></head><body>');
+        printWindow.document.write('<img src="' + url + '" />');
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.print();
     }
     
     function closeOverlay() {
@@ -411,12 +598,12 @@
 
     // Function to set cache
     function setCache(key, value) {
-    const now = new Date();
-    const item = {
-        value: value,
-        expiry: now.getTime() + 1000 * 60 * 60,
-    };
-    localStorage.setItem(key, JSON.stringify(item));
+        const now = new Date();
+        const item = {
+            value: value,
+            expiry: now.getTime() + 1000 * 60 * 60,
+        };
+        localStorage.setItem(key, JSON.stringify(item));
     }
 
     function getCache(key) {
@@ -431,6 +618,11 @@
             return null;
         }
         return item.value;
+    }
+
+    function setFilter(newFilter) {
+        filter = newFilter;
+        placeElements();
     }
   </script>
 </body>
