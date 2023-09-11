@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    #fileList {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+        gap: 20px;
+        padding: 20px;
+    }
+
+    /* Styling for each item/box */
+    .box {
+        background-color: #f2f7ff;
+        padding: 16px;
+        border-radius: 15px;
+        position: relative;
+        box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease; /* New */
+        height: auto;
+    }
+
+    /* On hover, increase the shadow size */
+    .box:hover {
+        box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2); /* New */
+        transform: scale(1.1); /* New */
+    }
+
+    /* Centering buttons and making them side by side */
+    .box .button-container {
+        display: flex;
+        justify-content: center;
+        gap: 8px;  /* Space between buttons */
+    }
+
+    .selected {
+        background-color: #cae7f5;
+        transform: scale(1.1);
+    }
+
+    /* Styling for the active tag */
+    .ready-tag {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background: #041B3D;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 0 0 0 4px;
+    }
+
+    /* Styling for the active tag */
+    .active-tag {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background: #078891;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 0 0 0 4px;
+    }
+
+    /* Styling for the active tag */
+    .completed-tag {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background: #1f9900;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 0 0 0 4px;
+    }
+
+    .hidden {
+        display: none;
+    }
+    /* Button Styling */
+    button {
+        background-color: #0F6BF5;
+        color: white;
+        border: none;
+        padding: 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        white-space: nowrap;
+    }
+    button:hover {
+        background-color: #004cbf;
+    }
+
+    /* Icons */
+    .icon {
+        width: 16px;
+        vertical-align: middle;
+    }
+
+    /* Full Screen Overlay */
+    /* Adjust overlay content */
+    #overlay-content {
+      width: 85%;
+      height: 85%;
+      position: relative;
+      border-radius: 12px; /* rounded corners */
+      background-color: white;
+      overflow: hidden;
+    }
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        display: none;
+    }
+    .overlay img, .overlay iframe {
+        width: 98%;
+        height: 98%;
+    }
+    .overlay.active {
+        display: flex;
+    }
+    .overlay button {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+    }
+    /* Adjust iframe within overlay */
+    .overlay iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    .button {
+        text-decoration: none;
+        display: inline-block;
+        padding: 8px 8px;
+        border-radius: 5rem;
+        color: #fff;
+        font-size: 1rem;
+        /* letter-spacing: 0.15rem; */
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+        white-space: nowrap;
+        min-width: 80px;
+        text-align: center;
+    }
+    .button:after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #0F6BF5;
+        border-radius: 5rem;
+        z-index: -2;
+    }
+    .button:before {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0%;
+        height: 100%;
+        background-color: #0cf;
+        transition: all 0.3s;
+        border-radius: 5rem;
+        z-index: -1;
+    }
+    .button:hover {
+        color: #fff;
+    }
+    .button:hover:before {
+        width: 100%;
+    }
+
+    .container {
+        padding-top: 50px;
+        margin: 0 auto;
+        width: 100%;
+        text-align: center;
+    }
+
+    .close {
+        position: absolute;
+        right: 32px;
+        top: 32px;
+        width: 32px;
+        height: 32px;
+        opacity: 0.5;
+        z-index: 1002;
+    }
+    .close:hover {
+        opacity: 1;
+    }
+    .close:before, .close:after {
+        position: absolute;
+        left: 15px;
+        content: ' ';
+        height: 33px;
+        width: 2px;
+        background-color: #333;
+        }
+    .close:before {
+        transform: rotate(45deg);
+    }
+    .close:after {
+        transform: rotate(-45deg);
+    }
+    h1 {
+        /* Center on the screen, make blue, padding, lexend font, bold, very large text */
+        text-align: center;
+        color: #0F6BF5;
+        padding: 10px;
+        font-family: 'Lexend Deca', sans-serif;
+        font-weight: 800;
+        font-size: 50px;
+    }
+    h2 {
+        /* Center on the screen, make black , medium weight, lexend font */
+        text-align: center;
+        color: black;
+        font-family: 'Lexend Deca', sans-serif;
+        font-weight: 600;
+    }
+</style>
+  </style>
+</head>
+<body>
+    <h1>Giuseppe Rosselli</h1>
+    <h2>Canvassing Dashboard</h2>
+  <div id="fileList"></div>
+<!-- Overlay for Full Screen Images and Visualization -->
+  <div id="overlay" class="overlay">
+    <div id="overlay-content">
+        <a href="#" class="close" onclick="closeOverlay()"></a>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function(event) {
+      placeElements();
+
+        // Event listener for closing overlay when clicking outside
+        document.getElementById('overlay').addEventListener('click', function(event) {
+            if (!document.getElementById('overlay-content').contains(event.target)) {
+                closeOverlay();
+            }
+        });
+    });
+
+    let selectedBox = null;
+    let isOverlayActive = false;
+
+    const HOUSE_ICON_URL = 'https://static.thenounproject.com/png/1439-200.png'
+    const DISTANCE_ICON_URL = 'https://static.thenounproject.com/png/1832-200.png'
+    const PERSON_ICON_URL = 'https://static.thenounproject.com/png/4851855-200.png'
+
+    async function placeElements() {
+        const details_file = "https://votefalcon.s3.amazonaws.com/lists/rosselli-details_new.json"
+        let lists;
+
+        const cachedData = getCache("lists");
+
+        if (cachedData) {
+            lists = cachedData;
+        } else {
+            // Get the list of files from the details file
+            try {
+                const response = await fetch(details_file);
+                lists = await response.json();
+                setCache("lists", lists);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        // Get the list of files from the details file
+        try {
+
+            const fileListElement = document.getElementById('fileList');
+            fileListElement.innerHTML = '';
+
+            // Sort the lists by efficiency (weight houses more than distance)
+            const sortedLists = Object.entries(lists).sort((a, b) => {
+                let a_efficiency = a[1].num_houses / a[1].distance;
+                let b_efficiency = b[1].num_houses / b[1].distance;
+                const scoreA = a[1].num_houses + 10 * a_efficiency;
+                const scoreB = b[1].num_houses + 10 * b_efficiency;
+                return scoreB - scoreA;
+            });
+
+            // Update the lists with the visualization and qr code urls
+            let index = 0;
+            for (const [id, details] of sortedLists) {
+                details.visualizationUrl = `https://votefalcon.s3.amazonaws.com/visualization/${id}.html`;
+                details.qrCodeUrl = `https://votefalcon.s3.amazonaws.com/qr/${id}.png`;
+
+                details.upload_url = `https://votefalcon-uploads.s3.amazonaws.com/${id}.json`;
+                let status = null;
+                let num_completed = 0;
+
+                // Attempt to fetch the upload file
+                let cachedUpload = getCache(`upload-${id}`);
+                if (cachedUpload) {
+                    status = cachedUpload.status;
+                    num_completed = cachedUpload.num_completed;
+                } else {
+                    try {
+                        const response = await fetch(details.upload_url);
+                        const upload = await response.json();
+
+                        // Check the number of houses in the upload file (dict, "blocks" is a list of dicts, which has "houses" as a list)
+                        let num_houses = 0;
+                        for (const block of upload.blocks) {
+                            num_houses += block.houses.length;
+                        }
+                        status = num_houses === details.num_houses ? 'completed' : 'active';
+                        num_completed = num_houses;
+                        setCache(`upload-${id}`, {status, num_completed});
+                    } catch (error) {
+                        // If the file was not there, set status to ready
+                        status = 'ready';
+                        setCache(`upload-${id}`, {status, num_completed});
+                    }
+                }
+                const fileElement = document.createElement('div');
+                fileElement.className = 'box';
+
+                // Convert meters to miles
+                let miles = Math.round(details.distance * 0.000621371 * 100) / 100;
+                const distance_rounded = Math.round(miles * 10) / 10;
+
+                fileElement.innerHTML = `
+                    <div class="${status}-tag">${status === 'active' ? `${num_completed}/${details.num_houses}` : status.charAt(0).toUpperCase() + status.slice(1)}</div>
+                    <p><img class="icon" src="${HOUSE_ICON_URL}"> ${details.num_houses} houses</p>
+                    <p><img class="icon" src="${DISTANCE_ICON_URL}"> ${distance_rounded} miles</p>
+                    <p><img class="icon" src="${PERSON_ICON_URL}"> ${details.num_voters} voters</p>
+                        <div class="button-container">  <!-- New container for buttons -->
+                            <a href="#" class="button" onclick="openOverlay(event, '${details.visualizationUrl}', 'iframe')">View Route</a>
+                            <a href="#" class="button" onclick="window.open('${details.qrCodeUrl}', '_blank')">QR Code</a>
+                        </div>
+                `;
+
+                // This code will remove the selected class from all boxes if you click anywhere else on the document
+                document.addEventListener('click', function(event) {
+                    if (isOverlayActive) return;
+
+                    document.querySelectorAll('.box.selected').forEach(function(box) {
+                        box.classList.remove('selected');
+                    });
+
+                    // If clicking a box, select it
+                    const closestBox = event.target.closest('.box');
+                    if (closestBox) {
+                        closestBox.classList.add('selected');
+                        selectedBox = closestBox;
+                    } else {
+                        selectedBox = null;
+                    }
+                });
+
+                fileListElement.appendChild(fileElement);
+
+                // Add a click event to the "View Route" button inside this box
+                fileElement.querySelector(".button").addEventListener("click", function() {
+                    // If the box is not already selected, select it
+                    if (!fileElement.classList.contains("selected")) {
+                        fileElement.classList.add("selected");
+
+                        // If another box is already selected, unselect it
+                        if (selectedBox && selectedBox !== fileElement) {
+                            selectedBox.classList.remove("selected");
+                        }
+
+                        // Set the selectedBox to the current one
+                        selectedBox = fileElement;
+                    }
+                });
+
+                index++;
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    // Functions to open/close overlay
+    function openOverlay(event, url, type) {
+        event.preventDefault();
+        const overlayContent = document.getElementById('overlay-content');
+        overlayContent.innerHTML = `<iframe src="${url}" frameborder="0"></iframe>`;
+        document.getElementById('overlay').classList.add('active');
+        isOverlayActive = true;
+    }
+    
+    function closeOverlay() {
+        document.getElementById('overlay').classList.remove('active');
+        setTimeout(() => {
+            isOverlayActive = false;
+        }, 0);
+    }
+
+    // Function to set cache
+    function setCache(key, value) {
+    const now = new Date();
+    const item = {
+        value: value,
+        expiry: now.getTime() + 1000 * 60 * 60,
+    };
+    localStorage.setItem(key, JSON.stringify(item));
+    }
+
+    function getCache(key) {
+        const itemStr = localStorage.getItem(key);
+        if (!itemStr) {
+            return null;
+        }
+        const item = JSON.parse(itemStr);
+        const now = new Date();
+        if (now.getTime() > item.expiry) {
+            localStorage.removeItem(key);
+            return null;
+        }
+        return item.value;
+    }
+  </script>
+</body>
+</html>

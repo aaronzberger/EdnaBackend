@@ -8,8 +8,8 @@ from typing import Optional
 from tqdm import tqdm
 
 from src.config import Point, blocks_file_t, generate_pt_id, node_distance_table_file
-from src.gps_utils import great_circle_distance
-from src.route import get_distance
+from src.utils.gps import great_circle_distance
+from src.utils.route import get_distance
 
 
 class NodeDistances():

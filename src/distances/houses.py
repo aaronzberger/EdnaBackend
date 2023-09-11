@@ -12,7 +12,7 @@ from src.config import (DIFFERENT_BLOCK_COST, DIFFERENT_SIDE_COST, DISTANCE_TO_R
                         KEEP_APARTMENTS, USE_COST_METRIC, Block, Point, blocks_file,
                         blocks_file_t, house_distance_table_file, pt_id)
 from src.distances.nodes import NodeDistances
-from src.route import get_distance
+from src.utils.route import get_distance
 
 
 def store(distance: int, cost: int) -> int:

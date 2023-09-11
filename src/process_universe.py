@@ -21,7 +21,7 @@ from rapidfuzz import fuzz, process
 from termcolor import colored
 from tqdm import tqdm
 
-from src.address import Address, addresses_file_t
+from src.utils.address import Address, addresses_file_t
 from src.config import (
     UUID_NAMESPACE,
     HouseInfo,

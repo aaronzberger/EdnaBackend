@@ -18,7 +18,7 @@ from src.config import (
 
 from src.distances.houses import HouseDistances
 from src.distances.nodes import NodeDistances
-from src.route import get_distance
+from src.utils.route import get_distance
 
 
 class MixDistances:

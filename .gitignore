@@ -30,3 +30,5 @@ debug.txt
 *.osm.pbf
 
 regions/
+
+node_modules/

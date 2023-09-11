@@ -15,82 +15,57 @@ VRP_CLI_PATH = "/home/user/.cargo/bin/vrp-cli"
 
 AREA_ID = "rosselli"
 USE_COST_METRIC = False
-STYLE_COLOR = '#0F6BF5'
+STYLE_COLOR = "#0F6BF5"
 
 street_suffixes_file = os.path.join(BASE_DIR, "src", "street_suffixes.json")
 
-node_distance_table_file = os.path.join(
-    BASE_DIR, "regions", AREA_ID, "store", "node_distances.json"
-)
-house_distance_table_file = os.path.join(
-    BASE_DIR, "regions", AREA_ID, "store", "house_distances.json"
-)
-block_distance_matrix_file = os.path.join(
-    BASE_DIR, "regions", AREA_ID, "store", "segment_distance_matrix.json"
-)
-node_coords_file = os.path.join(
-    BASE_DIR, "regions", AREA_ID, "store", "node_coords.json"
-)
-block_output_file = os.path.join(
-    BASE_DIR, "regions", AREA_ID, "input", "block_output.json"
-)
-adjacency_list_file = os.path.join(
-    BASE_DIR, "regions", AREA_ID, "input", "adjacency_list.json"
-)
-coords_node_file = os.path.join(
-    BASE_DIR, "regions", AREA_ID, "input", "coords_node.json"
-)
-overpass_file = os.path.join(BASE_DIR, "regions", AREA_ID, "input", "overpass.json")
+region_dir = os.path.join(BASE_DIR, "regions", AREA_ID)
+store_dir = os.path.join(region_dir, "store")
+input_dir = os.path.join(region_dir, "input")
+
+# Per-region storage files
+node_distance_table_file = os.path.join(store_dir, "node_distances.json")
+house_distance_table_file = os.path.join(store_dir, "house_distances.json")
+block_distance_matrix_file = os.path.join(store_dir, "segment_distance_matrix.json")
+node_coords_file = os.path.join(store_dir, "node_coords.json")
+
+# Per-region input files
+block_output_file = os.path.join(input_dir, "block_output.json")
+adjacency_list_file = os.path.join(input_dir, "adjacency_list.json")
+coords_node_file = os.path.join(input_dir, "coords_node.json")
+overpass_file = os.path.join(input_dir, "overpass.json")
+manual_match_output_file = os.path.join(input_dir, "manual_match_output.json")
 
 # Map addresses to block IDs
-addresses_file = os.path.join(BASE_DIR, "regions", AREA_ID, "addresses.json")
+addresses_file = os.path.join(region_dir, "addresses.json")
+manual_match_input_file = os.path.join(region_dir, "manual_match_input.json")
+reverse_geocode_file = os.path.join(region_dir, "reverse_geocode.json")
+house_id_to_block_id_file = os.path.join(region_dir, "house_id_to_block_id.json")
+id_to_addresses_file = os.path.join(region_dir, "id_to_addresses.json")
+requested_blocks_file = os.path.join(region_dir, "requested_blocks.json")
+house_to_voters_file = os.path.join(region_dir, "house_to_voters.json")
+blocks_file = os.path.join(region_dir, "blocks.json")
 
-manual_match_input_file = os.path.join(BASE_DIR, "regions", AREA_ID, "manual_match_input.json")
+# Per-problem pickle files
+optimizer_points_pickle_file = os.path.join(region_dir, "points.pkl")
+clustering_pickle_file = os.path.join(region_dir, "clustering.pkl")
 
-manual_match_output_file = os.path.join(BASE_DIR, "regions", AREA_ID, "input", "manual_match_output.json")
-
-reverse_geocode_file = os.path.join(BASE_DIR, "regions", AREA_ID, "reverse_geocode.json")
-
-house_id_to_block_id_file = os.path.join(
-    BASE_DIR, "regions", AREA_ID, "house_id_to_block_id.json"
-)
-
-id_to_addresses_file = os.path.join(
-    BASE_DIR, "regions", AREA_ID, "id_to_addresses.json"
-)
-
-universe_association = os.path.join(
-    BASE_DIR, "regions", AREA_ID, "universe_association.json"
-)
-
-requested_blocks_file = os.path.join(
-    BASE_DIR, "regions", AREA_ID, "requested_blocks.json"
-)
-
-house_to_voters_file = os.path.join(
-    BASE_DIR, "regions", AREA_ID, "house_to_voters.json"
-)
-
-turnout_predictions_file = os.path.join(
-    BASE_DIR, "input", "2023_general_predictions.json"
-)
-
-optimizer_points_pickle_file = os.path.join(
-    BASE_DIR, "optimize", "points.pkl"
-)
-
-blocks_file = os.path.join(BASE_DIR, "regions", AREA_ID, "blocks.json")
-
+# Default problem files, if not given per-problem
 address_pts_file = os.path.join(BASE_DIR, "input", "address_pts.csv")
 problem_path = os.path.join(BASE_DIR, "optimize", "problem.json")
 solution_path = os.path.join(BASE_DIR, "optimize", "solution.json")
 distances_path = os.path.join(BASE_DIR, "optimize", "distances.json")
 
-clustering_pickle_file = os.path.join(BASE_DIR, "regions", AREA_ID, "clustering.pkl")
+details_file = os.path.join(region_dir, "areas", "details.json")
 
-details_file = os.path.join(BASE_DIR, "regions", AREA_ID, "areas", "details.json")
+# Global input files
+street_view_failed_uuids_file = os.path.join(
+    BASE_DIR, "input", "street_view_failed_uuids.json"
+)
 
-street_view_failed_uuids_file = os.path.join(BASE_DIR, "input", "street_view_failed_uuids.json")
+turnout_predictions_file = os.path.join(
+    BASE_DIR, "input", "2023_general_predictions.json"
+)
 
 VIZ_PATH = os.path.join(BASE_DIR, "viz")
 PROBLEM_PATH = os.path.join(VIZ_PATH, "problem")
@@ -145,8 +120,14 @@ def house_value(voter_values: list[float]) -> float:
 "----------------------------------------------------------------------------------"
 "                             Optimization Parameters                              "
 "----------------------------------------------------------------------------------"
+NUM_LISTS = 3
+DEPOT = "107503392"
+
 SEARCH_MODE_DEEP = False
 TIMEOUT = timedelta(seconds=100)
+
+Problem_Types = Enum("Problem", ["turf_split", "group_canvas", "completed_group_canvas"])
+PROBLEM_TYPE = Problem_Types.group_canvas
 
 
 "----------------------------------------------------------------------------------"
@@ -156,9 +137,6 @@ TIMEOUT = timedelta(seconds=100)
 GOOGLE_MAPS_API_KEY = "AIzaSyAPpRP4mPuMlyRP8YiIaEOL_YAms6TpCwM"
 
 UUID_NAMESPACE = uuid.UUID("ccf207c6-3b15-11ee-be56-0242ac120002")
-
-TURF_SPLIT = False  # Which problem to run
-GROUP_CANVAS_FULL = True
 
 # Maximum distance between two nodes where they should be stored
 ARBITRARY_LARGE_DISTANCE = 10000
@@ -259,17 +237,6 @@ def pt_id(p: Point) -> str:
 house_t = dict[str, Point]
 node_list_t = list[Point]
 
-# DEPOT = Point(lat=40.5397171, lon=-80.1763386, type="node", id=None)  # Sewickley
-# DEPOT = Point(lat=40.4471477, lon=-79.9311578, type='node')  # Kipling and Dunmoyle
-# DEPOT = Point(lat=40.4310603, lon=-79.9191268, type='node')  # Shady and Nicholson
-# DEPOT = Point(lat=40.4430899, lon=-79.9329246, type='node')  # Maynard and Bennington
-# DEPOT = Point(
-#     lat=40.4362340, lon=-79.9191103, type=NodeType.node, id=""
-# )  # Forbes and Shady
-
-DEPOT = "107503392"
-NUM_LISTS = 3
-
 
 class HouseInfo(TypedDict):
     display_address: str  # VERY IMPORTANT!!! NEVER USE THIS TO INDEX INTO HOUSES, USE HOUSE UUID INSTEAD
@@ -299,17 +266,20 @@ blocks_file_t = dict[str, Block]
 "                               Output File Type Hints                             "
 "----------------------------------------------------------------------------------"
 
-tracked_elections = Enum("elections", [
-    "primary_2023",
-    "general_2022",
-    "primary_2022",
-    "general_2021",
-    "primary_2021",
-    "general_2020",
-    "primary_2020",
-    "general_2019",
-    "primary_2019"
-])
+tracked_elections = Enum(
+    "elections",
+    [
+        "primary_2023",
+        "general_2022",
+        "primary_2022",
+        "general_2021",
+        "primary_2021",
+        "general_2020",
+        "primary_2020",
+        "general_2019",
+        "primary_2019",
+    ],
+)
 
 
 # Mapping from voter file column names to elections
@@ -323,7 +293,7 @@ voter_file_mapping = {
     22: tracked_elections.general_2021,
     25: tracked_elections.primary_2022,
     26: tracked_elections.general_2022,
-    30: tracked_elections.primary_2023
+    30: tracked_elections.primary_2023,
 }
 
 

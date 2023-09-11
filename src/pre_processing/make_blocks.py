@@ -40,18 +40,18 @@ from src.config import (
     reverse_geocode_file,
     id_to_addresses_file,
 )
-from src.gps_utils import (
+from src.utils.gps import (
     along_track_distance,
     cross_track_distance,
     great_circle_distance,
     pt_to_utm,
 )
 
-from src.address import Address, addresses_file_t
+from src.utils.address import Address, addresses_file_t
 
 from tqdm import tqdm
 
-from src.viz_utils import display_blocks
+from src.utils.viz import display_blocks
 
 MAX_DISTANCE = 500  # meters from house to segment
 CHUNK_SIZE = 500  # in meters

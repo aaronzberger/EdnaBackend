@@ -412,7 +412,7 @@
             }
         }
 
-        // Get the uploads for each list
+        // Get the uploads for each lixst
         for (const [id, details] of Object.entries(lists)) {
             details.visualizationUrl = `https://votefalcon.s3.amazonaws.com/visualization/${id}.html`;
             details.qrCodeUrl = `https://votefalcon.s3.amazonaws.com/qr/${id}.png`;
@@ -546,12 +546,14 @@
         overlayContent.classList.remove("image-only");
 
         overlayContent.innerHTML = `<iframe src="${url}" frameborder="0"></iframe>`;
+        overlayContent.style.width = '85%';
+        overlayContent.style.height = '85%';
         overlay.classList.add('active');
         isOverlayActive = true;
     }
 
     function openImageOverlay(event, url, listUrl) {
-        // event.preventDefault();
+        event.preventDefault();
         const overlay = document.getElementById('overlay');
         const overlayContent = document.getElementById('overlay-content');
         overlayContent.classList.add("image-only");
@@ -569,18 +571,22 @@
     }
 
     function copyLink(link) {
-        // Copy link logic here.
-        navigator.clipboard.writeText(link).then(function() {
-            console.log('Link copied to clipboard');
-        }).catch(function(err) {
-            console.error('Could not copy text', err);
-        });
+        // Fallback method for copying text
+        const textarea = document.createElement("textarea");
+        textarea.textContent = link;
+        document.body.append(textarea);
+        textarea.select();
+        try {
+            document.execCommand("copy");
+            console.log("Link copied to clipboard");
+        } catch (err) {
+            console.error("Could not copy text", err);
+        } finally {
+            textarea.remove();
+        }
     }
 
     function printQRCode(url) {
-        // Print QR code logic here.
-            // Open a new window
-        // Print logic here.
         const printWindow = window.open('', '_blank');
         printWindow.document.write('<html><head><title>Print QR Code</title></head><body>');
         printWindow.document.write('<img src="' + url + '" />');

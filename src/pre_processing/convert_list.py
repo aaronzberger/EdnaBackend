@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 from src.config import (BASE_DIR, Point, block_output_file, blocks_file,
                         node_coords_file)
-from src.gps_utils import along_track_distance
+from src.utils.gps import along_track_distance
 
 
 print('Loading associations')
