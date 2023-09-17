@@ -5,14 +5,66 @@
     <link href="https://fonts.cdnfonts.com/css/octarine" rel="stylesheet">
     <link href="https://db.onlinewebfonts.com/c/d5cef4813ddc09fcf83925bed58a4de3?family=Katarine+Medium" rel="stylesheet">
   <style>
+    h1, h2 {
+        margin: 1.2rem 0;
+    }
+    h1 {
+        text-align: center;
+        color: #0F6BF5;
+        font-family: 'Roboto', sans-serif;
+        font-weight: 800;
+        font-size: 50px;
+    }
+    h2 {
+        text-align: center;
+        color: rgba(0, 0, 0, 0.919);
+        font-family: 'Roboto', sans-serif;
+        font-weight: 600;
+        margin-bottom: 50px;
+    }
+
+    /* Progress bar styling */
+    .progress-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+    }
+    .progress-label {
+        font-family: 'Octarine', sans-serif;
+        font-size: 1.5em;
+        margin-bottom: 10px;
+        margin-top: 50px;
+    }
+    .progress{
+        position: relative;
+        height: 10px;
+        width: 80%;
+        border: 10px solid #0F6BF5;
+        background-color: #0F6BF5;
+        border-radius: 15px;
+    }
+    .progress .color{
+        position: absolute;
+        background-color: #ffffff;
+        width: 0px;
+        height: 10px;
+        border-radius: 15px;
+        transition: width 0.5s ease-in-out;
+    }
+
     #fileList {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
         gap: 20px;
         padding: 20px;
     }
-
-    /* Styling for each item/box */
+    /* Box styling */
     .box {
         background-color: #f2f7ff;
         padding: 16px;
@@ -22,102 +74,56 @@
         transition: all 0.3s ease; /* New */
         height: auto;
     }
-
-    /* On hover, increase the shadow size */
     .box:hover {
-        box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2); /* New */
-        transform: scale(1.1); /* New */
+        box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+        transform: scale(1.1);
     }
-
-    /* Centering buttons and making them side by side */
     .box .button-container {
         display: flex;
         justify-content: center;
-        gap: 8px;  /* Space between buttons */
+        gap: 10px;  /* Space between buttons within boxes */
     }
-
     .selected {
         background-color: #cae7f5;
         transform: scale(1.1);
     }
-
-    /* Styling for the active tag */
-    .ready-tag {
-        position: absolute;
-        top: 0;
-        right: 0;
-        background: #041B3D;
-        color: white;
-        padding: 4px 8px;
-        padding-top: 6px;
-        border-radius: 0 0 0 10px;
+    /* Route statistics within each box */
+    .box-detail {
         font-family: 'Octarine', sans-serif;
     }
-
-    /* Styling for the active tag */
-    .active-tag {
-        position: absolute;
-        top: 0;
-        right: 0;
-        background: #078891;
-        color: white;
-        padding: 4px 8px;
-        padding-top: 6px;
-        border-radius: 0 0 0 10px;
-        font-family: 'Octarine', sans-serif;
-    }
-
-    /* Styling for the active tag */
-    .completed-tag {
-        position: absolute;
-        top: 0;
-        right: 0;
-        background: #1f9900;
-        color: white;
-        padding: 4px 8px;
-        padding-top: 6px;
-        border-radius: 0 0 0 10px;
-        font-family: 'Octarine', sans-serif;
-    }
-
-    .list-detail {
-        font-family: 'Octarine', sans-serif;
-    }
-
-    .unhidden {
-        display: block;
-    }
-    .hidden {
-        display: none;
-    }
-    /* Button Styling */
-    button {
-        background-color: #0F6BF5;
-        color: white;
-        border: none;
-        padding: 8px;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-        white-space: nowrap;
-    }
-    button:hover {
-        background-color: #004cbf;
-    }
-
-    /* Icons */
+    /* Route statistic icons */
     .icon {
-        width: 16px;
+        width: 20px;
         vertical-align: middle;
     }
 
-    /* Full Screen Overlay */
-    /* Adjust overlay content */
+    /* Box tag styling */
+    .box-tag {
+        position: absolute;
+        top: 0;
+        right: 0;
+        color: white;
+        padding: 4px 8px;
+        padding-top: 6px;
+        border-radius: 0 0 0 10px;
+        font-family: 'Octarine', sans-serif;
+    }
+    .box-tag.ready {
+        background: #041B3D;
+    }
+    .box-tag.active {
+        background: #078891;
+    }
+    .box-tag.completed {
+        background: #1f9900;
+    }
+
+    /* Full screen overlay */
     #overlay-content {
       width: 85%;
       height: 85%;
       position: relative;
-      border-radius: 12px; /* rounded corners */
+      border-radius: 12px;
       background-color: white;
       overflow: hidden;
       display: flex;
@@ -227,71 +233,19 @@
         width: 100%;
     }
 
-    .container {
-        padding-top: 50px;
-        margin: 0 auto;
-        width: 100%;
-        text-align: center;
-    }
-
-    .close {
-        position: absolute;
-        right: 32px;
-        top: 32px;
-        width: 32px;
-        height: 32px;
-        opacity: 0.5;
-        z-index: 1002;
-    }
-    .close:hover {
-        opacity: 1;
-    }
-    .close:before, .close:after {
-        position: absolute;
-        left: 15px;
-        content: ' ';
-        height: 33px;
-        width: 2px;
-        background-color: #333;
-        }
-    .close:before {
-        transform: rotate(45deg);
-    }
-    .close:after {
-        transform: rotate(-45deg);
-    }
-    h1, h2 {
-        margin: 1.2rem 0;
-    }
-    h1 {
-        /* Center on the screen, make blue, padding, lexend font, bold, very large text */
-        text-align: center;
-        color: #0F6BF5;
-        font-family: 'Roboto', sans-serif;
-        font-weight: 800;
-        font-size: 50px;
-    }
-    h2 {
-        /* Center on the screen, make black , medium weight, lexend font */
-        text-align: center;
-        color: rgba(0, 0, 0, 0.919);
-        font-family: 'Roboto', sans-serif;
-        font-weight: 600;
-        margin-bottom: 50px;
-    }
-
+    /* Box for radio buttons and pies */
     .flex-wrapper {
         display: flex;
         justify-content: center;
         align-items: flex-start;
         position: relative;
     }
+
+    /* Radio button styling */
     .radio-container {
         position: absolute;
         margin-left: 20px;
         left: 0;
-        /* top: 50%;
-        transform: translateY(-50%); */
     }
     .radio {
         margin: 0.5rem;
@@ -301,7 +255,6 @@
     .radio input[type=radio] {
         position: absolute;
         opacity: 0;
-        /* z-index: 1;  To bring it above the label */
         cursor: pointer;  /* Optional: To change cursor to a hand when hovering */
         width: 100%;  /* To make it cover the entire label */
         height: 100%;  /* To make it cover the entire label */
@@ -333,36 +286,8 @@
     .radio input[type=radio] + .radio-label:empty:before {
         margin-right: 0;
     }
-    .progress-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-    }
-    .progress-label {
-        margin-bottom: 10px;
-    }
-    .progress{
-        position: relative;
-        height: 10px;
-        width: 80%;
-        border: 10px solid #0F6BF5;
-        background-color: #0F6BF5;
-        border-radius: 15px;
-    }
-    .progress .color{
-        position: absolute;
-        background-color: #ffffff;
-        width: 0px;
-        height: 10px;
-        border-radius: 15px;
-        transition: width 0.5s ease-in-out;
-    }
+
+    /* Pie styling */
     .pie-container {
         display: inline-block;
         text-align: center;
@@ -376,7 +301,6 @@
         font-size: 1.5em;
         font-family: 'Octarine', sans-serif;
     }
-
     .pie-description {
         margin-top: 10px;
         font-size: 1.2em;
@@ -384,7 +308,6 @@
         color: #333;
         font-family: 'Roboto', sans-serif;
     }
-
     .pie {
         width: 120px;
         height: 120px;
@@ -394,9 +317,8 @@
         position: relative;
         display: inline-block;
         margin: 10px;
-        }
-
-        .pie::before {
+    }
+    .pie::before {
         content: '';
         display: block;
         margin-left: 50%;
@@ -404,9 +326,8 @@
         border-radius: 0 100% 100% 0 / 50%;
         background-color: inherit;
         transform-origin: left;
-        }
-
-        .pie::after {
+    }
+    .pie::after {
         content: attr(data-label);
         position: absolute;
         width: 70%;
@@ -419,12 +340,37 @@
         top: 0;
         bottom: 0;
         text-align: center;
-        font: 800 30px/81px Tahoma;
-        }
+        font: 800 40px/81px Tahoma;
+        font-family: 'Roboto', sans-serif;
+    }
     .pie-section {
         text-align: center;
         flex: 3;
         align-self: cetner;
+    }
+
+    /* Re-arrange elements for thin screen sizes */
+    @media only screen and (max-width: 768px) {
+        .flex-wrapper {
+            flex-direction: column;
+            align-items: center;
+        }
+        .radio-container {
+            position: static; /* Reset the absolute positioning */
+            margin-left: 0;
+            margin-bottom: 20px;
+        }
+        h2 {
+            margin-bottom: 20px;
+        }
+    }
+
+    /* General styling */
+    .unhidden {
+        display: block;
+    }
+    .hidden {
+        display: none;
     }
 </style>
   </style>
@@ -432,7 +378,7 @@
 <body>
     <h1>Giuseppe Rosselli</h1>
     <h2>Canvassing Dashboard</h2>
-    <div class="flex-wrapper">
+    <div id="canvassing-details" class="flex-wrapper">
         <div class="radio-container" style="flex-direction: column; align-items: left; display: flex;">
             <div class="radio">
                 <input id="radio-1" name="radio" type="radio" value="all" onclick="setFilter('all')" checked>
@@ -473,9 +419,7 @@
   <div id="fileList"></div>
 <!-- Overlay for Full Screen Images and Visualization -->
   <div id="overlay" class="overlay">
-    <div id="overlay-content">
-        <a href="#" class="close" onclick="closeOverlay()"></a>
-    </div>
+    <div id="overlay-content"></div>
   </div>
 
   <script>
@@ -596,9 +540,6 @@
         const voters_pie_pctg = Math.round(num_voters_completed / num_voters_total * 100);
         const lists_pie_pctg = Math.round(num_lists_completed / num_lists_total * 100);
 
-        setPiePercentage(voters_pie, voters_pie_pctg);
-        setPiePercentage(lists_pie, lists_pie_pctg);
-
         // Set the pie labels
         document.getElementById('voters-pie-description').innerHTML = `${num_voters_completed}/${num_voters_total} visited`;
         document.getElementById('lists-pie-description').innerHTML = `${num_lists_completed}/${num_lists_total} completed`;
@@ -648,11 +589,11 @@
                 }
 
                 fileElement.innerHTML = `
-                    <div class="${details.status}-tag">${status_text}</div>
+                    <div class="box-tag ${details.status}">${status_text}</div>
                     <div style="height: 10px;"></div>
-                    <p class="list-detail"><img class="icon" src="${HOUSE_ICON_URL}"> ${details.num_houses} houses</p>
-                    <p class="list-detail"><img class="icon" src="${DISTANCE_ICON_URL}"> ${distance_rounded} miles</p>
-                    <p class="list-detail"><img class="icon" src="${PERSON_ICON_URL}"> ${details.num_voters} voters</p>
+                    <p class="box-detail"><img class="icon" src="${HOUSE_ICON_URL}"> ${details.num_houses} houses</p>
+                    <p class="box-detail"><img class="icon" src="${DISTANCE_ICON_URL}"> ${distance_rounded} miles</p>
+                    <p class="box-detail"><img class="icon" src="${PERSON_ICON_URL}"> ${details.num_voters} voters</p>
                         <div class="button-container">  <!-- New container for buttons -->
                             <a href="#" class="button" onclick="openVizOverlay(event, '${details.visualizationUrl}')">View Route</a>
                             <a href="#" class="button" onclick="openImageOverlay(event, '${details.qrCodeUrl}', '${details.listUrl}')">QR Code</a>
@@ -715,30 +656,44 @@
 
         progressBarShowing = false;
         updateProgressBarState();
+
+        // Wait a little bit to update the pies (to ensure that the progress bar is hidden)
+        setTimeout(() => {
+            setPiePercentage(voters_pie, voters_pie_pctg);
+            setPiePercentage(lists_pie, lists_pie_pctg);
+        }, 200);
     }
 
+    // Update the progress bar state
     function updateProgressBarState() {
         if (progressBarShowing) {
             setTimeout(() => {
                 if (progressBarShowing) {
-                    showProgressBar();
+                    loadingModeOn();
                 }
             }, 200);
         } else {
-            hideProgressBar();
+            loadingModeOff();
         }
     }
 
     function setPiePercentage(element, percentage) {
         const stylesheet = document.styleSheets[0];
         const className = element.className;
+
+        // Ensure that the pie is not hidden
+        element.classList.remove('hidden');
+
         const ruleIndex = stylesheet.insertRule(`.${className}[data-value="${percentage}"]::before { transform: rotate(${percentage / 100}turn); }`, stylesheet.cssRules.length);
         element.setAttribute('data-value', percentage);
         element.setAttribute('data-label', `${percentage}%`);
     }
 
-    function hideProgressBar() {
-        document.querySelector('.pie-section').classList.remove('hidden');
+    function loadingModeOff() {
+        // Show all elements in the canvassing-details section
+        document.getElementById('canvassing-details').querySelectorAll('*').forEach((element) => {
+            element.classList.remove('hidden');
+        });
 
         // Hide the progress bar
         document.querySelector('.progress').classList.remove('unhidden');
@@ -749,9 +704,13 @@
         document.querySelector('.progress-label').classList.add('hidden');
     }
 
-    function showProgressBar() {
-        document.querySelector('.pie-section').classList.add('hidden');
+    function loadingModeOn() {
+        // Hide all elements in the canvassing-details section
+        document.getElementById('canvassing-details').querySelectorAll('*').forEach((element) => {
+            element.classList.add('hidden');
+        });
 
+        // Show the progress bar
         document.querySelector('.progress').classList.remove('hidden');
         document.querySelector('.progress').classList.add('unhidden');
 
@@ -760,7 +719,7 @@
         document.querySelector('.progress-label').classList.remove('hidden');
     }
 
-    // Functions to open/close overlay
+    // Open the visualization overlay
     function openVizOverlay(event, url) {
         event.preventDefault();
         const overlay = document.getElementById('overlay');
@@ -775,6 +734,7 @@
         isOverlayActive = true;
     }
 
+    // Open the QR code overlay
     function openImageOverlay(event, url, listUrl) {
         event.preventDefault();
         const overlay = document.getElementById('overlay');
@@ -794,7 +754,6 @@
     }
 
     function copyLink(link) {
-        // Fallback method for copying text
         const textarea = document.createElement("textarea");
         textarea.textContent = link;
         document.body.append(textarea);
@@ -809,6 +768,7 @@
         }
     }
 
+    // Open the QR code in a new tab for printing
     function printQRCode(url) {
         const printWindow = window.open('', '_blank');
         printWindow.document.write('<html><head><title>Print QR Code</title></head><body>');
@@ -825,28 +785,38 @@
         }, 0);
     }
 
-    // Function to set cache
+    // Set the cache for a key
     function setCache(key, value) {
-        const now = new Date();
-        const item = {
-            value: value,
-            expiry: now.getTime() + 1000 * 60 * 60,
-        };
-        localStorage.setItem(key, JSON.stringify(item));
+        try {
+            const now = new Date();
+            const item = {
+                value: value,
+                expiry: now.getTime() + 1000 * 60 * 60,
+            };
+            localStorage.setItem(key, JSON.stringify(item));
+        } catch (error) {
+            console.error("Could not set cache: ", error);
+        }
     }
 
+    // Retrieve the cache for a key
     function getCache(key) {
-        const itemStr = localStorage.getItem(key);
-        if (!itemStr) {
+        try {
+            const itemStr = localStorage.getItem(key);
+            if (!itemStr) {
+                return null;
+            }
+            const item = JSON.parse(itemStr);
+            const now = new Date();
+            if (now.getTime() > item.expiry) {
+                localStorage.removeItem(key);
+                return null;
+            }
+            return item.value;
+        } catch (error) {
+            console.error("Could not get cache: ", error);
             return null;
         }
-        const item = JSON.parse(itemStr);
-        const now = new Date();
-        if (now.getTime() > item.expiry) {
-            localStorage.removeItem(key);
-            return null;
-        }
-        return item.value;
     }
 
     function setFilter(newFilter) {
