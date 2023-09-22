@@ -54,8 +54,9 @@ then
     IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${OSRM_CONTAINER_NAME})
     echo -e "${GREEN}IP Address of the OSRM container is ${IP}${NC}"
 else
-    echo -e "${ERR}Could not find OSRM container at ${OSRM_CONTAINER_NAME}. Is it running?"
+    echo -e "${ERR}Could not find OSRM container at ${OSRM_CONTAINER_NAME}. Is it running?${NC}"
 fi
 
 echo "Starting container with name $tag"
-docker run -it --platform $platform --rm --privileged --net=bridge --name=$CONTAINER_NAME --security-opt seccomp=unconfined -v "$(pwd):/home/user/$destdir" -w "/home/user/$destdir" $tag
+# docker run -it --platform $platform --rm --privileged --net=bridge --name=$CONTAINER_NAME --security-opt seccomp=unconfined -v "$(pwd):/home/user/$destdir" -w "/home/user/$destdir" $tag
+docker run -it --platform $platform --rm --privileged --net falcon_backend --name=$CONTAINER_NAME --security-opt seccomp=unconfined -v "$(pwd):/home/user/$destdir" -w "/home/user/$destdir" $tag

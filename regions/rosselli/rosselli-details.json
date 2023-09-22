@@ -1,0 +1,1442 @@
+{
+    "rosselli-0-0": {
+        "distance": 4210.426550142933,
+        "num_houses": 62,
+        "start_point": {
+            "lat": 40.5416031,
+            "lon": -80.17814
+        }
+    },
+    "rosselli-1-0": {
+        "distance": 4346.1168271703855,
+        "num_houses": 38,
+        "start_point": {
+            "lat": 40.5788403,
+            "lon": -80.0885773
+        }
+    },
+    "rosselli-2-0": {
+        "distance": 4060.8264730061655,
+        "num_houses": 32,
+        "start_point": {
+            "lat": 40.6110911,
+            "lon": -80.104503
+        }
+    },
+    "rosselli-2-1": {
+        "distance": 592.9023801680132,
+        "num_houses": 28,
+        "start_point": {
+            "lat": 40.6131119,
+            "lon": -80.1049599
+        }
+    },
+    "rosselli-3-0": {
+        "distance": 2941.0459299323984,
+        "num_houses": 21,
+        "start_point": {
+            "lat": 40.6076378,
+            "lon": -80.1747323
+        }
+    },
+    "rosselli-3-1": {
+        "distance": 5701.177405919835,
+        "num_houses": 23,
+        "start_point": {
+            "lat": 40.6076378,
+            "lon": -80.1747323
+        }
+    },
+    "rosselli-4-0": {
+        "distance": 5177.8711495388225,
+        "num_houses": 37,
+        "start_point": {
+            "lat": 40.5855655,
+            "lon": -80.0704252
+        }
+    },
+    "rosselli-4-1": {
+        "distance": 2198.0228611928947,
+        "num_houses": 27,
+        "start_point": {
+            "lat": 40.5854924,
+            "lon": -80.0726746
+        }
+    },
+    "rosselli-5-0": {
+        "distance": 2599.1779979076346,
+        "num_houses": 73,
+        "start_point": {
+            "lat": 40.5439201,
+            "lon": -80.1828677
+        }
+    },
+    "rosselli-5-1": {
+        "distance": 5108.674170910279,
+        "num_houses": 32,
+        "start_point": {
+            "lat": 40.5445601,
+            "lon": -80.1835222
+        }
+    },
+    "rosselli-5-2": {
+        "distance": 3018.0075970428898,
+        "num_houses": 62,
+        "start_point": {
+            "lat": 40.5439201,
+            "lon": -80.1828677
+        }
+    },
+    "rosselli-6-0": {
+        "distance": 3326.17694933274,
+        "num_houses": 56,
+        "start_point": {
+            "lat": 40.5916813,
+            "lon": -80.0858339
+        }
+    },
+    "rosselli-6-1": {
+        "distance": 940.8253067862742,
+        "num_houses": 20,
+        "start_point": {
+            "lat": 40.5916813,
+            "lon": -80.0858339
+        }
+    },
+    "rosselli-7-0": {
+        "distance": 3904.50781997868,
+        "num_houses": 23,
+        "start_point": {
+            "lat": 40.5903688,
+            "lon": -80.1052263
+        }
+    },
+    "rosselli-7-1": {
+        "distance": 1618.9689697327358,
+        "num_houses": 52,
+        "start_point": {
+            "lat": 40.5938357,
+            "lon": -80.1039176
+        }
+    },
+    "rosselli-7-2": {
+        "distance": 6220.369459747758,
+        "num_houses": 59,
+        "start_point": {
+            "lat": 40.5932247,
+            "lon": -80.1059326
+        }
+    },
+    "rosselli-8-0": {
+        "distance": 4189.440183209963,
+        "num_houses": 51,
+        "start_point": {
+            "lat": 40.5549759,
+            "lon": -80.1988632
+        }
+    },
+    "rosselli-8-1": {
+        "distance": 846.5668664263155,
+        "num_houses": 18,
+        "start_point": {
+            "lat": 40.5549759,
+            "lon": -80.1988632
+        }
+    },
+    "rosselli-9-0": {
+        "distance": 2601.331287045491,
+        "num_houses": 57,
+        "start_point": {
+            "lat": 40.5318907,
+            "lon": -80.172814
+        }
+    },
+    "rosselli-9-1": {
+        "distance": 2286.2015906782135,
+        "num_houses": 31,
+        "start_point": {
+            "lat": 40.5322197,
+            "lon": -80.1753652
+        }
+    },
+    "rosselli-10-0": {
+        "distance": 3064.564562748957,
+        "num_houses": 26,
+        "start_point": {
+            "lat": 40.5671164,
+            "lon": -80.0680558
+        }
+    },
+    "rosselli-10-1": {
+        "distance": 3415.6366739505406,
+        "num_houses": 61,
+        "start_point": {
+            "lat": 40.5690173,
+            "lon": -80.069061
+        }
+    },
+    "rosselli-11-0": {
+        "distance": 2480.9934585932797,
+        "num_houses": 28,
+        "start_point": {
+            "lat": 40.5693559,
+            "lon": -80.0773652
+        }
+    },
+    "rosselli-11-1": {
+        "distance": 3110.124076582713,
+        "num_houses": 49,
+        "start_point": {
+            "lat": 40.5678548,
+            "lon": -80.0772933
+        }
+    },
+    "rosselli-12-0": {
+        "distance": 3762.5732928192856,
+        "num_houses": 59,
+        "start_point": {
+            "lat": 40.6007923,
+            "lon": -80.0849342
+        }
+    },
+    "rosselli-13-0": {
+        "distance": 4216.333904145378,
+        "num_houses": 20,
+        "start_point": {
+            "lat": 40.5299249,
+            "lon": -80.1541064
+        }
+    },
+    "rosselli-14-0": {
+        "distance": 3251.756876121499,
+        "num_houses": 57,
+        "start_point": {
+            "lat": 40.5529142,
+            "lon": -80.0715431
+        }
+    },
+    "rosselli-14-1": {
+        "distance": 2662.3657724366535,
+        "num_houses": 24,
+        "start_point": {
+            "lat": 40.5505912,
+            "lon": -80.0714365
+        }
+    },
+    "rosselli-15-0": {
+        "distance": 3691.2621300124756,
+        "num_houses": 54,
+        "start_point": {
+            "lat": 40.5574404,
+            "lon": -80.0800748
+        }
+    },
+    "rosselli-16-0": {
+        "distance": 3168.929133330152,
+        "num_houses": 20,
+        "start_point": {
+            "lat": 40.5940114,
+            "lon": -80.0683939
+        }
+    },
+    "rosselli-17-0": {
+        "distance": 3824.608811365797,
+        "num_houses": 29,
+        "start_point": {
+            "lat": 40.5760887,
+            "lon": -80.1107916
+        }
+    },
+    "rosselli-18-0": {
+        "distance": 2075.1874313641456,
+        "num_houses": 39,
+        "start_point": {
+            "lat": 40.60553,
+            "lon": -80.0865844
+        }
+    },
+    "rosselli-18-1": {
+        "distance": 3655.2961790222157,
+        "num_houses": 68,
+        "start_point": {
+            "lat": 40.6065652,
+            "lon": -80.085255
+        }
+    },
+    "rosselli-19-0": {
+        "distance": 2798.1946964419794,
+        "num_houses": 6,
+        "start_point": {
+            "lat": 40.5585285,
+            "lon": -80.1224956
+        }
+    },
+    "rosselli-20-0": {
+        "distance": 2725.403198858272,
+        "num_houses": 35,
+        "start_point": {
+            "lat": 40.5825682,
+            "lon": -80.0793971
+        }
+    },
+    "rosselli-20-1": {
+        "distance": 3220.155357096649,
+        "num_houses": 51,
+        "start_point": {
+            "lat": 40.5840251,
+            "lon": -80.0794486
+        }
+    },
+    "rosselli-21-0": {
+        "distance": 3409.9248866197595,
+        "num_houses": 39,
+        "start_point": {
+            "lat": 40.5881793,
+            "lon": -80.205132
+        }
+    },
+    "rosselli-22-0": {
+        "distance": 3337.9464033788026,
+        "num_houses": 9,
+        "start_point": {
+            "lat": 40.5517978,
+            "lon": -80.1592139
+        }
+    },
+    "rosselli-23-0": {
+        "distance": 1132.7892849677355,
+        "num_houses": 68,
+        "start_point": {
+            "lat": 40.6056909,
+            "lon": -80.0918201
+        }
+    },
+    "rosselli-23-1": {
+        "distance": 2851.8767266915693,
+        "num_houses": 77,
+        "start_point": {
+            "lat": 40.6049904,
+            "lon": -80.0908331
+        }
+    },
+    "rosselli-24-0": {
+        "distance": 1409.3593574065096,
+        "num_houses": 26,
+        "start_point": {
+            "lat": 40.6012535,
+            "lon": -80.0823814
+        }
+    },
+    "rosselli-24-1": {
+        "distance": 3985.094006875993,
+        "num_houses": 58,
+        "start_point": {
+            "lat": 40.6012535,
+            "lon": -80.0823814
+        }
+    },
+    "rosselli-25-0": {
+        "distance": 2634.154407941645,
+        "num_houses": 44,
+        "start_point": {
+            "lat": 40.564219,
+            "lon": -80.0686513
+        }
+    },
+    "rosselli-26-0": {
+        "distance": 2659.4778394893965,
+        "num_houses": 31,
+        "start_point": {
+            "lat": 40.5823362,
+            "lon": -80.1851421
+        }
+    },
+    "rosselli-27-0": {
+        "distance": 1571.1325905661545,
+        "num_houses": 57,
+        "start_point": {
+            "lat": 40.5372111,
+            "lon": -80.1774336
+        }
+    },
+    "rosselli-27-1": {
+        "distance": 3829.846562253376,
+        "num_houses": 65,
+        "start_point": {
+            "lat": 40.5382546,
+            "lon": -80.1784298
+        }
+    },
+    "rosselli-27-2": {
+        "distance": 2419.188131499828,
+        "num_houses": 86,
+        "start_point": {
+            "lat": 40.5391281,
+            "lon": -80.1741705
+        }
+    },
+    "rosselli-27-3": {
+        "distance": 1365.8876449983486,
+        "num_houses": 46,
+        "start_point": {
+            "lat": 40.5372111,
+            "lon": -80.1774336
+        }
+    },
+    "rosselli-28-0": {
+        "distance": 1605.662875475998,
+        "num_houses": 6,
+        "start_point": {
+            "lat": 40.5283891,
+            "lon": -80.1616083
+        }
+    },
+    "rosselli-28-1": {
+        "distance": 6542.604729475904,
+        "num_houses": 43,
+        "start_point": {
+            "lat": 40.5283891,
+            "lon": -80.1616083
+        }
+    },
+    "rosselli-29-0": {
+        "distance": 856.0981646916721,
+        "num_houses": 82,
+        "start_point": {
+            "lat": 40.5245281,
+            "lon": -80.1417747
+        }
+    },
+    "rosselli-29-1": {
+        "distance": 1042.8563126878223,
+        "num_houses": 19,
+        "start_point": {
+            "lat": 40.5286668,
+            "lon": -80.1405439
+        }
+    },
+    "rosselli-30-0": {
+        "distance": 1227.8918640248294,
+        "num_houses": 46,
+        "start_point": {
+            "lat": 40.5369789,
+            "lon": -80.1510087
+        }
+    },
+    "rosselli-30-1": {
+        "distance": 2477.0116245419285,
+        "num_houses": 87,
+        "start_point": {
+            "lat": 40.5376025,
+            "lon": -80.1521537
+        }
+    },
+    "rosselli-31-0": {
+        "distance": 3430.4736040708426,
+        "num_houses": 44,
+        "start_point": {
+            "lat": 40.5805474,
+            "lon": -80.0745238
+        }
+    },
+    "rosselli-32-0": {
+        "distance": 3472.948316672566,
+        "num_houses": 47,
+        "start_point": {
+            "lat": 40.5520589,
+            "lon": -80.1919153
+        }
+    },
+    "rosselli-32-1": {
+        "distance": 1516.6504156414996,
+        "num_houses": 39,
+        "start_point": {
+            "lat": 40.5505983,
+            "lon": -80.1940561
+        }
+    },
+    "rosselli-33-0": {
+        "distance": 1527.5673891476636,
+        "num_houses": 34,
+        "start_point": {
+            "lat": 40.5607831,
+            "lon": -80.0661734
+        }
+    },
+    "rosselli-33-1": {
+        "distance": 1746.5432557379656,
+        "num_houses": 68,
+        "start_point": {
+            "lat": 40.5607831,
+            "lon": -80.0661734
+        }
+    },
+    "rosselli-34-0": {
+        "distance": 3242.0723898489987,
+        "num_houses": 48,
+        "start_point": {
+            "lat": 40.5674572,
+            "lon": -80.1026166
+        }
+    },
+    "rosselli-35-0": {
+        "distance": 3468.1958854998547,
+        "num_houses": 41,
+        "start_point": {
+            "lat": 40.5987899,
+            "lon": -80.1082518
+        }
+    },
+    "rosselli-36-0": {
+        "distance": 3208.071572284498,
+        "num_houses": 38,
+        "start_point": {
+            "lat": 40.5475844,
+            "lon": -80.0682899
+        }
+    },
+    "rosselli-37-0": {
+        "distance": 2546.9339879009954,
+        "num_houses": 33,
+        "start_point": {
+            "lat": 40.5315843,
+            "lon": -80.1592085
+        }
+    },
+    "rosselli-38-0": {
+        "distance": 2736.1639604152424,
+        "num_houses": 59,
+        "start_point": {
+            "lat": 40.5859708,
+            "lon": -80.0902461
+        }
+    },
+    "rosselli-38-1": {
+        "distance": 4568.738996857454,
+        "num_houses": 69,
+        "start_point": {
+            "lat": 40.5859708,
+            "lon": -80.0902461
+        }
+    },
+    "rosselli-39-0": {
+        "distance": 6154.6992341786845,
+        "num_houses": 20,
+        "start_point": {
+            "lat": 40.5387813,
+            "lon": -80.1248581
+        }
+    },
+    "rosselli-39-1": {
+        "distance": 1308.4722978578852,
+        "num_houses": 8,
+        "start_point": {
+            "lat": 40.5342365,
+            "lon": -80.127032
+        }
+    },
+    "rosselli-40-0": {
+        "distance": 1863.4294361638495,
+        "num_houses": 65,
+        "start_point": {
+            "lat": 40.5888492,
+            "lon": -80.0966106
+        }
+    },
+    "rosselli-40-1": {
+        "distance": 2302.7823952522517,
+        "num_houses": 24,
+        "start_point": {
+            "lat": 40.5878541,
+            "lon": -80.0965703
+        }
+    },
+    "rosselli-41-0": {
+        "distance": 5091.510411991997,
+        "num_houses": 36,
+        "start_point": {
+            "lat": 40.5952126,
+            "lon": -80.1469961
+        }
+    },
+    "rosselli-42-0": {
+        "distance": 943.450219544849,
+        "num_houses": 47,
+        "start_point": {
+            "lat": 40.6063221,
+            "lon": -80.1022242
+        }
+    },
+    "rosselli-42-1": {
+        "distance": 2617.871866292172,
+        "num_houses": 68,
+        "start_point": {
+            "lat": 40.6041153,
+            "lon": -80.1023835
+        }
+    },
+    "rosselli-43-0": {
+        "distance": 5440.603606386124,
+        "num_houses": 44,
+        "start_point": {
+            "lat": 40.5498905,
+            "lon": -80.1854649
+        }
+    },
+    "rosselli-44-0": {
+        "distance": 1847.5940347038327,
+        "num_houses": 80,
+        "start_point": {
+            "lat": 40.5402457,
+            "lon": -80.1891065
+        }
+    },
+    "rosselli-44-1": {
+        "distance": 1010.213212493215,
+        "num_houses": 35,
+        "start_point": {
+            "lat": 40.5398272,
+            "lon": -80.1861025
+        }
+    },
+    "rosselli-44-2": {
+        "distance": 3663.2478987731433,
+        "num_houses": 70,
+        "start_point": {
+            "lat": 40.5401992,
+            "lon": -80.1856713
+        }
+    },
+    "rosselli-44-3": {
+        "distance": 1084.4897198897493,
+        "num_houses": 32,
+        "start_point": {
+            "lat": 40.5398272,
+            "lon": -80.1861025
+        }
+    },
+    "rosselli-44-4": {
+        "distance": 2016.928206764244,
+        "num_houses": 52,
+        "start_point": {
+            "lat": 40.5389101,
+            "lon": -80.1842796
+        }
+    },
+    "rosselli-45-0": {
+        "distance": 2301.7928725499078,
+        "num_houses": 23,
+        "start_point": {
+            "lat": 40.587207,
+            "lon": -80.1114772
+        }
+    },
+    "rosselli-46-0": {
+        "distance": 3821.900615011934,
+        "num_houses": 37,
+        "start_point": {
+            "lat": 40.5750433,
+            "lon": -80.0754151
+        }
+    },
+    "rosselli-46-1": {
+        "distance": 1879.0593126025406,
+        "num_houses": 18,
+        "start_point": {
+            "lat": 40.5750433,
+            "lon": -80.0754151
+        }
+    },
+    "rosselli-47-0": {
+        "distance": 3385.430980823779,
+        "num_houses": 15,
+        "start_point": {
+            "lat": 40.5965023,
+            "lon": -80.1366642
+        }
+    },
+    "rosselli-48-0": {
+        "distance": 5028.008083724144,
+        "num_houses": 30,
+        "start_point": {
+            "lat": 40.5641649,
+            "lon": -80.181437
+        }
+    },
+    "rosselli-49-0": {
+        "distance": 1992.0014459709337,
+        "num_houses": 52,
+        "start_point": {
+            "lat": 40.605811,
+            "lon": -80.0687585
+        }
+    },
+    "rosselli-50-0": {
+        "distance": 2118.065291869374,
+        "num_houses": 79,
+        "start_point": {
+            "lat": 40.5358918,
+            "lon": -80.1830535
+        }
+    },
+    "rosselli-50-1": {
+        "distance": 424.9791027626708,
+        "num_houses": 15,
+        "start_point": {
+            "lat": 40.5358918,
+            "lon": -80.1830535
+        }
+    },
+    "rosselli-51-0": {
+        "distance": 4952.701649088917,
+        "num_houses": 39,
+        "start_point": {
+            "lat": 40.5789767,
+            "lon": -80.2008989
+        }
+    },
+    "rosselli-52-0": {
+        "distance": 2661.416728186462,
+        "num_houses": 18,
+        "start_point": {
+            "lat": 40.581901,
+            "lon": -80.1675265
+        }
+    },
+    "rosselli-53-0": {
+        "distance": 1508.9018222409668,
+        "num_houses": 8,
+        "start_point": {
+            "lat": 40.5669382,
+            "lon": -80.1233492
+        }
+    },
+    "rosselli-54-0": {
+        "distance": 3357.063805495672,
+        "num_houses": 50,
+        "start_point": {
+            "lat": 40.6002405,
+            "lon": -80.0987147
+        }
+    },
+    "rosselli-55-0": {
+        "distance": 3898.306289286056,
+        "num_houses": 22,
+        "start_point": {
+            "lat": 40.5382487,
+            "lon": -80.1571271
+        }
+    },
+    "rosselli-56-0": {
+        "distance": 3726.0446494820153,
+        "num_houses": 49,
+        "start_point": {
+            "lat": 40.5801298,
+            "lon": -80.0696517
+        }
+    },
+    "rosselli-57-0": {
+        "distance": 2501.7742638114305,
+        "num_houses": 11,
+        "start_point": {
+            "lat": 40.5991961,
+            "lon": -80.1214252
+        }
+    },
+    "rosselli-58-0": {
+        "distance": 4194.387369409058,
+        "num_houses": 47,
+        "start_point": {
+            "lat": 40.6001198,
+            "lon": -80.0779964
+        }
+    },
+    "rosselli-59-0": {
+        "distance": 1262.4938621953786,
+        "num_houses": 9,
+        "start_point": {
+            "lat": 40.5312236,
+            "lon": -80.1227888
+        }
+    },
+    "rosselli-60-0": {
+        "distance": 3540.147490506667,
+        "num_houses": 19,
+        "start_point": {
+            "lat": 40.577923,
+            "lon": -80.108243
+        }
+    },
+    "rosselli-61-0": {
+        "distance": 1961.3328739142628,
+        "num_houses": 48,
+        "start_point": {
+            "lat": 40.5468767,
+            "lon": -80.1921786
+        }
+    },
+    "rosselli-61-1": {
+        "distance": 2205.305973534856,
+        "num_houses": 45,
+        "start_point": {
+            "lat": 40.5468767,
+            "lon": -80.1921786
+        }
+    },
+    "rosselli-62-0": {
+        "distance": 3757.5197665718406,
+        "num_houses": 59,
+        "start_point": {
+            "lat": 40.6155726,
+            "lon": -80.0717921
+        }
+    },
+    "rosselli-63-0": {
+        "distance": 1265.3114962916002,
+        "num_houses": 10,
+        "start_point": {
+            "lat": 40.5940451,
+            "lon": -80.1668461
+        }
+    },
+    "rosselli-63-1": {
+        "distance": 6295.825414412802,
+        "num_houses": 25,
+        "start_point": {
+            "lat": 40.5990008,
+            "lon": -80.1655404
+        }
+    },
+    "rosselli-64-0": {
+        "distance": 2668.8181843645825,
+        "num_houses": 56,
+        "start_point": {
+            "lat": 40.571595,
+            "lon": -80.2022637
+        }
+    },
+    "rosselli-65-0": {
+        "distance": 3156.9641452242895,
+        "num_houses": 19,
+        "start_point": {
+            "lat": 40.533427,
+            "lon": -80.140339
+        }
+    },
+    "rosselli-66-0": {
+        "distance": 2681.465422525441,
+        "num_houses": 10,
+        "start_point": {
+            "lat": 40.5531603,
+            "lon": -80.1651574
+        }
+    },
+    "rosselli-67-0": {
+        "distance": 2901.600292067912,
+        "num_houses": 10,
+        "start_point": {
+            "lat": 40.5595242,
+            "lon": -80.1435494
+        }
+    },
+    "rosselli-68-0": {
+        "distance": 4463.773139776453,
+        "num_houses": 10,
+        "start_point": {
+            "lat": 40.5650745,
+            "lon": -80.0914372
+        }
+    },
+    "rosselli-68-1": {
+        "distance": 923.6476728443021,
+        "num_houses": 6,
+        "start_point": {
+            "lat": 40.5650745,
+            "lon": -80.0914372
+        }
+    },
+    "rosselli-69-0": {
+        "distance": 2774.267185939737,
+        "num_houses": 54,
+        "start_point": {
+            "lat": 40.5985886,
+            "lon": -80.0903308
+        }
+    },
+    "rosselli-70-0": {
+        "distance": 2622.894796650013,
+        "num_houses": 44,
+        "start_point": {
+            "lat": 40.573572,
+            "lon": -80.0873757
+        }
+    },
+    "rosselli-71-0": {
+        "distance": 1983.166436062125,
+        "num_houses": 27,
+        "start_point": {
+            "lat": 40.5217896,
+            "lon": -80.1303591
+        }
+    },
+    "rosselli-72-0": {
+        "distance": 2446.898994066629,
+        "num_houses": 20,
+        "start_point": {
+            "lat": 40.606936,
+            "lon": -80.0974322
+        }
+    },
+    "rosselli-73-0": {
+        "distance": 2675.7285271507667,
+        "num_houses": 31,
+        "start_point": {
+            "lat": 40.5740978,
+            "lon": -80.121891
+        }
+    },
+    "rosselli-74-0": {
+        "distance": 1742.1862122541072,
+        "num_houses": 6,
+        "start_point": {
+            "lat": 40.6048885,
+            "lon": -80.1594681
+        }
+    },
+    "rosselli-75-0": {
+        "distance": 3561.2941426451694,
+        "num_houses": 65,
+        "start_point": {
+            "lat": 40.5634764,
+            "lon": -80.0783214
+        }
+    },
+    "rosselli-76-0": {
+        "distance": 3526.1424403610945,
+        "num_houses": 18,
+        "start_point": {
+            "lat": 40.5874377,
+            "lon": -80.1245175
+        }
+    },
+    "rosselli-77-0": {
+        "distance": 2143.3433465410535,
+        "num_houses": 40,
+        "start_point": {
+            "lat": 40.5810507,
+            "lon": -80.0924572
+        }
+    },
+    "rosselli-78-0": {
+        "distance": 4781.0509073438125,
+        "num_houses": 48,
+        "start_point": {
+            "lat": 40.6038148,
+            "lon": -80.0739134
+        }
+    },
+    "rosselli-79-0": {
+        "distance": 1098.2592593864747,
+        "num_houses": 18,
+        "start_point": {
+            "lat": 40.5791516,
+            "lon": -80.2149935
+        }
+    },
+    "rosselli-79-1": {
+        "distance": 3243.217660593216,
+        "num_houses": 49,
+        "start_point": {
+            "lat": 40.5791198,
+            "lon": -80.2161357
+        }
+    },
+    "rosselli-79-2": {
+        "distance": 2103.081206888074,
+        "num_houses": 35,
+        "start_point": {
+            "lat": 40.5791198,
+            "lon": -80.2161357
+        }
+    },
+    "rosselli-80-0": {
+        "distance": 439.07087314932295,
+        "num_houses": 2,
+        "start_point": {
+            "lat": 40.602619,
+            "lon": -80.184856
+        }
+    },
+    "rosselli-81-0": {
+        "distance": 1007.3466006562003,
+        "num_houses": 4,
+        "start_point": {
+            "lat": 40.6005587,
+            "lon": -80.1488488
+        }
+    },
+    "rosselli-82-0": {
+        "distance": 3943.1292950572724,
+        "num_houses": 24,
+        "start_point": {
+            "lat": 40.5524095,
+            "lon": -80.1372761
+        }
+    },
+    "rosselli-83-0": {
+        "distance": 5641.4438648480855,
+        "num_houses": 42,
+        "start_point": {
+            "lat": 40.5831058,
+            "lon": -80.1953115
+        }
+    },
+    "rosselli-84-0": {
+        "distance": 2498.3777238200505,
+        "num_houses": 41,
+        "start_point": {
+            "lat": 40.6108141,
+            "lon": -80.0693673
+        }
+    },
+    "rosselli-85-0": {
+        "distance": 373.81608789223196,
+        "num_houses": 1,
+        "start_point": {
+            "lat": 40.6135298,
+            "lon": -80.1490476
+        }
+    },
+    "rosselli-86-0": {
+        "distance": 3799.4835345526226,
+        "num_houses": 30,
+        "start_point": {
+            "lat": 40.596975,
+            "lon": -80.1151546
+        }
+    },
+    "rosselli-87-0": {
+        "distance": 2107.0795128721575,
+        "num_houses": 29,
+        "start_point": {
+            "lat": 40.5402366,
+            "lon": -80.1546333
+        }
+    },
+    "rosselli-88-0": {
+        "distance": 2534.737792996647,
+        "num_houses": 45,
+        "start_point": {
+            "lat": 40.5535366,
+            "lon": -80.1896321
+        }
+    },
+    "rosselli-89-0": {
+        "distance": 4571.697112064827,
+        "num_houses": 48,
+        "start_point": {
+            "lat": 40.5393022,
+            "lon": -80.1713845
+        }
+    },
+    "rosselli-90-0": {
+        "distance": 3238.1402144221233,
+        "num_houses": 7,
+        "start_point": {
+            "lat": 40.5570124,
+            "lon": -80.1722153
+        }
+    },
+    "rosselli-91-0": {
+        "distance": 2310.1848852926964,
+        "num_houses": 12,
+        "start_point": {
+            "lat": 40.6038729,
+            "lon": -80.1168121
+        }
+    },
+    "rosselli-92-0": {
+        "distance": 5733.505164666835,
+        "num_houses": 28,
+        "start_point": {
+            "lat": 40.5903623,
+            "lon": -80.1388749
+        }
+    },
+    "rosselli-93-0": {
+        "distance": 4699.76795264097,
+        "num_houses": 15,
+        "start_point": {
+            "lat": 40.5871781,
+            "lon": -80.1706421
+        }
+    },
+    "rosselli-94-0": {
+        "distance": 2362.8022846366152,
+        "num_houses": 8,
+        "start_point": {
+            "lat": 40.5828865,
+            "lon": -80.1171128
+        }
+    },
+    "rosselli-95-0": {
+        "distance": 2810.5803650112252,
+        "num_houses": 14,
+        "start_point": {
+            "lat": 40.5441974,
+            "lon": -80.1512823
+        }
+    },
+    "rosselli-96-0": {
+        "distance": 1394.4130092727144,
+        "num_houses": 24,
+        "start_point": {
+            "lat": 40.5845855,
+            "lon": -80.2091793
+        }
+    },
+    "rosselli-97-0": {
+        "distance": 3696.710498708456,
+        "num_houses": 12,
+        "start_point": {
+            "lat": 40.5804993,
+            "lon": -80.1301554
+        }
+    },
+    "rosselli-98-0": {
+        "distance": 1263.23489988685,
+        "num_houses": 3,
+        "start_point": {
+            "lat": 40.6086208,
+            "lon": -80.1348245
+        }
+    },
+    "rosselli-99-0": {
+        "distance": 1352.7295168262006,
+        "num_houses": 10,
+        "start_point": {
+            "lat": 40.56157,
+            "lon": -80.0971975
+        }
+    },
+    "rosselli-100-0": {
+        "distance": 720.6901473042574,
+        "num_houses": 2,
+        "start_point": {
+            "lat": 40.6127093,
+            "lon": -80.1280188
+        }
+    },
+    "rosselli-100-1": {
+        "distance": 337.8213016198384,
+        "num_houses": 1,
+        "start_point": {
+            "lat": 40.6127093,
+            "lon": -80.1280188
+        }
+    },
+    "rosselli-101-0": {
+        "distance": 1902.782553847192,
+        "num_houses": 12,
+        "start_point": {
+            "lat": 40.5805311,
+            "lon": -80.0858683
+        }
+    },
+    "rosselli-102-0": {
+        "distance": 1990.656376217286,
+        "num_houses": 9,
+        "start_point": {
+            "lat": 40.5589293,
+            "lon": -80.16075
+        }
+    },
+    "rosselli-103-0": {
+        "distance": 4199.981754464525,
+        "num_houses": 62,
+        "start_point": {
+            "lat": 40.5766719,
+            "lon": -80.1239252
+        }
+    },
+    "rosselli-104-0": {
+        "distance": 2916.7646073140036,
+        "num_houses": 79,
+        "start_point": {
+            "lat": 40.5713713,
+            "lon": -80.2093511
+        }
+    },
+    "rosselli-104-1": {
+        "distance": 903.4060195825207,
+        "num_houses": 17,
+        "start_point": {
+            "lat": 40.5720019,
+            "lon": -80.2114623
+        }
+    },
+    "rosselli-105-0": {
+        "distance": 883.0280458389772,
+        "num_houses": 8,
+        "start_point": {
+            "lat": 40.5785147,
+            "lon": -80.1745535
+        }
+    },
+    "rosselli-106-0": {
+        "distance": 2763.714507108872,
+        "num_houses": 66,
+        "start_point": {
+            "lat": 40.610918,
+            "lon": -80.0811449
+        }
+    },
+    "rosselli-107-0": {
+        "distance": 419.0069445823235,
+        "num_houses": 2,
+        "start_point": {
+            "lat": 40.5666757,
+            "lon": -80.209801
+        }
+    },
+    "rosselli-108-0": {
+        "distance": 2401.484833470714,
+        "num_houses": 4,
+        "start_point": {
+            "lat": 40.5718468,
+            "lon": -80.1886487
+        }
+    },
+    "rosselli-108-1": {
+        "distance": 53.847046141236696,
+        "num_houses": 3,
+        "start_point": {
+            "lat": 40.5718468,
+            "lon": -80.1886487
+        }
+    },
+    "rosselli-108-2": {
+        "distance": 1152.3569923827583,
+        "num_houses": 7,
+        "start_point": {
+            "lat": 40.5718468,
+            "lon": -80.1886487
+        }
+    },
+    "rosselli-109-0": {
+        "distance": 3268.0474203195236,
+        "num_houses": 6,
+        "start_point": {
+            "lat": 40.5918348,
+            "lon": -80.1620061
+        }
+    },
+    "rosselli-110-0": {
+        "distance": 249.35098741910247,
+        "num_houses": 4,
+        "start_point": {
+            "lat": 40.5432406,
+            "lon": -80.1291221
+        }
+    },
+    "rosselli-111-0": {
+        "distance": 596.2184323997863,
+        "num_houses": 7,
+        "start_point": {
+            "lat": 40.5679941,
+            "lon": -80.2078091
+        }
+    },
+    "rosselli-112-0": {
+        "distance": 1139.4185734945984,
+        "num_houses": 8,
+        "start_point": {
+            "lat": 40.5863168,
+            "lon": -80.1318872
+        }
+    },
+    "rosselli-113-0": {
+        "distance": 3135.6202102362017,
+        "num_houses": 13,
+        "start_point": {
+            "lat": 40.5481827,
+            "lon": -80.1664217
+        }
+    },
+    "rosselli-114-0": {
+        "distance": 2689.4260600798384,
+        "num_houses": 51,
+        "start_point": {
+            "lat": 40.5760859,
+            "lon": -80.0822259
+        }
+    },
+    "rosselli-115-0": {
+        "distance": 671.6477382690698,
+        "num_houses": 8,
+        "start_point": {
+            "lat": 40.5896649,
+            "lon": -80.1786741
+        }
+    },
+    "rosselli-116-0": {
+        "distance": 1426.002096576708,
+        "num_houses": 29,
+        "start_point": {
+            "lat": 40.5397993,
+            "lon": -80.1479429
+        }
+    },
+    "rosselli-117-0": {
+        "distance": 172.73153773222313,
+        "num_houses": 8,
+        "start_point": {
+            "lat": 40.5654678,
+            "lon": -80.0874646
+        }
+    },
+    "rosselli-118-0": {
+        "distance": 38.55817283034438,
+        "num_houses": 1,
+        "start_point": {
+            "lat": 40.547319,
+            "lon": -80.0647149
+        }
+    },
+    "rosselli-119-0": {
+        "distance": 280.20043093699076,
+        "num_houses": 8,
+        "start_point": {
+            "lat": 40.5507374,
+            "lon": -80.0669483
+        }
+    },
+    "rosselli-120-0": {
+        "distance": 1214.9379397605092,
+        "num_houses": 24,
+        "start_point": {
+            "lat": 40.5931079,
+            "lon": -80.0915121
+        }
+    },
+    "rosselli-121-0": {
+        "distance": 3256.2253298864716,
+        "num_houses": 64,
+        "start_point": {
+            "lat": 40.5968912,
+            "lon": -80.0748256
+        }
+    },
+    "rosselli-122-0": {
+        "distance": 716.5321541353125,
+        "num_houses": 10,
+        "start_point": {
+            "lat": 40.5742422,
+            "lon": -80.1062953
+        }
+    },
+    "rosselli-123-0": {
+        "distance": 2418.3137963138524,
+        "num_houses": 38,
+        "start_point": {
+            "lat": 40.6155563,
+            "lon": -80.0830627
+        }
+    },
+    "rosselli-124-0": {
+        "distance": 1929.5497042041764,
+        "num_houses": 28,
+        "start_point": {
+            "lat": 40.57763,
+            "lon": -80.2065738
+        }
+    },
+    "rosselli-125-0": {
+        "distance": 536.7398866794556,
+        "num_houses": 3,
+        "start_point": {
+            "lat": 40.560738,
+            "lon": -80.190183
+        }
+    },
+    "rosselli-126-0": {
+        "distance": 1861.020280101996,
+        "num_houses": 5,
+        "start_point": {
+            "lat": 40.5241778,
+            "lon": -80.1243304
+        }
+    },
+    "rosselli-127-0": {
+        "distance": 3060.0210818590467,
+        "num_houses": 7,
+        "start_point": {
+            "lat": 40.5569553,
+            "lon": -80.1363428
+        }
+    },
+    "rosselli-128-0": {
+        "distance": 1550.546597596669,
+        "num_houses": 66,
+        "start_point": {
+            "lat": 40.5339065,
+            "lon": -80.1818566
+        }
+    },
+    "rosselli-128-1": {
+        "distance": 511.8520765600987,
+        "num_houses": 15,
+        "start_point": {
+            "lat": 40.5349158,
+            "lon": -80.1810206
+        }
+    },
+    "rosselli-129-0": {
+        "distance": 2092.413853396245,
+        "num_houses": 2,
+        "start_point": {
+            "lat": 40.5915299,
+            "lon": -80.1836359
+        }
+    },
+    "rosselli-129-1": {
+        "distance": 479.9736250918109,
+        "num_houses": 1,
+        "start_point": {
+            "lat": 40.5915299,
+            "lon": -80.1836359
+        }
+    },
+    "rosselli-130-0": {
+        "distance": 1408.4929568024922,
+        "num_houses": 13,
+        "start_point": {
+            "lat": 40.594646,
+            "lon": -80.1002371
+        }
+    },
+    "rosselli-131-0": {
+        "distance": 5004.045476227006,
+        "num_houses": 10,
+        "start_point": {
+            "lat": 40.5711836,
+            "lon": -80.1382584
+        }
+    },
+    "rosselli-131-1": {
+        "distance": 2673.0332871464943,
+        "num_houses": 3,
+        "start_point": {
+            "lat": 40.5754068,
+            "lon": -80.1377297
+        }
+    },
+    "rosselli-132-0": {
+        "distance": 2115.253961065684,
+        "num_houses": 40,
+        "start_point": {
+            "lat": 40.61238,
+            "lon": -80.0780362
+        }
+    }
+}
