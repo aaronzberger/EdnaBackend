@@ -4,22 +4,24 @@ Save a json that maps node IDs to their GPS coordinates
 
 import json
 
-from src.config import Point, node_coords_file, overpass_file
+from tqdm import tqdm
+
+from src.config import overpass_file, NODE_COORDS_DB_IDX, STYLE_COLOR
+from src.utils.db import Database
+
 
 # Returned from OSM query of all nodes and ways in a region
 loaded = json.load(open(overpass_file))
 
-node_coords: dict[str, Point] = {}
+Database()
 
-print('Loading items from {} into a hash table'.format(overpass_file))
-for item in loaded['elements']:
+for item in tqdm(loaded['elements'], desc='Writing node coordinates', colour=STYLE_COLOR, unit='nodes'):
     if item['type'] == 'node':
-        # This is the only ID casting from int to str. Forward, IDs are str only
-        node_coords[str(item['id'])] = {
-            'lat': item['lat'],
-            'lon': item['lon']
-        }
+        # NOTE: This is the only ID casting from int to str. Downstream, all IDs are ints
+        item_id = str(item['id'])
 
-# Save the file as input for the data preparation in associate_houses.py
-print('Saving node table to {}'.format(node_coords_file))
-json.dump(node_coords, open(node_coords_file, 'w', encoding='utf-8'), indent=4)
+        if not Database.exists(item_id, NODE_COORDS_DB_IDX):
+            Database.set_dict(item_id, {
+                'lat': item['lat'],
+                'lon': item['lon']
+            }, NODE_COORDS_DB_IDX)

@@ -34,18 +34,24 @@ from src.config import (
     blocks_file,
     blocks_file_t,
     addresses_file,
-    node_coords_file,
     node_list_t,
     ALD_BUFFER,
     reverse_geocode_file,
     id_to_addresses_file,
+    AREA_BBOX,
+    HOUSE_DB_IDX,
+    BLOCK_DB_IDX,
+    NODE_COORDS_DB_IDX
 )
 from src.utils.gps import (
     along_track_distance,
     cross_track_distance,
+    distance_along_path,
     great_circle_distance,
     pt_to_utm,
 )
+
+from src.utils.db import Database
 
 from src.utils.address import Address, addresses_file_t
 
@@ -54,11 +60,18 @@ from tqdm import tqdm
 from src.utils.viz import display_blocks
 
 MAX_DISTANCE = 500  # meters from house to segment
-CHUNK_SIZE = 500  # in meters
-DEBUG = True
+
+# In meters, the square size of each chunk in the matrix
+# Higher values will result in faster processing, but more false positives in matching
+CHUNK_SIZE = 500
+
+DEBUG = False
 
 # Create a buffer using StringIO
 buffer = io.StringIO()
+
+# Initialize the database (connect)
+Database()
 
 if DEBUG:
     with open("debug.txt", "w") as f:
@@ -68,9 +81,6 @@ if DEBUG:
 "                                     Load files                                          "
 "-----------------------------------------------------------------------------------------"
 # region Load files
-# Load the table containing node coordinates by ID
-print("Loading node coordinates table...")
-node_coords: dict[str, Point] = json.load(open(node_coords_file))
 
 # Load the file (unorganized) containing house coordinates (and info)
 print("Loading coordinates of houses...")
@@ -110,38 +120,10 @@ class Segment:
     id: str | None
 
 
-def distance_along_path(path: node_list_t) -> float:
-    """
-    Find the distance through a list of Points.
-
-    Parameters
-    ----------
-        path (node_list_t): the navigation path to follow
-
-    Returns
-    -------
-        float: the distance through the path
-    """
-    distance = 0
-    for first, second in itertools.pairwise(path):
-        distance += great_circle_distance(
-            Point(lat=first["lat"], lon=first["lon"], type=NodeType.other, id="first"),
-            Point(
-                lat=second["lat"], lon=second["lon"], type=NodeType.other, id="second"
-            ),
-        )  # type: ignore
-    return distance
-
-
 # We will need to temporarily store the street names for each block as well
 block_to_street_names = {}
 
-min_lat, min_lon, max_lat, max_lon = (
-    40.5147085,
-    -80.2215597,
-    40.6199697,
-    -80.0632736,
-)
+min_lat, min_lon, max_lat, max_lon = AREA_BBOX
 
 origin = Point(lat=min_lat, lon=min_lon, type=NodeType.other, id="origin")
 
@@ -164,6 +146,19 @@ block_matrix: list[list[list[str]]] = [
 
 # Get matrix indices for a given node
 def get_matrix_index(node: Point, origin: Point, chunk_size: float) -> tuple[int, int]:
+    """
+    Get the matrix indices for a given node.
+
+    Parameters
+    ----------
+        node: The node to get the matrix indices for.
+        origin: The origin node.
+        chunk_size: The size of each chunk in the matrix.
+
+    Returns
+    -------
+        A tuple containing the matrix indices for the given node.
+    """
     lat_distance = great_circle_distance(
         Point(lat=origin["lat"], lon=node["lon"], type=NodeType.other, id=""), node
     )
@@ -192,25 +187,17 @@ with tqdm(
             all_node_ids = [str(i) for i in block[2]["nodes"]]
             all_nodes: list[Point] = []
             for id in all_node_ids:
-                try:
-                    coords = node_coords[id]
-                except KeyError:
+                coords = Database.get_dict(id, NODE_COORDS_DB_IDX)
+                if coords == {}:
                     print(f"KeyError on finding coordinates of node {id}")
                     continue
-                all_nodes.append(coords)
+                all_nodes.append(Point(lat=float(coords["lat"]), lon=float(coords["lon"]), type=NodeType.node, id=id))
             for node in all_nodes:
                 i, j = get_matrix_index(node, origin, CHUNK_SIZE)
                 if 0 <= i < num_lat_chunks and 0 <= j < num_lon_chunks:
                     if segment_id not in block_matrix[i][j]:
                         block_matrix[i][j].append(segment_id)
         progress.update(1)
-
-data_as_list = [
-    [list(inner_set) for inner_set in inner_list] for inner_list in block_matrix
-]
-
-with open("block_matrix.json", "w") as outfile:
-    json.dump(data_as_list, outfile)
 
 # First, load every block, find subsegments, and save all data besides actual addresses to segments_by_id
 with tqdm(
@@ -226,11 +213,11 @@ with tqdm(
             all_node_ids = [str(i) for i in block[2]["nodes"]]
             all_nodes: list[Point] = []
             for id in all_node_ids:
-                try:
-                    coords = node_coords[id]
-                except KeyError:
+                coords = Database.get_dict(id, NODE_COORDS_DB_IDX)
+                if coords == {}:
+                    print(f"KeyError on finding coordinates of node {id}")
                     continue
-                all_nodes.append(coords)
+                all_nodes.append(Point(lat=float(coords["lat"]), lon=float(coords["lon"]), type=NodeType.node, id=id))
 
             # NOTE: For now, assume there's one way per segment
             segments_by_id[segment_id] = Block(
@@ -256,9 +243,6 @@ with tqdm(
                 )
             )
         progress.update(1)
-
-with open("block_street_mapping.json", "w") as outfile:
-    json.dump(block_to_street_names, outfile)
 
 num_failed_houses = 0
 

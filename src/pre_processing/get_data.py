@@ -1,5 +1,5 @@
 '''
-Generate the {area}.json file containing all nodes and ways
+Generate the overpass.json file containing all nodes and ways
 '''
 import json
 import os
@@ -7,18 +7,11 @@ import os
 import overpass
 from termcolor import colored
 
-from src.config import BASE_DIR, AREA_ID, overpass_file
+from src.config import BASE_DIR, AREA_ID, overpass_file, AREA_BBOX
 
-OVERPASS_AREA = 'Squirrel Hill'
-AREA_KEY = 'squirrel_hill'
-
-OVERPASS_AREAS = 'Bell Acres, Edgeworth'
-
-# assert AREA_KEY == AREA_ID, 'AREA_KEY from get_data.py and AREA_ID from config.py must match'
-
-if not os.path.exists(os.path.join(BASE_DIR, 'regions', AREA_KEY, 'input')):
-    print(f'No region found called {AREA_KEY}. Creating the directory...')
-    os.makedirs(os.path.join(BASE_DIR, 'regions', AREA_KEY, 'input'))
+if not os.path.exists(os.path.join(BASE_DIR, 'regions', AREA_ID, 'input')):
+    print(f'No region found called {AREA_ID}. Creating the directory...')
+    os.makedirs(os.path.join(BASE_DIR, 'regions', AREA_ID, 'input'))
 
 print(colored('Please wait. This query takes ~ 2m 30s for Squirrel Hill...', color='yellow'))
 print('Querying Overpass API...', end=' ')
@@ -26,10 +19,12 @@ print('Querying Overpass API...', end=' ')
 api = overpass.API(endpoint='https://overpass-api.de/api/interpreter')
 
 # Fetch all ways and nodes in designated area
+
+# TODO: Replace bounding box with polygon
 response = api.get(
     f'''
         [out:json][timeout:600];
-        way(40.5147085, -80.2215597, 40.6199697, -80.0632736)
+        way({AREA_BBOX[0]}, {AREA_BBOX[1]}, {AREA_BBOX[2]}, {AREA_BBOX[3]})
           ['name']
           ['highway']
           ['highway' != 'path']
@@ -51,7 +46,7 @@ response = api.get(
         {{
         (
         ._;
-        way(bn)(40.5147085, -80.2215597, 40.6199697, -80.0632736)
+        way(bn)({AREA_BBOX[0]}, {AREA_BBOX[1]}, {AREA_BBOX[2]}, {AREA_BBOX[3]})
         ['name']
         ['highway']
         ['highway' != 'path']

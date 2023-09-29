@@ -16,6 +16,7 @@ VRP_CLI_PATH = "/home/user/.cargo/bin/vrp-cli"
 AREA_ID = "rosselli"
 USE_COST_METRIC = False
 STYLE_COLOR = "#0F6BF5"
+AREA_BBOX = [40.5147085, -80.2215597, 40.6199697, -80.0632736]
 
 street_suffixes_file = os.path.join(BASE_DIR, "src", "street_suffixes.json")
 
@@ -56,7 +57,8 @@ problem_path = os.path.join(BASE_DIR, "optimize", "problem.json")
 solution_path = os.path.join(BASE_DIR, "optimize", "solution.json")
 distances_path = os.path.join(BASE_DIR, "optimize", "distances.json")
 
-details_file = os.path.join(region_dir, "areas", "details.json")
+details_file = os.path.join(region_dir, "details.json")
+files_dir = os.path.join(region_dir, "files")
 
 # Global input files
 street_view_failed_uuids_file = os.path.join(
@@ -69,6 +71,22 @@ turnout_predictions_file = os.path.join(
 
 VIZ_PATH = os.path.join(BASE_DIR, "viz")
 PROBLEM_PATH = os.path.join(VIZ_PATH, "problem")
+
+"----------------------------------------------------------------------------------"
+"                                     Database                                     "
+"----------------------------------------------------------------------------------"
+# Indices for the Redis database
+VOTER_DB_IDX = 1
+HOUSE_DB_IDX = 2
+BLOCK_DB_IDX = 3
+NODE_DISTANCE_MATRIX_DB_IDX = 4
+HOUSE_DISTANCE_MATRIX_DB_IDX = 5
+BLOCK_DISTANCE_MATRIX_DB_IDX = 6
+NODE_COORDS_DB_IDX = 7
+HOUSE_IMAGES_DB_IDX = 8
+STREET_SUFFIXES_DB_IDX = 9
+CAMPAIGN_SUBSET_DB_IDX = 10
+
 
 "----------------------------------------------------------------------------------"
 "                               Problem Parameters                                 "

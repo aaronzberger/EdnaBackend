@@ -99,8 +99,6 @@ class Preprocessor:
         # (1 means dead end, 3+ means intersection, 2 is just a regular road)
         intersection_nodes: dict[NodeId, NodeInfo] = {}
 
-        # json.dump(grouped_response, open("grouped_response.json", "w"))
-
         for key in grouped_response:
             branches = 0
             for way in grouped_response[key][1]:
@@ -260,7 +258,7 @@ class Preprocessor:
         return True
 
 
-def main() -> None:
+if __name__ == "__main__":
     response: Model = json.load(open(overpass_file))
 
     p = Preprocessor.from_response(response)
@@ -268,7 +266,3 @@ def main() -> None:
     p.bidirectional_search()
 
     json.dump(p.blocks, open(block_output_file, "w", encoding="utf-8"), indent=4)
-
-
-if __name__ == "__main__":
-    main()

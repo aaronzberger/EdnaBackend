@@ -9,7 +9,7 @@ import utm
 from geographiclib.geodesic import Geodesic
 from haversine import Unit, haversine
 
-from src.config import MINS_PER_HOUSE, WALKING_M_PER_S, Block, NodeType, Point, generate_pt_id
+from src.config import MINS_PER_HOUSE, WALKING_M_PER_S, Block, NodeType, Point, generate_pt_id, node_list_t
 
 converter: Geodesic = Geodesic.WGS84  # type: ignore
 
@@ -17,6 +17,27 @@ converter: Geodesic = Geodesic.WGS84  # type: ignore
 @cache
 def inverse_line_cached(lat1, lon1, lat2, lon2):
     return converter.InverseLine(lat1, lon1, lat2, lon2)
+
+
+def distance_along_path(path: node_list_t) -> float:
+    """
+    Find the distance through a list of Points.
+
+    Parameters
+    ----------
+        path (node_list_t): the navigation path to follow
+
+    Returns
+    -------
+        float: the distance through the path
+    """
+    distance = 0
+    for first, second in itertools.pairwise(path):
+        distance += great_circle_distance(
+            Point(lat=first["lat"], lon=first["lon"], type=NodeType.other, id="first"),
+            Point(lat=second["lat"], lon=second["lon"], type=NodeType.other, id="second"),
+        )
+    return distance
 
 
 def along_track_distance(p1: Point, p2: Point, p3: Point) -> tuple[float, float]:
