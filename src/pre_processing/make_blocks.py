@@ -12,7 +12,6 @@ from itertools import chain
 import json
 from copy import deepcopy
 from dataclasses import dataclass
-import os
 from typing import Any, Optional
 import math
 from rapidfuzz import process, fuzz
@@ -20,28 +19,25 @@ import io
 import uuid
 import jsonpickle
 
+from termcolor import colored
+
 from src.config import (
-    BASE_DIR,
     UUID_NAMESPACE,
-    HouseInfo,
+    HouseGeography,
     NodeType,
     Point,
     Block,
+    WriteablePoint,
     street_suffixes_file,
     address_pts_file,
-    house_id_to_block_id_file,
     block_output_file,
-    blocks_file,
-    blocks_file_t,
     addresses_file,
-    node_list_t,
     ALD_BUFFER,
     reverse_geocode_file,
     id_to_addresses_file,
     AREA_BBOX,
-    HOUSE_DB_IDX,
     BLOCK_DB_IDX,
-    NODE_COORDS_DB_IDX
+    NODE_COORDS_DB_IDX,
 )
 from src.utils.gps import (
     along_track_distance,
@@ -71,7 +67,7 @@ DEBUG = False
 buffer = io.StringIO()
 
 # Initialize the database (connect)
-Database()
+db = Database()
 
 if DEBUG:
     with open("debug.txt", "w") as f:
@@ -100,10 +96,13 @@ print("Loading list of street suffixes")
 street_suffixes: dict[str, str] = json.load(open(street_suffixes_file))
 
 # Map segment IDs to a dict containting the addresses and node IDs
-segments_by_id: blocks_file_t = {}
+# segments_by_id: blocks_file_t = {}
+
+# NOTE/TODO: This file is temporary, and will be eliminated when we transition to place keys
 addresses_to_id: addresses_file_t = {}
+
+# NOTE/TODO: This file is also temporary, and is only used for manual matching (eliminated with place keys)
 id_to_addresses: dict[str, dict[str, str]] = {}
-house_id_to_block_id: dict[str, str] = {}
 
 reverse_geocode: list[tuple[float, float, dict[str, str]]] = []
 
@@ -187,7 +186,7 @@ with tqdm(
             all_node_ids = [str(i) for i in block[2]["nodes"]]
             all_nodes: list[Point] = []
             for id in all_node_ids:
-                coords = Database.get_dict(id, NODE_COORDS_DB_IDX)
+                coords = db.get_dict(id, NODE_COORDS_DB_IDX)
                 if coords == {}:
                     print(f"KeyError on finding coordinates of node {id}")
                     continue
@@ -211,20 +210,22 @@ with tqdm(
 
             # Create the list of sub-segments in this block
             all_node_ids = [str(i) for i in block[2]["nodes"]]
-            all_nodes: list[Point] = []
+            all_nodes: list[WriteablePoint] = []
             for id in all_node_ids:
-                coords = Database.get_dict(id, NODE_COORDS_DB_IDX)
+                coords = db.get_dict(id, NODE_COORDS_DB_IDX)
                 if coords == {}:
                     print(f"KeyError on finding coordinates of node {id}")
                     continue
-                all_nodes.append(Point(lat=float(coords["lat"]), lon=float(coords["lon"]), type=NodeType.node, id=id))
+                all_nodes.append(WriteablePoint(lat=float(coords["lat"]), lon=float(coords["lon"])))
 
-            # NOTE: For now, assume there's one way per segment
-            segments_by_id[segment_id] = Block(
-                addresses={},
+            block_to_write = Block(
+                houses={},
                 nodes=all_nodes,
                 type=block[2]["ways"][0][1]["highway"],
             )
+
+            db.set_dict(segment_id, dict(block_to_write), BLOCK_DB_IDX)
+
         progress.update(1)
 
 with tqdm(
@@ -464,7 +465,8 @@ with tqdm(
             if sanitized_street_name in block_to_street_names[segment_id]:
                 if DEBUG:
                     print("Found exact match for street name", file=buffer)
-                closest_block = segments_by_id[segment_id]
+                closest_block = db.get_dict(segment_id, BLOCK_DB_IDX)
+                # closest_block = segments_by_id[segment_id]
                 best_segment = search_for_best_subsegment(
                     closest_block, segment_id, best_segment, house_pt
                 )
@@ -507,14 +509,15 @@ with tqdm(
                 ):
                     if DEBUG:
                         print("---------block---------", file=buffer)
-                        print(segments_by_id[block_id], file=buffer)
+                        # print(segments_by_id[block_id], file=buffer)
                     best_segment = search_for_best_subsegment(
-                        segments_by_id[block_id], block_id, best_segment, house_pt
+                        db.get_dict(block_id, BLOCK_DB_IDX), block_id, best_segment, house_pt
                     )
 
         if best_segment is not None and best_segment.ctd <= MAX_DISTANCE:
             # Create house to insert into table
-            all_points = segments_by_id[str(best_segment.id)]["nodes"]
+            all_points = db.get_dict(str(best_segment.id), BLOCK_DB_IDX)["nodes"]
+            # all_points = segments_by_id[str(best_segment.id)]["nodes"]
 
             sub_nodes = [
                 all_points.index(best_segment.sub_node_1),
@@ -547,13 +550,9 @@ with tqdm(
             distance_to_end += distances[1]
 
             # Lastly, calculate the distance from the end of this house's sub-segment to the end of the block
-            distance_to_end += distance_along_path(all_points[min(sub_nodes) + 1 :])
+            distance_to_end += distance_along_path(all_points[min(sub_nodes) + 1:])
 
-            output_house = HouseInfo(
-                display_address=item["full_address"],
-                city=item["municipality"],
-                state=item["state"],
-                zip=item["zip_code"],
+            output_house = HouseGeography(
                 lat=house_pt["lat"],
                 lon=house_pt["lon"],
                 distance_to_start=round(distance_to_start),
@@ -561,7 +560,6 @@ with tqdm(
                 side=best_segment.side,
                 distance_to_road=round(best_segment.ctd),
                 subsegment=(min(sub_nodes), max(sub_nodes)),
-                value=-1,
             )
 
             # TODO: resolve best_segment type issues, these casts should not be needed
@@ -571,16 +569,16 @@ with tqdm(
             lon_rounded = Decimal(str(house_pt["lon"])).quantize(Decimal("0.0001"))
             uuid_input = item["full_address"] + str(lat_rounded) + str(lon_rounded)
             house_uuid = uuid.uuid5(UUID_NAMESPACE, uuid_input)
+
             addresses_to_id[formatted_address] = (str(best_segment.id), str(house_uuid))
 
             id_to_addresses[str(house_uuid)] = dataclasses.asdict(formatted_address)
 
-            # Add the house to the segments output
-            segments_by_id[str(best_segment.id)]["addresses"][
-                str(house_uuid)
-            ] = output_house
+            # Add the house to the block (Note that we expect the block to already exist in the database most of the time)
+            old_block = db.get_dict(str(best_segment.id), BLOCK_DB_IDX)
+            old_block["houses"][str(house_uuid)] = output_house
 
-            house_id_to_block_id[str(house_uuid)] = str(best_segment.id)
+            db.set_dict(str(best_segment.id), old_block, BLOCK_DB_IDX)
 
         else:
             num_failed_houses += 1
@@ -612,26 +610,13 @@ print(
 )
 
 # Write the output to files
-print("Writing...")
+print("Writing temporary files (deprecated soon)...")
 
 json.dump(id_to_addresses, open(id_to_addresses_file, "w"))
-
 json.dump(reverse_geocode, open(reverse_geocode_file, "w"))
-
-# Go through segments_by_id and look for duplicates
-uuids = set()
-for segment_id in segments_by_id:
-    for address in segments_by_id[segment_id]["addresses"]:
-        if address in uuids:
-            print("Duplicate UUID found: {}".format(address))
-        else:
-            uuids.add(address)
-
-json.dump(segments_by_id, open(blocks_file, "w"), indent=4)
 
 with open(addresses_file, "w") as outfile:
     outfile.write(jsonpickle.encode(addresses_to_id, keys=True))
 
-json.dump(house_id_to_block_id, open(house_id_to_block_id_file, "w"))
-
-display_blocks(segments_by_id)[0].save(os.path.join(BASE_DIR, "viz", "segments.html"))
+# TODO: Viz is a no-argument call which saves the viz to a file as well
+# display_blocks(segments_by_id)[0].save(os.path.join(BASE_DIR, "viz", "segments.html"))

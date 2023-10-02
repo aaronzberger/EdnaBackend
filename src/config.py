@@ -41,7 +41,10 @@ manual_match_output_file = os.path.join(input_dir, "manual_match_output.json")
 addresses_file = os.path.join(region_dir, "addresses.json")
 manual_match_input_file = os.path.join(region_dir, "manual_match_input.json")
 reverse_geocode_file = os.path.join(region_dir, "reverse_geocode.json")
+
+# TODO: About to be deprecated
 house_id_to_block_id_file = os.path.join(region_dir, "house_id_to_block_id.json")
+
 id_to_addresses_file = os.path.join(region_dir, "id_to_addresses.json")
 requested_blocks_file = os.path.join(region_dir, "requested_blocks.json")
 house_to_voters_file = os.path.join(region_dir, "house_to_voters.json")
@@ -86,6 +89,8 @@ NODE_COORDS_DB_IDX = 7
 HOUSE_IMAGES_DB_IDX = 8
 STREET_SUFFIXES_DB_IDX = 9
 CAMPAIGN_SUBSET_DB_IDX = 10
+
+TESTING_DB_IDX = 11
 
 
 "----------------------------------------------------------------------------------"
@@ -233,6 +238,15 @@ class Point(TypedDict):
     id: str
 
 
+class WriteablePoint(TypedDict):
+    lat: float
+    lon: float
+
+
+def to_serializable_pt(p: Point) -> WriteablePoint:
+    return WriteablePoint(lat=p["lat"], lon=p["lon"])
+
+
 def pt_id(p: Point) -> str:
     """
     Get the ID of a point.
@@ -253,14 +267,11 @@ def pt_id(p: Point) -> str:
 
 
 house_t = dict[str, Point]
-node_list_t = list[Point]
+node_list_t = list[Point | WriteablePoint]
 
 
-class HouseInfo(TypedDict):
-    display_address: str  # VERY IMPORTANT!!! NEVER USE THIS TO INDEX INTO HOUSES, USE HOUSE UUID INSTEAD
-    city: str
-    state: str
-    zip: str
+class HouseGeography(TypedDict):
+    """Geographic information about a house."""
     lat: float
     lon: float
     distance_to_start: int
@@ -268,11 +279,10 @@ class HouseInfo(TypedDict):
     side: bool
     distance_to_road: int
     subsegment: tuple[int, int]
-    value: float
 
 
 class Block(TypedDict):
-    addresses: dict[str, HouseInfo]
+    houses: dict[str, HouseGeography]
     nodes: node_list_t
     type: str
 

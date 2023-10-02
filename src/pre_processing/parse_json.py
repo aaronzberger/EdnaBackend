@@ -6,22 +6,23 @@ import json
 
 from tqdm import tqdm
 
-from src.config import overpass_file, NODE_COORDS_DB_IDX, STYLE_COLOR
+from src.config import WriteablePoint, overpass_file, NODE_COORDS_DB_IDX, STYLE_COLOR
 from src.utils.db import Database
 
 
 # Returned from OSM query of all nodes and ways in a region
 loaded = json.load(open(overpass_file))
 
-Database()
+db = Database()
 
 for item in tqdm(loaded['elements'], desc='Writing node coordinates', colour=STYLE_COLOR, unit='nodes'):
     if item['type'] == 'node':
-        # NOTE: This is the only ID casting from int to str. Downstream, all IDs are ints
+        # NOTE: This is the only ID casting from int to str. Downstream, all IDs are strings
         item_id = str(item['id'])
 
-        if not Database.exists(item_id, NODE_COORDS_DB_IDX):
-            Database.set_dict(item_id, {
-                'lat': item['lat'],
-                'lon': item['lon']
-            }, NODE_COORDS_DB_IDX)
+        point = WriteablePoint(
+            lat=item['lat'],
+            lon=item['lon'],
+        )
+
+        db.set_dict(item_id, dict(point), NODE_COORDS_DB_IDX)

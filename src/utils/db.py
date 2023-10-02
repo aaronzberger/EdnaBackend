@@ -1,75 +1,84 @@
+"""
+Temporary DB Documentation
+--------------------------
+
+Node Coords DB (NODE_COORDS_DB_IDX)
+    Key: Node ID (from OSM)
+    Value: Dict with keys 'lat' and 'lon'
+
+Blocks (BLOCK_DB_IDX):
+    Key: Block ID (from pre-processing, the concatenation of end node IDs and an identifier)
+    Value: Block object
+
+"""
+
+import json
 from typing import Awaitable
 import redis
 
 
 class Database:
-    @classmethod
-    def __init__(cls):
-        cls.db = redis.Redis(host='redis-container', port=6379, password='votefalcon12', decode_responses=True)
+    def __init__(self):
+        self.db = redis.Redis(host='redis-container', port=6379, password='votefalcon12', decode_responses=True)
 
-        if not Database.db.ping():
+        if not self.db.ping():
             raise ConnectionError('Redis server failed to respond to ping.')
 
     # @staticmethod
     # def db_select(func):
     #     def wrapper(key, value, database: int):
-    #         cls.db.select(database: int)
+    #         self.db.select(database: int)
     #         # Wrap in try except?
     #         func(key, value, database: int)
 
     #     return wrapper
 
-    @classmethod
-    def set_dict(cls, key: str, value: dict, database: int):
-        cls.db.select(database)
-        cls.db.hset(key, mapping=value)
+    def set_dict(self, key: str, value: dict, database: int):
+        self.set_str(key, json.dumps(value), database)
 
-    @classmethod
-    def get_dict(cls, key: str, database: int) -> dict:
-        cls.db.select(database)
-        return cls.db.hgetall(key)
+    def get_dict(self, key: str, database: int) -> dict:
+        return json.loads(self.get_str(key, database))
 
-    @classmethod
-    def set_str(cls, key: str, value: str, database: int):
-        cls.db.select(database)
-        cls.db.set(key, value)
+    def set_str(self, key: str, value: str, database: int):
+        self.db.select(database)
+        self.db.set(key, value)
 
-    @classmethod
-    def get_str(cls, key: str, database: int) -> str:
-        cls.db.select(database)
-        return cls.db.get(key)
+    def get_str(self, key: str, database: int) -> str:
+        self.db.select(database)
+        return self.db.get(key)
 
-    @classmethod
-    def add_to_list(cls, key: str, value: str, database: int):
-        cls.db.select(database)
-        cls.db.lpush(key, value)
+    def add_to_list(self, key: str, value: str, database: int):
+        self.db.select(database)
+        self.db.lpush(key, value)
 
-    @classmethod
-    def get_list(cls, key: str, database: int):
-        cls.db.select(database)
-        return cls.db.lrange(key, 0, -1)
+    def get_list(self, key: str, database: int):
+        self.db.select(database)
+        return self.db.lrange(key, 0, -1)
 
-    @classmethod
-    def get_list_length(cls, key: str, database: int) -> Awaitable[int] | int:
-        cls.db.select(database)
-        return cls.db.llen(key)
+    def get_list_length(self, key: str, database: int) -> Awaitable[int] | int:
+        self.db.select(database)
+        return self.db.llen(key)
 
-    @classmethod
-    def exists(cls, key: str, database: int) -> bool:
-        cls.db.select(database)
-        return cls.db.exists(key) > 0  # type: ignore
+    def exists(self, key: str, database: int) -> bool:
+        self.db.select(database)
+        return self.db.exists(key) > 0  # type: ignore
 
-    @classmethod
-    def delete(cls, key: str, database: int):
-        cls.db.select(database)
-        cls.db.delete(key)
+    def delete(self, key: str, database: int):
+        self.db.select(database)
+        self.db.delete(key)
 
-    @classmethod
-    def get_keys(cls, database: int):
-        cls.db.select(database)
-        return cls.db.keys()
+    def get_keys(self, database: int):
+        self.db.select(database)
+        return self.db.keys()
 
-    @classmethod
-    def __del__(cls):
+    def get_type(self, key: str, database: int):
+        self.db.select(database)
+        return self.db.type(key)
+
+    def clear_db(self, database: int):
+        self.db.select(database)
+        self.db.flushdb()
+
+    def __del__(self):
         print('Saving database to disk...')
-        cls.db.save()
+        self.db.save()
