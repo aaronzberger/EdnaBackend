@@ -23,7 +23,8 @@ from termcolor import colored
 
 from src.config import (
     UUID_NAMESPACE,
-    HouseGeography,
+    PlaceGeography,
+    PlaceSemantics,
     NodeType,
     Point,
     Block,
@@ -38,6 +39,7 @@ from src.config import (
     AREA_BBOX,
     BLOCK_DB_IDX,
     NODE_COORDS_DB_IDX,
+    HOUSE_DB_IDX
 )
 from src.utils.gps import (
     along_track_distance,
@@ -552,7 +554,7 @@ with tqdm(
             # Lastly, calculate the distance from the end of this house's sub-segment to the end of the block
             distance_to_end += distance_along_path(all_points[min(sub_nodes) + 1:])
 
-            output_house = HouseGeography(
+            house_geography = PlaceGeography(
                 lat=house_pt["lat"],
                 lon=house_pt["lon"],
                 distance_to_start=round(distance_to_start),
@@ -562,7 +564,12 @@ with tqdm(
                 subsegment=(min(sub_nodes), max(sub_nodes)),
             )
 
-            # TODO: resolve best_segment type issues, these casts should not be needed
+            house_semantics = PlaceSemantics(
+                display_address=item["full_address"],
+                city=item["municipality"],
+                state=item["state"],
+                zip=item["zip_code"],
+            )
 
             # Add this association to the houses file
             lat_rounded = Decimal(str(house_pt["lat"])).quantize(Decimal("0.0001"))
@@ -576,9 +583,12 @@ with tqdm(
 
             # Add the house to the block (Note that we expect the block to already exist in the database most of the time)
             old_block = db.get_dict(str(best_segment.id), BLOCK_DB_IDX)
-            old_block["houses"][str(house_uuid)] = output_house
+            old_block["houses"][str(house_uuid)] = house_geography
 
             db.set_dict(str(best_segment.id), old_block, BLOCK_DB_IDX)
+
+            # Add the house to the houses file
+            db.set_dict(str(house_uuid), dict(house_semantics), HOUSE_DB_IDX)
 
         else:
             num_failed_houses += 1

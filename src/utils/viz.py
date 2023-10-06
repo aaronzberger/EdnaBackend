@@ -30,9 +30,11 @@ from src.config import (
     generate_pt_id,
     node_coords_file,
     house_to_voters_file,
-    turnout_predictions_file
+    turnout_predictions_file,
+    BLOCK_DB_IDX
 )
 from src.utils.gps import SubBlock
+from src.utils.db import Database
 
 
 def generate_starter_map(
@@ -110,16 +112,18 @@ def display_targeting_voters(voters):
     return m
 
 
-def display_blocks(
-    blocks: blocks_file_t,
-) -> tuple[folium.Map, set[tuple[float, float]]]:
+def display_blocks() -> set[tuple[float, float]]:
     # Seed the hash consistently for better visualization
     os.environ["PYTHONHASHSEED"] = "0"
+
+    # Retrieve the blocks from the database
+    db = Database()
+    blocks = db.get_multiple(db.get_keys(BLOCK_DB_IDX), BLOCK_DB_IDX)
 
     m = generate_starter_map(blocks)
     cmap = ColorMap(0, len(blocks.values()))
 
-    num_houses_per_block = [len(b["addresses"]) for b in blocks.values()]
+    num_houses_per_block = [len(b["houses"]) for b in blocks.values()]
     min_houses, max_houses = min(num_houses_per_block), max(num_houses_per_block)
     num_duplicate_coords = 0
 
@@ -129,7 +133,7 @@ def display_blocks(
         index = randint(0, len(blocks))
         word = humanhash.humanize(str(hash(b_id)), words=1)
         weight = (
-            4 + ((len(block["addresses"]) - min_houses) / (max_houses - min_houses)) * 8
+            4 + ((len(block["houses"]) - min_houses) / (max_houses - min_houses)) * 8
         )
         folium.PolyLine(
             [[p["lat"], p["lon"]] for p in block["nodes"]],
@@ -139,7 +143,7 @@ def display_blocks(
             tooltip=word,
         ).add_to(m)
 
-        for house_info in block["addresses"].values():
+        for house_info in block["houses"].values():
             lat = float(Decimal(house_info["lat"]).quantize(Decimal("0.000001")))
             lon = float(Decimal(house_info["lon"]).quantize(Decimal("0.000001")))
 
@@ -159,7 +163,7 @@ def display_blocks(
 
     print(
         colored(
-            "Of {} addresses, {} were duplicates (too close to render both).".format(
+            "Of {} houses, {} were duplicates (too close to render both).".format(
                 sum(num_houses_per_block), num_duplicate_coords
             ),
             "yellow",
@@ -169,7 +173,35 @@ def display_blocks(
         "This is likely fine, since storefronts or other close buildings may be in the same location. Debug if necessary."
     )
 
-    return m, added_houses
+    m.save(os.path.join(BASE_DIR, "viz", "blocks.html"))
+
+    return added_houses
+
+
+def display_visited_and_unvisited(
+    visited: list[Point], unvisited: list[Point], tooltips: dict[str, str]
+) -> folium.Map:
+    lats = [i["lat"] for i in visited]
+    lons = [i["lon"] for i in visited]
+    m = generate_starter_map(lats=lats, lons=lons)
+
+    for pt in visited:
+        folium.Marker(
+            location=[pt["lat"], pt["lon"]],
+            icon=folium.Icon(color="green", icon="check", prefix="fa"),
+            tooltip=tooltips[pt["id"]],
+        ).add_to(m)
+
+    for pt in unvisited:
+        folium.Marker(
+            location=[pt["lat"], pt["lon"]],
+            icon=folium.Icon(color="red", icon="times", prefix="fa"),
+            tooltip=tooltips[pt["id"]],
+        ).add_to(m)
+
+    m.fit_bounds(m.get_bounds())
+
+    return m
 
 
 def display_blocks_and_unassociated(
@@ -471,43 +503,45 @@ def display_individual_walk_lists(walk_lists: list[list[SubBlock]]) -> list[foli
 
 if __name__ == "__main__":
     # Load the file (unorganized) containing house coordinates (and info)
-    house_points_file = open(address_pts_file)
-    num_houses = -1
-    for _ in house_points_file:
-        num_houses += 1
-    house_points_file.seek(0)
-    house_points_reader = csv.DictReader(house_points_file)
+    # house_points_file = open(address_pts_file)
+    # num_houses = -1
+    # for _ in house_points_file:
+    #     num_houses += 1
+    # house_points_file.seek(0)
+    # house_points_reader = csv.DictReader(house_points_file)
 
-    min_lat, min_lon, max_lat, max_lon = (
-        40.5147085,
-        -80.2215597,
-        40.6199697,
-        -80.0632736,
-    )
+    # min_lat, min_lon, max_lat, max_lon = (
+    #     40.5147085,
+    #     -80.2215597,
+    #     40.6199697,
+    #     -80.0632736,
+    # )
 
-    all_houses: list[Point] = []
-    for row in tqdm(
-        house_points_reader, total=num_houses, colour="green", desc="Loading houses"
-    ):
-        lat, lon = float(row["latitude"]), float(row["longitude"])
-        if lat < min_lat or lat > max_lat or lon < min_lon or lon > max_lon:
-            continue
-        all_houses.append(
-            Point(
-                lat=float(Decimal(lat).quantize(Decimal("0.000001"))),
-                lon=float(Decimal(lon).quantize(Decimal("0.000001"))),
-                id=row["full_address"],
-                type=NodeType.house,
-            )
-        )
+    # all_houses: list[Point] = []
+    # for row in tqdm(
+    #     house_points_reader, total=num_houses, colour="green", desc="Loading houses"
+    # ):
+    #     lat, lon = float(row["latitude"]), float(row["longitude"])
+    #     if lat < min_lat or lat > max_lat or lon < min_lon or lon > max_lon:
+    #         continue
+    #     all_houses.append(
+    #         Point(
+    #             lat=float(Decimal(lat).quantize(Decimal("0.000001"))),
+    #             lon=float(Decimal(lon).quantize(Decimal("0.000001"))),
+    #             id=row["full_address"],
+    #             type=NodeType.house,
+    #         )
+    #     )
 
-    all_blocks: blocks_file_t = json.load(open(blocks_file))
+    # all_blocks: blocks_file_t = json.load(open(blocks_file))
 
-    # Visualize the pre-processing association
-    display_blocks_and_unassociated(all_blocks, all_houses).save(
-        os.path.join(BASE_DIR, "viz", "blocks_and_unassociated.html")
-    )
+    # # Visualize the pre-processing association
+    # display_blocks_and_unassociated(all_blocks, all_houses).save(
+    #     os.path.join(BASE_DIR, "viz", "blocks_and_unassociated.html")
+    # )
 
     # Visualize the pre-processing association
     # display_blocks(all_blocks).save(os.path.join(BASE_DIR, "viz", "blocks.html"))
     # print(colored("Saved blocks.html", "green"))
+
+    display_blocks()

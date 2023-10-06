@@ -4,6 +4,7 @@ import uuid
 from datetime import timedelta
 from enum import Enum
 from typing import Any, Literal, TypedDict
+from typing_extensions import NotRequired
 
 "----------------------------------------------------------------------------------"
 "                                     File Paths                                   "
@@ -36,6 +37,7 @@ adjacency_list_file = os.path.join(input_dir, "adjacency_list.json")
 coords_node_file = os.path.join(input_dir, "coords_node.json")
 overpass_file = os.path.join(input_dir, "overpass.json")
 manual_match_output_file = os.path.join(input_dir, "manual_match_output.json")
+mail_data_file = os.path.join(BASE_DIR, "input", "mail_data_9-29-23.json")
 
 # Map addresses to block IDs
 addresses_file = os.path.join(region_dir, "addresses.json")
@@ -270,7 +272,7 @@ house_t = dict[str, Point]
 node_list_t = list[Point | WriteablePoint]
 
 
-class HouseGeography(TypedDict):
+class PlaceGeography(TypedDict):
     """Geographic information about a house."""
     lat: float
     lon: float
@@ -281,8 +283,18 @@ class HouseGeography(TypedDict):
     subsegment: tuple[int, int]
 
 
+class PlaceSemantics(TypedDict):
+    """Semantic information about a house."""
+    display_address: str
+    # For houses with multiple units, a mapping of unit numbers to a list of voter IDs
+    voters: NotRequired[list[str] | dict[str, list[str]]]
+    city: str
+    state: str
+    zip: str
+
+
 class Block(TypedDict):
-    houses: dict[str, HouseGeography]
+    houses: dict[str, PlaceGeography]
     nodes: node_list_t
     type: str
 
@@ -329,12 +341,15 @@ class Person(TypedDict):
     name: str
     age: int
     party: Literal["D", "R", "I"]
-    voting_history: dict[str, bool]
     voter_id: str
-    value: float
+    place: str
+    place_unit: NotRequired[str]
+    voting_history: dict[str, bool]
     turnout: float
+    value: float
 
 
+# NOTE/TODO: About to be deprecated
 class HousePeople(TypedDict):
     display_address: str
     city: str
@@ -344,9 +359,9 @@ class HousePeople(TypedDict):
     longitude: float
     voter_info: list[Person]
     value: float
-    # NOTE: This previously had subsegment_start, but this will now only be in the post-processing output
 
 
+# NOTE/TODO: About to be deprecated
 class HouseOutput(TypedDict):
     display_address: str
     city: str

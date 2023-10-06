@@ -59,6 +59,22 @@ class Database:
         self.db.select(database)
         return self.db.llen(key)
 
+    def add_to_set(self, key: str, value: str, database: int):
+        self.db.select(database)
+        self.db.sadd(key, value)
+
+    def get_set(self, key: str, database: int):
+        self.db.select(database)
+        return self.db.smembers(key)
+
+    def get_set_length(self, key: str, database: int) -> Awaitable[int] | int:
+        self.db.select(database)
+        return self.db.scard(key)
+
+    def is_in_set(self, key: str, value: str, database: int) -> Awaitable[bool] | bool:
+        self.db.select(database)
+        return self.db.sismember(key, value)
+
     def exists(self, key: str, database: int) -> bool:
         self.db.select(database)
         return self.db.exists(key) > 0  # type: ignore
@@ -70,6 +86,11 @@ class Database:
     def get_keys(self, database: int):
         self.db.select(database)
         return self.db.keys()
+
+    def get_multiple(self, keys: list[str], database: int):
+        self.db.select(database)
+        values = self.db.mget(keys)
+        return dict(zip(keys, [json.loads(value) for value in values]))
 
     def get_type(self, key: str, database: int):
         self.db.select(database)
