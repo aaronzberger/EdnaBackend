@@ -14,7 +14,7 @@ from termcolor import colored
 from src.config import (
     DISTANCE_TO_ROAD_MULTIPLIER,
     Block,
-    HouseGeography,
+    PlaceGeography,
     Point,
     adjacency_list_file,
     blocks_file,
@@ -284,7 +284,7 @@ class RouteMaker:
 
     @classmethod
     def get_route_cost(
-        cls, start: HouseGeography, block1: Block, end: HouseGeography, block2: Block
+        cls, start: PlaceGeography, block1: Block, end: PlaceGeography, block2: Block
     ):
         """
         Get the cost of a route between two houses. Each street crossing cost is added
@@ -392,7 +392,7 @@ class RouteMaker:
 
 if __name__ == "__main__":
     # Call on a specific house
-    house_1_info = HouseGeography(
+    house_1_info = PlaceGeography(
         {
             "lat": 40.5494095015337,
             "lon": -80.1919223610264,
@@ -499,7 +499,7 @@ if __name__ == "__main__":
         } # type: ignore
     )
 
-    house_2_info = HouseGeography(
+    house_2_info = PlaceGeography(
         {
             "lat": 40.551660346094,
             "lon": -80.1929784945178,

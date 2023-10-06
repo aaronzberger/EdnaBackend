@@ -19,6 +19,8 @@ from src.config import (
     blocks_file,
     blocks_file_t,
     turnout_predictions_file,
+    mail_data_file,
+    house_to_voters_file
 )
 from src.process_universe import Associater
 from src.utils.viz import display_targeting_voters
@@ -37,10 +39,36 @@ stats = {
     "num_sending": 0,
     "num_indeps": 0,
     "num_dems": 0,
-    "num_reps": 0,
+    "num_ballot_already_sent": 0,
     "num_too_unlikely": 0,
     "num_houses": 0,
+    "num_failed": 0,
 }
+
+# FRANKLIN PK
+PRECINCT_CODES = [
+    "1450101",
+    "1450102",
+    "1450103",
+    "1450201",
+    "1450202",
+    "1450203",
+    "1450301",
+    "1450302",
+    "1450303",
+    "MN145"
+]
+
+# num_voters = 0
+# voter_to_uuid: dict[str, str] = {}
+# uuids_to_voters: dict[str, str] = json.load(open(house_to_voters_file))
+# for uuid, info in uuids_to_voters.items():
+#     for voter in info["voter_info"]:
+#         voter_to_uuid[voter["voter_id"]] = uuid
+#         num_voters += 1
+
+# print("NUM VOTERS IN UNIVERSE:", num_voters)
+
 
 # VISTA_FIELDNAMES = ["Salutation", "First name", "Middle", "Last name (Required if no Company)", "Suffix", "Title",
 #                     "Company (Required if no Last name)", "Address Line 1 (Required)", "Address Line 2",
@@ -52,7 +80,7 @@ VISTA_FIELDNAMES = ["Salutation", "First name", "Middle", "Name", "Suffix", "Tit
 
 
 def handle_universe_file(
-    universe_file: str, blocks: blocks_file_t, turnouts: dict[str, float]
+    universe_file: str, blocks: blocks_file_t, turnouts: dict[str, float], mail_data: dict[str, dict]
 ):
     universe_file_opened = open(universe_file)
     num_voters = -1
@@ -63,25 +91,13 @@ def handle_universe_file(
 
     associater = Associater()
 
-    output_file_d = open(os.path.join(BASE_DIR, "full_pool_d.csv"), "w")
+    output_file = open(os.path.join(BASE_DIR, "franklin_park_target_25.csv"), "w")
     writer_d = csv.DictWriter(
-        output_file_d, VISTA_FIELDNAMES
+        output_file, VISTA_FIELDNAMES
     )
     writer_d.writeheader()
 
-    output_file_r = open(os.path.join(BASE_DIR, "full_pool_r.csv"), "w")
-    writer_r = csv.DictWriter(
-        output_file_r, VISTA_FIELDNAMES
-    )
-    writer_r.writeheader()
-
-    output_file_i = open(os.path.join(BASE_DIR, "full_pool_i.csv"), "w")
-    writer_i = csv.DictWriter(
-        output_file_i, VISTA_FIELDNAMES
-    )
-    writer_i.writeheader()
-
-    output_file_store = open(os.path.join(BASE_DIR, "full_pool_store.csv"), "w")
+    output_file_store = open(os.path.join(BASE_DIR, "franklin_park_target_store_25.csv"), "w")
     store_writer = csv.DictWriter(
         output_file_store, fieldnames=VISTA_FIELDNAMES + ["PA-ID"]
     )
@@ -104,11 +120,18 @@ def handle_universe_file(
         -------
             bool: whether or not a new address was added
         """
+
         party = (
             "D"
             if universe_row["Party Code"] == "D"
             else ("R" if universe_row["Party Code"] == "R" else "I")
         )
+
+        if party == "R":
+            return False
+
+        if universe_row["Precinct Code"] not in PRECINCT_CODES:
+            return False
 
         try:
             turnout: float = turnouts[universe_row["ID Number"]]
@@ -120,6 +143,15 @@ def handle_universe_file(
                 )
             )
             sys.exit()
+
+        try:
+            mail_ballot_data = mail_data[universe_row["ID Number"]]
+        except KeyError:
+            mail_ballot_data = {"BallotSent": None}
+
+        if mail_ballot_data["BallotSent"] is not None:
+            stats["num_ballot_already_sent"] += 1
+            return False
 
         name = f"{universe_row['First Name']} {universe_row['Last Name']}"
         if universe_row["Suffix"] != "":
@@ -136,14 +168,12 @@ def handle_universe_file(
         stats["num_voters"] += 1
 
         # Criteria for adding a voter:
-        if (party == "I" and turnout < 0.2) or (party in ["D", "R"] and turnout < 0.35):
+        if turnout < 0.25:
             stats["num_too_unlikely"] += 1
         else:
             stats["num_sending"] += 1
             if party == "D":
                 stats["num_dems"] += 1
-            elif party == "R":
-                stats["num_reps"] += 1
             else:
                 stats["num_indeps"] += 1
 
@@ -227,7 +257,17 @@ def handle_universe_file(
             voter.coords["lat"] = blocks[block_id]["addresses"][uuid]["lat"]
             voter.coords["lon"] = blocks[block_id]["addresses"][uuid]["lon"]
 
-        combined_names = ", ".join([person["name"] for person in voter.people])
+        names = [person["name"] for person in voter.people]
+
+        # If there are more than 2 voters, find a common last name and use that
+        if len(names) > 2:
+            last_names = [name.split(' ')[-1] for name in names]
+            last_name = max(set(last_names), key=last_names.count)
+            display_name = f'{last_name} Family'
+        else:
+            display_name = ' & '.join(names)
+
+        # combined_names = ", ".join([person["name"] for person in voter.people])
         combined_ids = ", ".join([person["voter_id"] for person in voter.people])
 
         # Use the output fieldnames to write the row
@@ -235,7 +275,7 @@ def handle_universe_file(
             "Salutation": "",
             "First name": "",
             "Middle": "",
-            "Name": combined_names,
+            "Name": display_name,
             "Suffix": "",
             "Title": "",
             "Company (Required if no Last name)": "",
@@ -245,54 +285,26 @@ def handle_universe_file(
             "State (Required)": voter.address.state,
             "Zip Code (Required. 5- or 9- digits)": voter.address.zip_code,
         }
-        rows_written = 0
 
         # If any voter is independent, send to the independent list
-        for person in voter.people:
-            if person["party"] == "I":
-                writer_i.writerow(output)
-                rows_written += 1
-                break
-
-        if rows_written == 1:
-            continue
-
-        for person in voter.people:
-            if person["party"] == "D":
-                writer_d.writerow(output)
-                rows_written += 1
-                break
-
-        if rows_written == 1:
-            continue
-
-        for person in voter.people:
-            if person["party"] == "R":
-                writer_r.writerow(output)
-                rows_written += 1
-                break
-
-        assert rows_written == 1
+        writer_d.writerow(output)
 
         store_output = deepcopy(output)
         store_output["PA-ID"] = combined_ids
         store_writer.writerow(store_output)
 
-    display_targeting_voters(voters).save(os.path.join(BASE_DIR, "viz", "full_pool.html"))
+    display_targeting_voters(voters).save(os.path.join(BASE_DIR, "viz", "franklin_park_25.html"))
 
     print(f"Of {stats['num_voters']} voters:")
     print(f"  {stats['num_sending']} ({stats['num_sending'] / stats['num_voters'] * 100:.2f}%) are being sent to")
     print(f"  {stats['num_houses']} are unique houses")
-    print(f"  {stats['num_indeps']} ({stats['num_indeps'] / stats['num_sending'] * 100:.2f}%) are independents")
-    print(f"  {stats['num_dems']} ({stats['num_dems'] / stats['num_sending'] * 100:.2f}%) are democrats")
-    print(f"  {stats['num_reps']} ({stats['num_reps'] / stats['num_sending'] * 100:.2f}%) are republicans")
-    print(
-        f"  {stats['num_too_unlikely']} ({stats['num_too_unlikely'] / stats['num_voters'] * 100:.2f}%) are too unlikely to vote"
-    )
+    print(f"  {stats['num_indeps']} ({stats['num_indeps'] / stats['num_voters'] * 100:.2f}%) are independents")
+    print(f"  {stats['num_dems']} ({stats['num_dems'] / stats['num_voters'] * 100:.2f}%) are democrats")
+    print(f"  {stats['num_ballot_already_sent']} ({stats['num_ballot_already_sent'] / stats['num_voters'] * 100:.2f}%) have already been sent a ballot")
+    print(f"  {stats['num_too_unlikely']} ({stats['num_too_unlikely'] / stats['num_voters'] * 100:.2f}%) are too unlikely to vote")
+    print(f"  {stats['num_failed']} ({stats['num_failed'] / stats['num_voters'] * 100:.2f}%) failed to be processed")
 
-    output_file_d.close()
-    output_file_r.close()
-    output_file_i.close()
+    output_file.close()
 
 
 if __name__ == "__main__":
@@ -300,8 +312,10 @@ if __name__ == "__main__":
 
     turnouts: dict[str, float] = json.load(open(turnout_predictions_file))
 
+    mail_data: dict[str, dict] = json.load(open(mail_data_file))
+
     if len(sys.argv) != 2 or not os.path.isfile(sys.argv[1]):
         print("Usage: python3 mail_list.py <universe_file>")
         sys.exit(1)
 
-    handle_universe_file(sys.argv[1], all_blocks, turnouts)
+    handle_universe_file(sys.argv[1], all_blocks, turnouts, mail_data)

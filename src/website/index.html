@@ -399,9 +399,9 @@
         </div>
         <div class="pie-section">
             <div class="pie-container">
-                <div class="pie-label">Voters</div>
-                <div id="voters-pie-description" class="pie-description"></div>
-                <div id="voters-pie" class="pie"></div>
+                <div class="pie-label">Houses</div>
+                <div id="houses-pie-description" class="pie-description"></div>
+                <div id="houses-pie" class="pie"></div>
             </div>
             <div class="pie-container">
                 <div class="pie-label">Lists</div>
@@ -440,8 +440,8 @@
     let isOverlayActive = false;
     let progressBarShowing = false;
 
-    let num_voters_completed = 0;
-    let num_voters_total = 0;
+    let num_houses_completed = 0;
+    let num_houses_total = 0;
 
     let num_lists_completed = 0;
     let num_lists_total = 0;
@@ -496,7 +496,7 @@
                 status = cachedUpload.status;
                 num_completed = cachedUpload.num_completed;
                 if (recount) {
-                    num_voters_completed += num_completed;
+                    num_houses_completed += num_completed;
                     if (status === 'completed') {
                         num_lists_completed++;
                     }
@@ -511,7 +511,7 @@
                     for (const block of upload.blocks) {
                         num_houses += block.houses.length;
                     }
-                    if (recount) num_voters_completed += num_houses;
+                    if (recount) num_houses_completed += num_houses;
 
                     if (num_houses >= details.num_houses * 0.88) {
                         status = 'completed';
@@ -530,18 +530,18 @@
             details.status = status;
             details.num_completed = num_completed;
 
-            if (recount) num_voters_total += details.num_voters;
+            if (recount) num_houses_total += details.num_houses;
         }
 
         // Set the pies
-        const voters_pie = document.getElementById('voters-pie');
+        const houses_pie = document.getElementById('houses-pie');
         const lists_pie = document.getElementById('lists-pie');
 
-        const voters_pie_pctg = Math.round(num_voters_completed / num_voters_total * 100);
+        const houses_pie_pctg = Math.round(num_houses_completed / num_houses_total * 100);
         const lists_pie_pctg = Math.round(num_lists_completed / num_lists_total * 100);
 
         // Set the pie labels
-        document.getElementById('voters-pie-description').innerHTML = `${num_voters_completed}/${num_voters_total} visited`;
+        document.getElementById('houses-pie-description').innerHTML = `${num_houses_completed}/${num_houses_total} visited`;
         document.getElementById('lists-pie-description').innerHTML = `${num_lists_completed}/${num_lists_total} completed`;
 
         // Filter the lists
@@ -659,7 +659,7 @@
 
         // Wait a little bit to update the pies (to ensure that the progress bar is hidden)
         setTimeout(() => {
-            setPiePercentage(voters_pie, voters_pie_pctg);
+            setPiePercentage(houses_pie, houses_pie_pctg);
             setPiePercentage(lists_pie, lists_pie_pctg);
         }, 200);
     }
