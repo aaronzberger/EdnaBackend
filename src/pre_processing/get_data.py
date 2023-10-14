@@ -7,11 +7,11 @@ import os
 import overpass
 from termcolor import colored
 
-from src.config import BASE_DIR, AREA_ID, overpass_file, AREA_BBOX
+from src.config import BASE_DIR, CAMPAIGN_NAME, overpass_file, AREA_BBOX
 
-if not os.path.exists(os.path.join(BASE_DIR, 'regions', AREA_ID, 'input')):
-    print(f'No region found called {AREA_ID}. Creating the directory...')
-    os.makedirs(os.path.join(BASE_DIR, 'regions', AREA_ID, 'input'))
+if not os.path.exists(os.path.join(BASE_DIR, 'regions', CAMPAIGN_NAME, 'input')):
+    print(f'No region found called {CAMPAIGN_NAME}. Creating the directory...')
+    os.makedirs(os.path.join(BASE_DIR, 'regions', CAMPAIGN_NAME, 'input'))
 
 print(colored('Please wait. This query takes ~ 2m 30s for Squirrel Hill...', color='yellow'))
 print('Querying Overpass API...', end=' ')

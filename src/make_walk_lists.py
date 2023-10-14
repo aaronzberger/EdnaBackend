@@ -15,11 +15,14 @@ from termcolor import colored
 import argparse
 
 from src.config import (
-    AREA_ID,
+    CAMPAIGN_NAME,
     BASE_DIR,
     DEPOT,
+    PLACE_DB_IDX,
     PROBLEM_TYPE,
+    VOTER_DB_IDX,
     Problem_Types,
+    CAMPAIGN_SUBSET_DB_IDX,
     NUM_LISTS,
     NodeType,
     Point,
@@ -28,7 +31,6 @@ from src.config import (
     node_coords_file,
     optimizer_points_pickle_file,
     pt_id,
-    requested_blocks_file,
     solution_path,
     clustering_pickle_file
 )
@@ -40,8 +42,9 @@ from src.optimize.completed_group_canvas import CompletedGroupCanvas
 from src.optimize.group_canvas import GroupCanvas
 from src.optimize.optimizer import Optimizer
 from src.optimize.turf_split import TurfSplit
-from src.post_processing.post_process import process_solution
+# from src.post_processing.post_process import process_solution
 from src.utils.viz import display_clustered_blocks
+from src.utils.db import Database
 
 
 parser = argparse.ArgumentParser(
@@ -52,14 +55,39 @@ parser.add_argument("-n", "--no-optimize", action="store_true", help="Skip the o
 parser.add_argument("-r", "--restart", action="store_true", help="Force-perform the optimization on all clusters")
 args = parser.parse_args()
 
-# Load the requested blocks
-requested_blocks: blocks_file_t = json.load(open(requested_blocks_file))
+db = Database()
+
+# Walk up the database from voters to places to blocks
+# To retrieve all nodes, take the first and last node from all blocks with places which have voters in this campaign
+voter_ids = db.get_set(CAMPAIGN_NAME, CAMPAIGN_SUBSET_DB_IDX)
+
+print(f'Found {len(voter_ids)} voters')
+
+place_ids: set[str] = set()
+for voter in voter_ids:
+    place = db.get_dict(voter, VOTER_DB_IDX)
+    if place is None:
+        print(colored("Voter {} not found in database".format(voter), color="red"))
+        sys.exit(1)
+    place_ids.add(place["place"])
+
+print('Found {} places'.format(len(place_ids)))
+
+block_ids: set[str] = set()
+for place in place_ids:
+    place_data = db.get_dict(place, PLACE_DB_IDX)
+    if place_data is None:
+        print(colored("Place {} not found in database".format(place), color="red"))
+        sys.exit(1)
+    block_ids.add(place_data["block_id"])
+
+print('Found {} blocks'.format(len(block_ids)))
 
 # Generate node distance matrix
-NodeDistances(requested_blocks)
+NodeDistances(block_ids=block_ids, skip_update=True)
 
 # Generate block distance matrix
-BlockDistances(requested_blocks)
+BlockDistances(block_ids=block_ids, skip_update=True)
 
 # Initialize calculator for mixed distances
 MixDistances()
@@ -70,7 +98,7 @@ MixDistances()
 " Clusters are used for partitioning the space into more reasonable and optimizable areas               "
 "-------------------------------------------------------------------------------------------------------"
 # region Cluster
-distance_matrix = BlockDistances.get_distance_matrix()
+distance_matrix = BlockDistances.get_distance_matrix(block_ids=block_ids)
 
 if os.path.exists(clustering_pickle_file):
     db = pickle.load(open(clustering_pickle_file, "rb"))
@@ -268,10 +296,10 @@ match PROBLEM_TYPE:
 match PROBLEM_TYPE:
     case Problem_Types.completed_group_canvas:
         for i, (cluster, center) in enumerate(zip(clustered_points, centers)):
-            if not args.restart and os.path.exists(os.path.join(BASE_DIR, "regions", AREA_ID, "areas", str(i))):
+            if not args.restart and os.path.exists(os.path.join(BASE_DIR, "regions", CAMPAIGN_NAME, "areas", str(i))):
                 continue
             print(colored("Optimizing cluster {}".format(i), color="green"))
-            save_path = os.path.join(BASE_DIR, "regions", AREA_ID, "areas", str(i))
+            save_path = os.path.join(BASE_DIR, "regions", CAMPAIGN_NAME, "areas", str(i))
 
             # Remove the old files (and all subdirectories)
             if os.path.isdir(save_path):

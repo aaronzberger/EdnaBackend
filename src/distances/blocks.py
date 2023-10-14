@@ -1,72 +1,97 @@
 from __future__ import annotations
+import math
 
-import json
-import os
-import random
-from copy import deepcopy
 from typing import Optional
 
 import numpy as np
-from nptyping import Float32, NDArray, Shape
 from tqdm import tqdm
+import time
 
-from src.config import (ARBITRARY_LARGE_DISTANCE, Block,
-                        block_distance_matrix_file, blocks_file_t)
+from src.config import (
+    ARBITRARY_LARGE_DISTANCE,
+    Block,
+    BLOCK_DISTANCE_MATRIX_DB_IDX,
+    generate_block_id_pair,
+    BLOCK_DB_IDX,
+)
 from src.distances.nodes import NodeDistances
+from src.utils.db import Database
 
 
-class BlockDistances():
-    _block_distances: dict[str, dict[str, float]] = {}
-    _blocks: blocks_file_t = {}
+class BlockDistances:
+    _db = Database()
 
     @classmethod
     def _insert_pair(cls, b1: Block, b1_id: str, b2: Block, b2_id: str):
-        # If this pair already exists in the opposite order, skip
-        try:
-            cls._block_distances[b2_id][b1_id]
-        except KeyError:
-            routed_distances = \
-                [NodeDistances.get_distance(i, j) for i, j in
-                    [(b1['nodes'][0], b2['nodes'][0]), (b1['nodes'][0], b2['nodes'][-1]),
-                     (b1['nodes'][-1], b2['nodes'][0]), (b1['nodes'][-1], b2['nodes'][-1])]]
-            existing_distances = [i for i in routed_distances if i is not None]
-            if len(existing_distances) > 0:
-                cls._block_distances[b1_id][b2_id] = min(existing_distances)
+        pair_1, pair_2 = generate_block_id_pair(b1_id, b2_id), generate_block_id_pair(
+            b2_id, b1_id
+        )
+        if cls._db.exists(pair_1, BLOCK_DISTANCE_MATRIX_DB_IDX) or cls._db.exists(
+            pair_2, BLOCK_DISTANCE_MATRIX_DB_IDX
+        ):
+            return
+
+        routed_distances = [
+            cls._snapshot.get_distance(i, j)
+            for (i, j) in [
+                (b1["nodes"][0], b2["nodes"][0]),
+                (b1["nodes"][0], b2["nodes"][-1]),
+                (b1["nodes"][-1], b2["nodes"][0]),
+                (b1["nodes"][-1], b2["nodes"][-1]),
+            ]
+        ]
+
+        existing_distances = [i for i in routed_distances if i is not None]
+        if len(existing_distances) > 0:
+            cls._db.set_str(
+                pair_1, str(min(existing_distances)), BLOCK_DISTANCE_MATRIX_DB_IDX
+            )
 
     @classmethod
-    def __init__(cls, blocks: blocks_file_t):
-        cls._blocks = deepcopy(blocks)
+    def _update(cls, blocks: dict[str, Block]):
+        """
+        Update the block distance table by adding any missing blocks
 
-        if os.path.exists(block_distance_matrix_file):
-            print('Block distance table file found.')
-            cls._block_distances = json.load(open(block_distance_matrix_file))
-            need_regeneration = False
-            num_samples = min(len(cls._blocks), 100)
-            for block_id in random.sample(cls._blocks.keys(), num_samples):
-                if block_id not in cls._block_distances:
-                    need_regeneration = True
-                    break
-            if not need_regeneration:
-                return
-            else:
-                print('The saved block distance table did not include all requested blocks. Regenerating...')
-        else:
-            print('No block distance table file found at {}. Generating now...'.format(block_distance_matrix_file))
+        Parameters
+        ----------
+            blocks (dict[str, Block]): the blocks to confirm are in the table, and to add if they are not
 
-        cls._block_distances = {}
-        with tqdm(total=len(blocks) ** 2, desc='Generating', unit='pairs', colour='green') as progress:
+        Notes
+        -----
+            Time complexity: O(n^2), where n is the number of blocks
+        """
+        with tqdm(
+            total=len(blocks) ** 2, desc="Updating blocks", unit="pairs", colour="green"
+        ) as progress:
             for b_id, block in blocks.items():
-                cls._block_distances[b_id] = {}
                 for other_b_id, other_block in blocks.items():
                     cls._insert_pair(block, b_id, other_block, other_b_id)
                     progress.update()
 
-            print('Saving to {}'.format(block_distance_matrix_file))
-            json.dump(cls._block_distances, open(block_distance_matrix_file, 'w', encoding='utf-8'), indent=4)
+    @classmethod
+    def __init__(cls, block_ids: set[str], skip_update: bool = False):
+        if skip_update:
+            return
+
+        blocks: dict[str, Block] = {}
+        for block_id in block_ids:
+            block = cls._db.get_dict(block_id, BLOCK_DB_IDX)
+
+            if block is None:
+                raise KeyError(
+                    "Block with ID {} not found in database.".format(block_id)
+                )
+
+            # TODO: Decide globally if we should unpack into a Block (Block(**block))), or assume written correctly
+            blocks[block_id] = block
+
+        cls._snapshot = NodeDistances.snapshot()
+
+        cls._update(blocks)
 
     @classmethod
     def get_distance(cls, b1_id: str, b2_id: str) -> Optional[float]:
-        '''
+        """
         Get the distance between two blocks by their coordinates
 
         Parameters:
@@ -75,20 +100,28 @@ class BlockDistances():
 
         Returns:
             float | None: distance between the two blocks if it exists, None otherwise
-        '''
-        try:
-            return cls._block_distances[b1_id][b2_id]
-        except KeyError:
-            try:
-                return cls._block_distances[b2_id][b1_id]
-            except KeyError:
-                return None
+        """
+        pair_1, pair_2 = generate_block_id_pair(b1_id, b2_id), generate_block_id_pair(
+            b2_id, b1_id
+        )
+
+        pair_1_r = cls._db.get_str(pair_1, BLOCK_DISTANCE_MATRIX_DB_IDX)
+        if pair_1_r is not None:
+            return float(pair_1_r)
+
+        pair_2_r = cls._db.get_str(pair_2, BLOCK_DISTANCE_MATRIX_DB_IDX)
+        if pair_2_r is not None:
+            return float(pair_2_r)
+
+        return None
 
     @classmethod
-    def get_distance_matrix(cls) -> NDArray[Shape[len(_blocks), len(_blocks)], Float32]:
-        matrix = np.empty((len(cls._blocks), len(cls._blocks)), dtype=np.float32)
-        for r, block in enumerate(cls._blocks):
-            for c, other_block in enumerate(cls._blocks):
+    def get_distance_matrix(cls, block_ids: set[str]):
+        matrix = np.empty((len(block_ids), len(block_ids)), dtype=np.float32)
+        for r, block in enumerate(block_ids):
+            for c, other_block in enumerate(block_ids):
                 distance = cls.get_distance(block, other_block)
-                matrix[r][c] = ARBITRARY_LARGE_DISTANCE if distance is None else distance
+                matrix[r][c] = (
+                    ARBITRARY_LARGE_DISTANCE if distance is None else distance
+                )
         return matrix

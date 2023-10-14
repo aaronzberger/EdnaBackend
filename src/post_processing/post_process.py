@@ -9,7 +9,7 @@ from copy import deepcopy
 from termcolor import colored
 
 from src.config import (
-    AREA_ID,
+    CAMPAIGN_NAME,
     BASE_DIR,
     PROBLEM_PATH,
     TURF_SPLIT,
@@ -786,7 +786,7 @@ def process_solution(
     requested_blocks: blocks_file_t,
     viz_path: str = VIZ_PATH,
     problem_path: str = PROBLEM_PATH,
-    id: str = AREA_ID,
+    id: str = CAMPAIGN_NAME,
 ):
     point_orders: list[list[tuple[Point, int]]] = []
 
@@ -834,7 +834,7 @@ def process_solution(
 
         walk_lists.append(post_processor.post_process(tour))
 
-        list_id = f"{AREA_ID}-{id}-{i}"
+        list_id = f"{CAMPAIGN_NAME}-{id}-{i}"
         assert list_id not in details, f"List {list_id} already exists in details"
 
         num_houses = sum([len(sub_block.houses) for sub_block in walk_lists[-1]])
@@ -856,12 +856,12 @@ def process_solution(
 
     list_visualizations = display_individual_walk_lists(walk_lists)
     for i, walk_list in enumerate(list_visualizations):
-        walk_list.save(os.path.join(viz_path, f"{AREA_ID}-{id}-{i}.html"))
+        walk_list.save(os.path.join(viz_path, f"{CAMPAIGN_NAME}-{id}-{i}.html"))
 
-    form = json.load(open(os.path.join("regions", AREA_ID, "input", "form.json"), "r"))
+    form = json.load(open(os.path.join("regions", CAMPAIGN_NAME, "input", "form.json"), "r"))
 
     for i in range(len(walk_lists)):
-        list_id = f"{AREA_ID}-{id}-{i}"
+        list_id = f"{CAMPAIGN_NAME}-{id}-{i}"
         post_processor.generate_file(
             walk_lists[i], os.path.join(viz_path, f"{list_id}.json"), id=list_id, form=form
         )
@@ -881,8 +881,8 @@ if __name__ == "__main__":
     MixDistances()
 
     if len(sys.argv) == 2:
-        problem_dir = os.path.join(BASE_DIR, "regions", AREA_ID, "areas", sys.argv[1], "problem")
-        viz_dir = os.path.join(BASE_DIR, "regions", AREA_ID, "areas", sys.argv[1], "viz")
+        problem_dir = os.path.join(BASE_DIR, "regions", CAMPAIGN_NAME, "areas", sys.argv[1], "problem")
+        viz_dir = os.path.join(BASE_DIR, "regions", CAMPAIGN_NAME, "areas", sys.argv[1], "viz")
         solution = Optimizer.process_solution(
             os.path.join(problem_dir, "solution.json")
         )

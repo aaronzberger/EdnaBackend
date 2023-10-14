@@ -14,14 +14,15 @@ from typing_extensions import NotRequired
 BASE_DIR = os.path.abspath(os.path.join(__file__, "../../"))
 VRP_CLI_PATH = "/home/user/.cargo/bin/vrp-cli"
 
-AREA_ID = "rosselli"
+CAMPAIGN_NAME = "rosselli"
+AREA_BBOX = [40.5147085, -80.2215597, 40.6199697, -80.0632736]
+
 USE_COST_METRIC = False
 STYLE_COLOR = "#0F6BF5"
-AREA_BBOX = [40.5147085, -80.2215597, 40.6199697, -80.0632736]
 
 street_suffixes_file = os.path.join(BASE_DIR, "src", "street_suffixes.json")
 
-region_dir = os.path.join(BASE_DIR, "regions", AREA_ID)
+region_dir = os.path.join(BASE_DIR, "regions", CAMPAIGN_NAME)
 store_dir = os.path.join(region_dir, "store")
 input_dir = os.path.join(region_dir, "input")
 
@@ -82,7 +83,7 @@ PROBLEM_PATH = os.path.join(VIZ_PATH, "problem")
 "----------------------------------------------------------------------------------"
 # Indices for the Redis database
 VOTER_DB_IDX = 1
-HOUSE_DB_IDX = 2
+PLACE_DB_IDX = 2
 BLOCK_DB_IDX = 3
 NODE_DISTANCE_MATRIX_DB_IDX = 4
 HOUSE_DISTANCE_MATRIX_DB_IDX = 5
@@ -170,7 +171,7 @@ MAX_TOURING_DISTANCE = 10000
 WALKING_M_PER_S = 1.2
 MINS_PER_HOUSE = 1.5
 CLUSTERING_CONNECTED_THRESHOLD = 100  # Meters where blocks are connected
-KEEP_APARTMENTS = True
+# TODO: Reimplement Keep_apartments?
 DISTANCE_TO_ROAD_MULTIPLIER = 0.5
 ALD_BUFFER = 150  # Meters after a block ends where a house is still on the block
 DIFFERENT_BLOCK_COST = 25
@@ -233,6 +234,21 @@ def generate_pt_id(*args, **kwargs) -> str:
     return str("{:.7f}".format(lat)) + ":" + str("{:.7f}".format(lon))
 
 
+def generate_pt_id_pair(id1: str, id2: str) -> str:
+    # The middle character must never appear in an ID
+    return id1 + "_" + id2
+
+
+def generate_block_id_pair(id1: str, id2: str) -> str:
+    # The middle character must never appear in an ID
+    return id1 + "_" + id2
+
+
+def generate_place_id_pair(id1: str, id2: str) -> str:
+    # The middle character must never appear in an ID
+    return id1 + "_" + id2
+
+
 class Point(TypedDict):
     lat: float
     lon: float
@@ -243,6 +259,9 @@ class Point(TypedDict):
 class WriteablePoint(TypedDict):
     lat: float
     lon: float
+
+
+AnyPoint = Point | WriteablePoint
 
 
 def to_serializable_pt(p: Point) -> WriteablePoint:
@@ -288,11 +307,13 @@ class PlaceSemantics(TypedDict):
     display_address: str
     # For houses with multiple units, a mapping of unit numbers to a list of voter IDs
     voters: NotRequired[list[str] | dict[str, list[str]]]
+    block_id: str
     city: str
     state: str
     zip: str
 
 
+# TODO: rename houses to places and re-run
 class Block(TypedDict):
     houses: dict[str, PlaceGeography]
     nodes: node_list_t

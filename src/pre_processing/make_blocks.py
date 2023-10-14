@@ -39,7 +39,7 @@ from src.config import (
     AREA_BBOX,
     BLOCK_DB_IDX,
     NODE_COORDS_DB_IDX,
-    HOUSE_DB_IDX
+    PLACE_DB_IDX
 )
 from src.utils.gps import (
     along_track_distance,
@@ -567,6 +567,7 @@ with tqdm(
             house_semantics = PlaceSemantics(
                 display_address=item["full_address"],
                 city=item["municipality"],
+                block_id=str(best_segment.id),
                 state=item["state"],
                 zip=item["zip_code"],
             )
@@ -588,7 +589,7 @@ with tqdm(
             db.set_dict(str(best_segment.id), old_block, BLOCK_DB_IDX)
 
             # Add the house to the houses file
-            db.set_dict(str(house_uuid), dict(house_semantics), HOUSE_DB_IDX)
+            db.set_dict(str(house_uuid), dict(house_semantics), PLACE_DB_IDX)
 
         else:
             num_failed_houses += 1

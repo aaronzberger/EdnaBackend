@@ -18,9 +18,9 @@ from tqdm import tqdm
 
 from src.associate import Associater
 from src.config import (
-    AREA_ID,
+    CAMPAIGN_NAME,
     CAMPAIGN_SUBSET_DB_IDX,
-    HOUSE_DB_IDX,
+    PLACE_DB_IDX,
     VOTER_DB_IDX,
     Person,
     PlaceSemantics,
@@ -60,7 +60,7 @@ def handle_universe_file(universe_file: str, turnouts: dict[str, float]):
             bool: whether or not the voter was added
         """
         voter_id = universe_row["ID Number"]
-        if db.is_in_set(AREA_ID, voter_id, CAMPAIGN_SUBSET_DB_IDX):
+        if db.is_in_set(CAMPAIGN_NAME, voter_id, CAMPAIGN_SUBSET_DB_IDX):
             # This also means the voter has been accounted for in the place and block databases
             return False
 
@@ -81,13 +81,14 @@ def handle_universe_file(universe_file: str, turnouts: dict[str, float]):
             )
             sys.exit()
 
+        # Here, we do the only universe-wide elimination
         value = voter_value(party=party, turnout=turnout)
 
         if value == 0:
             # If we do not want to visit this voter at all, do not add them
             return False
 
-        semantic_house_info: PlaceSemantics = db.get_dict(place, HOUSE_DB_IDX)
+        semantic_house_info: PlaceSemantics = db.get_dict(place, PLACE_DB_IDX)
 
         if custom_unit_num is not None:
             if "voters" not in semantic_house_info:
@@ -149,11 +150,11 @@ def handle_universe_file(universe_file: str, turnouts: dict[str, float]):
         if custom_unit_num is not None:
             person["place_unit"] = custom_unit_num
 
-        # Add the voter to the database
+        # Add the voter info to the database
         db.set_dict(voter_id, dict(person), VOTER_DB_IDX)
 
-        # Add voter to the place
-        db.add_to_set(AREA_ID, voter_id, CAMPAIGN_SUBSET_DB_IDX)
+        # Add voter to this campaign
+        db.add_to_set(CAMPAIGN_NAME, voter_id, CAMPAIGN_SUBSET_DB_IDX)
 
         return True
 

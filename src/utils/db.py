@@ -8,12 +8,20 @@ Node Coords DB (NODE_COORDS_DB_IDX)
 
 Blocks (BLOCK_DB_IDX):
     Key: Block ID (from pre-processing, the concatenation of end node IDs and an identifier)
-    Value: Block object
+    Value: Block object (houses, nodes, type)
+
+Places (PLACE_DB_IDX):
+    Key: Place ID (uuid)
+    Value: PlaceSemantics object
+
+Voters (VOTER_DB_IDX):
+    Key: Voter ID
+    Value: Person object
 
 """
 
 import json
-from typing import Awaitable
+from typing import Awaitable, Optional
 import redis
 
 
@@ -24,28 +32,24 @@ class Database:
         if not self.db.ping():
             raise ConnectionError('Redis server failed to respond to ping.')
 
-    # @staticmethod
-    # def db_select(func):
-    #     def wrapper(key, value, database: int):
-    #         self.db.select(database: int)
-    #         # Wrap in try except?
-    #         func(key, value, database: int)
-
-    #     return wrapper
-
     def set_dict(self, key: str, value: dict, database: int):
         self.set_str(key, json.dumps(value), database)
 
-    def get_dict(self, key: str, database: int) -> dict:
-        return json.loads(self.get_str(key, database))
+    def get_dict(self, key: str, database: int) -> Optional[dict]:
+        retrieved = self.get_str(key, database)
+        return None if retrieved is None else json.loads(retrieved)
 
     def set_str(self, key: str, value: str, database: int):
         self.db.select(database)
         self.db.set(key, value)
 
-    def get_str(self, key: str, database: int) -> str:
+    def get_str(self, key: str, database: int) -> Optional[str]:
         self.db.select(database)
         return self.db.get(key)
+
+    def get_multiple_str(self, keys: list[str], database: int) -> list[Optional[str]]:
+        self.db.select(database)
+        return self.db.mget(keys)
 
     def add_to_list(self, key: str, value: str, database: int):
         self.db.select(database)
@@ -87,10 +91,17 @@ class Database:
         self.db.select(database)
         return self.db.keys()
 
+    def get_all(self, database: int):
+        """Get a dictionary of (key, value) pairs for all keys in the database."""
+        self.db.select(database)
+        keys = self.db.keys()
+        values = self.db.mget(keys)
+        return dict(zip(keys, [None if v is None else json.loads(v) for v in values]))
+
     def get_multiple(self, keys: list[str], database: int):
         self.db.select(database)
         values = self.db.mget(keys)
-        return dict(zip(keys, [json.loads(value) for value in values]))
+        return dict(zip(keys, [None if v is None else json.loads(v) for v in values]))
 
     def get_type(self, key: str, database: int):
         self.db.select(database)

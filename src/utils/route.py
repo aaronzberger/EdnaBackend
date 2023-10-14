@@ -13,6 +13,7 @@ from termcolor import colored
 
 from src.config import (
     DISTANCE_TO_ROAD_MULTIPLIER,
+    AnyPoint,
     Block,
     PlaceGeography,
     Point,
@@ -25,10 +26,11 @@ from src.config import (
 )
 from src.utils.gps import great_circle_distance
 
-SERVER = "http://172.17.0.2:5000"
+SERVER = "http://172.18.0.4:5000"
+# SERVER = "localhost:5001"
 
 
-def get_distance(start: Point, end: Point) -> float:
+def get_distance(start: AnyPoint, end: AnyPoint) -> float:
     """
     Get the distance on foot (in meters) between two points.
 
@@ -44,7 +46,7 @@ def get_distance(start: Point, end: Point) -> float:
     loc = "{},{};{},{}".format(start["lon"], start["lat"], end["lon"], end["lat"])
     url = SERVER + "/route/v1/walking/" + loc
     try:
-        r = requests.get(url, timeout=5)
+        r = requests.get(url, timeout=1)
     except Exception as e:
         raise RuntimeError("Request to OSRM server failed. Is it running?") from e
     if r.status_code == 200:
@@ -52,7 +54,7 @@ def get_distance(start: Point, end: Point) -> float:
     raise RuntimeError("Could not contact OSRM server")
 
 
-def get_route(start: Point, end: Point) -> dict[str, Any]:
+def get_route(start: AnyPoint, end: AnyPoint) -> dict[str, Any]:
     """
     Get the full route on foot between two points.
 
