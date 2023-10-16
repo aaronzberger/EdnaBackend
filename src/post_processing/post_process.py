@@ -11,23 +11,26 @@ from termcolor import colored
 from src.config import (
     CAMPAIGN_NAME,
     BASE_DIR,
-    PROBLEM_PATH,
-    TURF_SPLIT,
+    default_distances_path,
+    PROBLEM_TYPE,
+    Person,
+    PlaceGeography,
+    PlaceSemantics,
+    Problem_Types,
     VIZ_PATH,
+    Block,
     HouseOutput,
     HousePeople,
     NodeType,
     Point,
     Solution,
     Tour,
-    blocks_file,
-    blocks_file_t,
     generate_pt_id,
-    house_id_to_block_id_file,
-    house_to_voters_file,
     pt_id,
-    requested_blocks_file,
-    details_file
+    details_file,
+    PLACE_DB_IDX,
+    BLOCK_DB_IDX,
+    VOTER_DB_IDX,
 )
 from src.distances.blocks import BlockDistances
 from src.distances.mix import MixDistances
@@ -36,21 +39,23 @@ from src.utils.gps import SubBlock, project_to_line
 from src.optimize.optimizer import Optimizer
 from src.utils.route import RouteMaker
 from src.utils.viz import (
-    display_distance_matrix,
     display_house_orders,
     display_individual_walk_lists,
 )
+from src.utils.db import Database
 
 
 class PostProcess:
-    def __init__(self, requested_blocks: blocks_file_t, optimizer_points: list[Point]):
-        self._all_blocks: blocks_file_t = json.load(open(blocks_file))
-        self.house_id_to_block_id: dict[str, str] = json.load(
-            open(house_id_to_block_id_file)
-        )
-        self.house_to_voters = json.load(open(house_to_voters_file))
+    def __init__(self, optimizer_points: list[Point]):
+        # self._all_blocks: blocks_file_t = json.load(open(blocks_file))
+        # self.house_id_to_block_id: dict[str, str] = json.load(
+        #     open(house_id_to_block_id_file)
+        # )
+        # self.house_to_voters = json.load(open(house_to_voters_file))
 
-        self.requested_blocks = requested_blocks
+        self.db = Database()
+
+        # self.requested_blocks = requested_blocks
         self.tour_points = optimizer_points
         RouteMaker()
 
@@ -72,8 +77,8 @@ class PostProcess:
             Point: the exit point of this segment, which is either the start or endpoint of final_house's segment
         """
         # Determine the exit direction, which will either be the start or end of the segment
-        origin_block_id = self.house_id_to_block_id[final_house["id"]]
-        origin_block = self.requested_blocks[origin_block_id]
+        origin_block_id = self.db.get_dict(final_house["id"], PLACE_DB_IDX)["block_id"]
+        origin_block = self.db.get_dict(origin_block_id, BLOCK_DB_IDX)
 
         end_node = deepcopy(origin_block["nodes"][-1])
         end_node["type"] = NodeType.node
@@ -81,9 +86,7 @@ class PostProcess:
         through_end = MixDistances.get_distance(p1=end_node, p2=next_house)
 
         if through_end is not None:
-            through_end += self.requested_blocks[origin_block_id]["addresses"][
-                final_house["id"]
-            ]["distance_to_end"]
+            through_end += origin_block["places"][final_house["id"]]["distance_to_end"]
 
         start_node = deepcopy(origin_block["nodes"][0])
         start_node["type"] = NodeType.node
@@ -91,14 +94,14 @@ class PostProcess:
         through_start = MixDistances.get_distance(p1=start_node, p2=next_house)
 
         if through_start is not None:
-            through_start += self.requested_blocks[origin_block_id]["addresses"][
-                final_house["id"]
-            ]["distance_to_start"]
+            through_start += origin_block["places"][final_house["id"]][
+                "distance_to_start"
+            ]
 
         if through_start is None and through_end is None:
             print(
                 colored(
-                    f"Unable to find distance through start or end of block in post-processing Final house {final_house} and next house {next_house}. Quitting.",
+                    f"Unable to find distance through start/end of block (final house {final_house}, next house {next_house}). Quitting.",
                     "red",
                 )
             )
@@ -129,22 +132,28 @@ class PostProcess:
             Point: the entrance point of the next segment, which is either the start or endpoint of next_house's segment
         """
         # Determine the exit direction, which will either be the start or end of the segment
-        destination_block_id = self.house_id_to_block_id[next_house["id"]]
-        destination_block = self.requested_blocks[destination_block_id]
+        destination_block_id = self.db.get_dict(next_house["id"], PLACE_DB_IDX)[
+            "block_id"
+        ]
+        destination_block = self.db.get_dict(destination_block_id, BLOCK_DB_IDX)
 
-        through_end = NodeDistances.get_distance(intersection, destination_block["nodes"][-1])
+        through_end = NodeDistances.get_distance(
+            intersection, destination_block["nodes"][-1]
+        )
 
         if through_end is not None:
-            through_end += self.requested_blocks[destination_block_id]["addresses"][
-                next_house["id"]
-            ]["distance_to_end"]
+            through_end += destination_block["places"][next_house["id"]][
+                "distance_to_end"
+            ]
 
-        through_start = NodeDistances.get_distance(intersection, destination_block["nodes"][0])
+        through_start = NodeDistances.get_distance(
+            intersection, destination_block["nodes"][0]
+        )
 
         if through_start is not None:
-            through_start += self.requested_blocks[destination_block_id]["addresses"][
-                next_house["id"]
-            ]["distance_to_start"]
+            through_start += destination_block["places"][next_house["id"]][
+                "distance_to_start"
+            ]
 
         if through_start is None and through_end is None:
             print(
@@ -214,7 +223,7 @@ class PostProcess:
         uuids = [i["id"] for i in houses]
         block_houses = {
             uuid: info
-            for uuid, info in self.requested_blocks[block_id]["addresses"].items()
+            for uuid, info in self.db.get_dict(block_id, BLOCK_DB_IDX)["places"].items()
             if uuid in uuids
         }
 
@@ -227,7 +236,7 @@ class PostProcess:
         #         )
         #     )
 
-        block = self.requested_blocks[block_id]
+        block = self.db.get_dict(block_id, BLOCK_DB_IDX)
 
         extremum: tuple[Point, Point] = (entrance, exit)
 
@@ -294,7 +303,9 @@ class PostProcess:
             )
         # endregion
 
-        unused_uuids = set(self.blocks_on_route[block_id]) - set(uuids) - self.inserted_houses
+        unused_uuids = (
+            set(self.blocks_on_route[block_id]) - set(uuids) - self.inserted_houses
+        )
 
         # region: Order the houses
         if pt_id(entrance) != pt_id(exit):
@@ -338,11 +349,12 @@ class PostProcess:
 
                     # Also, add any houses on future blocks which can be moved up to this block
                     for potential_house_id in unused_uuids:
-                        info = self.requested_blocks[block_id]["addresses"][potential_house_id]
+                        info: PlaceGeography = self.db.get_dict(block_id, BLOCK_DB_IDX)[
+                            "places"
+                        ][potential_house_id]
                         if (
                             info["side"] != running_side
-                            and info[metric]
-                            < running_distance_to_start
+                            and info[metric] < running_distance_to_start
                             and potential_house_id not in added_houses
                         ):
                             new_houses.append(
@@ -372,7 +384,10 @@ class PostProcess:
 
             # Also, add any houses on future blocks which can be moved up to this block
             for potential_house_id in unused_uuids:
-                info = self.requested_blocks[block_id]["addresses"][potential_house_id]
+                info: PlaceGeography = self.db.get_dict(block_id, BLOCK_DB_IDX)[
+                    "places"
+                ][potential_house_id]
+                # info = self.requested_blocks[block_id]["addresses"][potential_house_id]
                 if (
                     info["side"] == running_side
                     and potential_house_id not in added_houses
@@ -422,18 +437,18 @@ class PostProcess:
             ]
 
             # To avoid mis-placing houses off the end, sort by the distance to the entrance/exit
-            metric_out = "distance_to_start" if pt_id(entrance) == pt_id(
-                block["nodes"][0]
-            ) else "distance_to_end"
+            metric_out = (
+                "distance_to_start"
+                if pt_id(entrance) == pt_id(block["nodes"][0])
+                else "distance_to_end"
+            )
 
             # Put the "out" side houses first, then the "back" side houses
             houses = sorted(
                 out_side,
                 key=lambda h: block_houses[h["id"]][metric_out],
             ) + sorted(
-                back_side,
-                key=lambda h: block_houses[h["id"]][metric_out],
-                reverse=True
+                back_side, key=lambda h: block_houses[h["id"]][metric_out], reverse=True
             )
 
             # For the out houses, we're always going forward, so the subsegments are as they are
@@ -454,7 +469,12 @@ class PostProcess:
 
                 if min(sub_start_idx, sub_end_idx) == len(out_nav_nodes):
                     sub_start_idx = len(out_nav_nodes) - 1
-                    print(colored(f"WARNNING: house {house['id']} 's subsegment is no longer existent: extremum calculation likely failed", "yellow"))
+                    print(
+                        colored(
+                            f"WARNNING: house {house['id']} 's subsegment is no longer existent: extremum calculation likely failed",
+                            "yellow",
+                        )
+                    )
 
                 houses[i]["subsegment_start"] = min(sub_start_idx, sub_end_idx)
 
@@ -476,7 +496,12 @@ class PostProcess:
 
                 if min(sub_start_idx, sub_end_idx) == len(back_nav_nodes):
                     sub_start_idx = len(back_nav_nodes) - 1
-                    print(colored(f"WARNNING: house {house['id']} 's subsegment is no longer existent: extremum calculation likely failed", "yellow"))
+                    print(
+                        colored(
+                            f"WARNNING: house {house['id']} 's subsegment is no longer existent: extremum calculation likely failed",
+                            "yellow",
+                        )
+                    )
 
                 houses[i + len(out_side)]["subsegment_start"] = (
                     min(sub_start_idx, sub_end_idx) + len(navigation_points) // 2 - 1
@@ -535,7 +560,8 @@ class PostProcess:
                     print(
                         colored(
                             "Not adding route between sub-blocks because no route was found",
-                        ), "yellow"
+                        ),
+                        "yellow",
                     )
                     continue
                 block_ids, distance = route_info
@@ -544,7 +570,7 @@ class PostProcess:
                 for block_id in block_ids:
                     # TODO: Check if we can remove this. It is the only reference to all_blocks
                     # May be able to just refer to block_id in the subblock
-                    block = self._all_blocks[block_id]
+                    block = self.db.get_dict(block_id, BLOCK_DB_IDX)
 
                     start = Point(
                         lat=block["nodes"][0]["lat"],
@@ -604,24 +630,27 @@ class PostProcess:
         self.depot = depot
 
         for house in houses:
-            if self.house_id_to_block_id[house["id"]] not in self.blocks_on_route:
-                self.blocks_on_route[self.house_id_to_block_id[house["id"]]] = [
-                    house["id"]
-                ]
+            if (
+                self.db.get_dict(house["id"], PLACE_DB_IDX)["block_id"]
+                not in self.blocks_on_route
+            ):
+                self.blocks_on_route[
+                    self.db.get_dict(house["id"], PLACE_DB_IDX)["block_id"]
+                ] = [house["id"]]
             else:
-                self.blocks_on_route[self.house_id_to_block_id[house["id"]]].append(
-                    house["id"]
-                )
+                self.blocks_on_route[
+                    self.db.get_dict(house["id"], PLACE_DB_IDX)["block_id"]
+                ].append(house["id"])
 
         current_sub_block_houses: list[Point] = []
 
         # Take the side closest to the first house (likely where a canvasser would park)
         running_intersection = depot
-        running_block_id = self.house_id_to_block_id[houses[0]["id"]]
+        running_block_id = self.db.get_dict(houses[0]["id"], PLACE_DB_IDX)["block_id"]
 
         # Process the list
         for house, next_house in itertools.pairwise(houses):
-            next_block_id = self.house_id_to_block_id[next_house["id"]]
+            next_block_id = self.db.get_dict(next_house["id"], PLACE_DB_IDX)["block_id"]
 
             if house["id"] not in self.inserted_houses:
                 current_sub_block_houses.append(house)
@@ -687,7 +716,9 @@ class PostProcess:
 
         return walk_list
 
-    def generate_file(self, walk_list: list[SubBlock], output_file: str, id: str, form: dict):
+    def generate_file(
+        self, walk_list: list[SubBlock], output_file: str, id: str, form: dict
+    ):
         """
         Generate a JSON file with the walk list (for front-end).
 
@@ -708,7 +739,13 @@ class PostProcess:
             for house in sub_block.houses:
                 # Lookup this entry by uuid
                 try:
-                    house_voter_info: HousePeople = self.house_to_voters[pt_id(house)]
+                    place: PlaceSemantics = self.db.get_dict(house["id"], PLACE_DB_IDX)
+                    voters: list[Person] = [
+                        self.db.get_dict(v, VOTER_DB_IDX) for v in place["voters"]
+                    ]
+                    place_geo: PlaceGeography = self.db.get_dict(
+                        place["block_id"], BLOCK_DB_IDX
+                    )["places"][house["id"]]
                 except KeyError:
                     print(
                         colored(
@@ -721,23 +758,23 @@ class PostProcess:
                     sys.exit(1)
 
                 assert (
-                    house_voter_info["latitude"] == house["lat"]
-                    and house_voter_info["longitude"] == house["lon"]
+                    place_geo["lat"] == house["lat"]
+                    and place_geo["lon"] == house["lon"]
                 ), "House coordinate mismatch: voter info file had {}, routing file had {}".format(
-                    (house_voter_info["latitude"], house_voter_info["longitude"]),
+                    (place_geo["lat"], place_geo["lon"]),
                     (house["lat"], house["lon"]),
                 )
 
                 houses.append(
                     HouseOutput(
-                        display_address=house_voter_info["display_address"],
-                        city=house_voter_info["city"],
-                        state=house_voter_info["state"],
-                        zip=house_voter_info["zip"],
+                        display_address=place["display_address"],
+                        city=place["city"],
+                        state=place["state"],
+                        zip=place["zip"],
                         uuid=pt_id(house),
-                        latitude=house_voter_info["latitude"],
-                        longitude=house_voter_info["longitude"],
-                        voter_info=house_voter_info["voter_info"],
+                        latitude=place_geo["lat"],
+                        longitude=place_geo["lon"],
+                        voter_info=voters,
                         subsegment_start=house["subsegment_start"],
                     )
                 )
@@ -783,9 +820,8 @@ def get_distance_cost(idx1: int, idx2: int, distances_file: str) -> tuple[float,
 def process_solution(
     solution: Solution,
     optimizer_points: list[Point],
-    requested_blocks: blocks_file_t,
     viz_path: str = VIZ_PATH,
-    problem_path: str = PROBLEM_PATH,
+    distances_path: str = default_distances_path,
     id: str = CAMPAIGN_NAME,
 ):
     point_orders: list[list[tuple[Point, int]]] = []
@@ -802,10 +838,9 @@ def process_solution(
     # ).save(os.path.join(viz_path, "distances.html"))
 
     # house_dcs = [[HouseDistances.get_distance(i, j) for (i, j) in itertools.pairwise(list)] for list in point_orders]
-    distances_file = os.path.join(problem_path, "distances.json")
     house_dcs = [
         [
-            get_distance_cost(i[1], j[1], distances_file)
+            get_distance_cost(i[1], j[1], default_distances_path)
             for (i, j) in itertools.pairwise(list)
         ]
         for list in point_orders
@@ -822,11 +857,15 @@ def process_solution(
     else:
         details = {}
 
-    post_processor = PostProcess(requested_blocks, optimizer_points=optimizer_points)
+    post_processor = PostProcess(optimizer_points=optimizer_points)
     walk_lists: list[list[SubBlock]] = []
     for i, tour in enumerate(solution["tours"]):
         # Do not count the startingg location service at the start or end
-        tour["stops"] = tour["stops"][1:-1] if TURF_SPLIT else tour["stops"]
+        tour["stops"] = (
+            tour["stops"][1:-1]
+            if PROBLEM_TYPE == Problem_Types.turf_split
+            else tour["stops"]
+        )
 
         if len(tour["stops"]) == 0:
             print(f"List {i} has 0 stops")
@@ -835,7 +874,8 @@ def process_solution(
         walk_lists.append(post_processor.post_process(tour))
 
         list_id = f"{CAMPAIGN_NAME}-{id}-{i}"
-        assert list_id not in details, f"List {list_id} already exists in details"
+        if list_id in details:
+            print(colored(f"Warning: List {list_id} already exists in details"))
 
         num_houses = sum([len(sub_block.houses) for sub_block in walk_lists[-1]])
         distance = 0
@@ -843,7 +883,7 @@ def process_solution(
             distance += sub_block.length
         start_point = {
             "lat": walk_lists[-1][0].start["lat"],
-            "lon": walk_lists[-1][0].start["lon"]
+            "lon": walk_lists[-1][0].start["lon"],
         }
 
         details[list_id] = {
@@ -858,42 +898,53 @@ def process_solution(
     for i, walk_list in enumerate(list_visualizations):
         walk_list.save(os.path.join(viz_path, f"{CAMPAIGN_NAME}-{id}-{i}.html"))
 
-    form = json.load(open(os.path.join("regions", CAMPAIGN_NAME, "input", "form.json"), "r"))
+    form = json.load(
+        open(os.path.join("regions", CAMPAIGN_NAME, "input", "form.json"), "r")
+    )
 
     for i in range(len(walk_lists)):
         list_id = f"{CAMPAIGN_NAME}-{id}-{i}"
         post_processor.generate_file(
-            walk_lists[i], os.path.join(viz_path, f"{list_id}.json"), id=list_id, form=form
+            walk_lists[i],
+            os.path.join(viz_path, f"{list_id}.json"),
+            id=list_id,
+            form=form,
         )
 
 
-if __name__ == "__main__":
-    # Load the requested blocks
-    requested_blocks = json.load(open(requested_blocks_file, "r"))
+# if __name__ == "__main__":
+#     # Load the requested blocks
+#     requested_blocks = json.load(open(requested_blocks_file, "r"))
 
-    # Generate node distance matrix
-    NodeDistances(requested_blocks)
+#     # Generate node distance matrix
+#     NodeDistances(requested_blocks)
 
-    # Generate block distance matrix
-    BlockDistances(requested_blocks)
+#     # Generate block distance matrix
+#     BlockDistances(requested_blocks)
 
-    # Initialize calculator for mixed distances
-    MixDistances()
+#     # Initialize calculator for mixed distances
+#     MixDistances()
 
-    if len(sys.argv) == 2:
-        problem_dir = os.path.join(BASE_DIR, "regions", CAMPAIGN_NAME, "areas", sys.argv[1], "problem")
-        viz_dir = os.path.join(BASE_DIR, "regions", CAMPAIGN_NAME, "areas", sys.argv[1], "viz")
-        solution = Optimizer.process_solution(
-            os.path.join(problem_dir, "solution.json")
-        )
+#     if len(sys.argv) == 2:
+#         problem_dir = os.path.join(
+#             BASE_DIR, "regions", CAMPAIGN_NAME, "areas", sys.argv[1], "problem"
+#         )
+#         viz_dir = os.path.join(
+#             BASE_DIR, "regions", CAMPAIGN_NAME, "areas", sys.argv[1], "viz"
+#         )
+#         solution = Optimizer.process_solution(
+#             os.path.join(problem_dir, "solution.json")
+#         )
 
-        optimizer_points = pickle.load(open(os.path.join(problem_dir, "points.pkl"), "rb"))
+#         optimizer_points = pickle.load(
+#             open(os.path.join(problem_dir, "points.pkl"), "rb")
+#         )
 
-        process_solution(
-            solution=solution,
-            optimizer_points=optimizer_points,
-            requested_blocks=requested_blocks,
-            viz_path=viz_dir,
-            problem_path=problem_dir,
-            id=sys.argv[1]
-        )
+#         process_solution(
+#             solution=solution,
+#             optimizer_points=optimizer_points,
+#             requested_blocks=requested_blocks,
+#             viz_path=viz_dir,
+#             problem_path=problem_dir,
+#             id=sys.argv[1],
+#         )

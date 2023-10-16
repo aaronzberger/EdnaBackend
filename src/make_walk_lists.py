@@ -15,11 +15,13 @@ from termcolor import colored
 import argparse
 
 from src.config import (
+    BLOCK_DB_IDX,
     CAMPAIGN_NAME,
     BASE_DIR,
     DEPOT,
     PLACE_DB_IDX,
     PROBLEM_TYPE,
+    NODE_COORDS_DB_IDX,
     VOTER_DB_IDX,
     Problem_Types,
     CAMPAIGN_SUBSET_DB_IDX,
@@ -31,7 +33,7 @@ from src.config import (
     node_coords_file,
     optimizer_points_pickle_file,
     pt_id,
-    solution_path,
+    default_solution_path,
     clustering_pickle_file
 )
 from src.distances.blocks import BlockDistances
@@ -42,7 +44,7 @@ from src.optimize.completed_group_canvas import CompletedGroupCanvas
 from src.optimize.group_canvas import GroupCanvas
 from src.optimize.optimizer import Optimizer
 from src.optimize.turf_split import TurfSplit
-# from src.post_processing.post_process import process_solution
+from src.post_processing.post_process import process_solution
 from src.utils.viz import display_clustered_blocks
 from src.utils.db import Database
 
@@ -101,48 +103,48 @@ MixDistances()
 distance_matrix = BlockDistances.get_distance_matrix(block_ids=block_ids)
 
 if os.path.exists(clustering_pickle_file):
-    db = pickle.load(open(clustering_pickle_file, "rb"))
-    clustered_points = db["clustered_points"]
-    clustered_blocks = db["clustered_blocks"]
-    centers = db["centers"]
+    clustered = pickle.load(open(clustering_pickle_file, "rb"))
+    clustered_points = clustered["clustered_points"]
+    clustered_blocks = clustered["clustered_blocks"]
+    centers = clustered["centers"]
 else:
     match PROBLEM_TYPE:
         case Problem_Types.turf_split:
-            db = DBSCAN(metric="precomputed", eps=400, min_samples=10).fit(distance_matrix)
+            clustered = DBSCAN(metric="precomputed", eps=400, min_samples=10).fit(distance_matrix)
         case Problem_Types.completed_group_canvas:
-            db = AgglomerativeClustering(
+            clustered = AgglomerativeClustering(
                 n_clusters=None, linkage="complete", distance_threshold=1000, metric="precomputed"
             ).fit(distance_matrix)
         case _:
             print(colored("Invalid problem type", color="red"))
             sys.exit(1)
 
-    labels: list[int] = db.labels_  # type: ignore
+    labels: list[int] = clustered.labels_  # type: ignore
 
     # Expand labels into a list of block groups
-    clustered_blocks: list[blocks_file_t] = [
-        {
-            b_id: b_info
-            for i, (b_id, b_info) in enumerate(requested_blocks.items())
-            if labels[i] == k
-        }  # Blocks in cluster k
-        for k in range(max(labels))
-    ]
+    clustered_blocks: list[blocks_file_t] = []
 
-    def cluster_to_houses(cluster: blocks_file_t) -> list[Point]:
+    for k in range(max(labels)):
+        k_dict = {}
+        for label, block_id in zip(labels, block_ids):
+            if label == k:
+                k_dict[block_id] = db.get_dict(block_id, BLOCK_DB_IDX)
+        clustered_blocks.append(k_dict)
+
+    def cluster_to_places(cluster: blocks_file_t) -> list[Point]:
         """Convert a list of blocks to its corresponding list of houses."""
         points: list[Point] = []
 
         for block in cluster.values():
             # Duplicate addresses from apartments may occur. For now, only insert once
 
-            for house_id, house_data in block["addresses"].items():
+            for place_id, place_data in block["places"].items():
                 # TODO: Maybe do this earlier to get rid of this method
                 points.append(
                     Point(
-                        lat=house_data["lat"],
-                        lon=house_data["lon"],
-                        id=house_id,
+                        lat=place_data["lat"],
+                        lon=place_data["lon"],
+                        id=place_id,
                         type=NodeType.house,
                     )
                 )
@@ -168,7 +170,7 @@ else:
 
         return points
 
-    clustered_points: list[list[Point]] = [cluster_to_houses(c) for c in clustered_blocks]
+    clustered_points: list[list[Point]] = [cluster_to_places(c) for c in clustered_blocks]
 
     # Print the clusters with too few houses
     for i, cluster in enumerate(clustered_points):
@@ -199,9 +201,7 @@ else:
 
         centers.append(min_intersection)
 
-    display_clustered_blocks(requested_blocks, labels, centers).save(
-        os.path.join(BASE_DIR, "viz", "clusters.html")
-    )
+    display_clustered_blocks(list(block_ids), labels, centers)
 
     pickle.dump(
         {
@@ -221,7 +221,7 @@ else:
 # Use all blocks as a single area
 # areas = [i for i in range(len(clustered_blocks))]
 
-areas = [8]
+areas = [44]
 area = clustered_points[areas[0]]
 area_blocks = deepcopy(clustered_blocks[areas[0]])
 for i in range(1, len(areas)):
@@ -256,16 +256,14 @@ match PROBLEM_TYPE:
                 unique_intersection_ids.add(pt_id(new_pt))
 
         # Generate the house distance matrix
-        HouseDistances(area_blocks)
+        HouseDistances(block_ids=list(area_blocks.keys()))
 
         # Create the optimizer
         optimizer = TurfSplit(houses=area, depots=depots, num_lists=NUM_LISTS)
 
     case Problem_Types.group_canvas:
-        node_coords_file = json.load(open(node_coords_file))
-
         try:
-            result = node_coords_file[DEPOT]
+            result = db.get_dict(DEPOT, NODE_COORDS_DB_IDX)
         except KeyError:
             print(colored("Depot not found in node_coords_file", color="red"))
             sys.exit()
@@ -276,12 +274,13 @@ match PROBLEM_TYPE:
             type=NodeType.other,
             id="depot",
         )
-        HouseDistances(area_blocks, depot)
+        HouseDistances(block_ids=list(area_blocks.keys()), depot=depot)
 
         optimizer = GroupCanvas(houses=area, depot=depot, num_lists=NUM_LISTS)
+        optimizer.build_problem()
 
     case Problem_Types.completed_group_canvas:
-        HouseDistances(requested_blocks)
+        HouseDistances(block_ids=list(area_blocks.keys()))
 
         # The problem is created and ran at "optimize"-time
 
@@ -333,7 +332,6 @@ match PROBLEM_TYPE:
             process_solution(
                 solution=solution,
                 optimizer_points=optimizer.points,
-                requested_blocks=requested_blocks,
                 viz_path=viz_dir,
                 problem_path=problem_dir,
                 id=str(i)
@@ -344,7 +342,7 @@ match PROBLEM_TYPE:
             sys.exit(1)
         if not args.no_optimize:
             optimizer.optimize()
-            solution = optimizer.process_solution(solution_path)
+            solution = optimizer.process_solution(default_solution_path)
 
             if solution is None:
                 print(colored("Failed to generate lists", color="red"))
@@ -365,11 +363,10 @@ match PROBLEM_TYPE:
 optimizer_points = pickle.load(open(optimizer_points_pickle_file, "rb"))
 
 # Load the solution file
-solution: Solution = Optimizer.process_solution(solution_path)
+solution: Solution = Optimizer.process_solution(default_solution_path)
 
 # Process the solution
 process_solution(
     solution=solution,
     optimizer_points=optimizer_points,
-    requested_blocks=requested_blocks,
 )

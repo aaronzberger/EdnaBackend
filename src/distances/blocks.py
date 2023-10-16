@@ -18,6 +18,21 @@ from src.distances.nodes import NodeDistances
 from src.utils.db import Database
 
 
+class BlockDistancesSnapshot:
+    def __init__(self, snapshot: dict[str, float]):
+        self.snapshot = snapshot
+
+    def get_distance(self, b1_id: str, b2_id: str) -> Optional[float]:
+        pair_1, pair_2 = generate_block_id_pair(b1_id, b2_id), generate_block_id_pair(
+            b2_id, b1_id
+        )
+        if pair_1 in self.snapshot:
+            return self.snapshot[pair_1]
+        if pair_2 in self.snapshot:
+            return self.snapshot[pair_2]
+        return None
+
+
 class BlockDistances:
     _db = Database()
 
@@ -117,11 +132,18 @@ class BlockDistances:
 
     @classmethod
     def get_distance_matrix(cls, block_ids: set[str]):
+        # Take a snapshot of the block distances
+        snapshot = BlockDistancesSnapshot(cls._db.get_all(BLOCK_DISTANCE_MATRIX_DB_IDX))
+
         matrix = np.empty((len(block_ids), len(block_ids)), dtype=np.float32)
-        for r, block in enumerate(block_ids):
-            for c, other_block in enumerate(block_ids):
-                distance = cls.get_distance(block, other_block)
-                matrix[r][c] = (
-                    ARBITRARY_LARGE_DISTANCE if distance is None else distance
-                )
+        with tqdm(
+            total=len(block_ids) ** 2, desc="Retrieving matrix", unit="pairs", colour="green", leave=False
+        ) as progress:
+            for r, block in enumerate(block_ids):
+                for c, other_block in enumerate(block_ids):
+                    distance = snapshot.get_distance(block, other_block)
+                    matrix[r][c] = (
+                        ARBITRARY_LARGE_DISTANCE if distance is None else distance
+                    )
+                    progress.update()
         return matrix

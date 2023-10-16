@@ -156,6 +156,9 @@ def handle_universe_file(universe_file: str, turnouts: dict[str, float]):
         # Add voter to this campaign
         db.add_to_set(CAMPAIGN_NAME, voter_id, CAMPAIGN_SUBSET_DB_IDX)
 
+        # Add the voter to the place
+        db.set_dict(place, semantic_house_info, PLACE_DB_IDX)
+
         return True
 
     # Process each requested house

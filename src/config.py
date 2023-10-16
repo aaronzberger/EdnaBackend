@@ -59,9 +59,9 @@ clustering_pickle_file = os.path.join(region_dir, "clustering.pkl")
 
 # Default problem files, if not given per-problem
 address_pts_file = os.path.join(BASE_DIR, "input", "address_pts.csv")
-problem_path = os.path.join(BASE_DIR, "optimize", "problem.json")
-solution_path = os.path.join(BASE_DIR, "optimize", "solution.json")
-distances_path = os.path.join(BASE_DIR, "optimize", "distances.json")
+default_problem_path = os.path.join(BASE_DIR, "optimize", "problem.json")
+default_solution_path = os.path.join(BASE_DIR, "optimize", "solution.json")
+default_distances_path = os.path.join(BASE_DIR, "optimize", "distances.json")
 
 details_file = os.path.join(region_dir, "details.json")
 files_dir = os.path.join(region_dir, "files")
@@ -76,7 +76,7 @@ turnout_predictions_file = os.path.join(
 )
 
 VIZ_PATH = os.path.join(BASE_DIR, "viz")
-PROBLEM_PATH = os.path.join(VIZ_PATH, "problem")
+# PROBLEM_PATH = os.path.join(VIZ_PATH, "problem")
 
 "----------------------------------------------------------------------------------"
 "                                     Database                                     "
@@ -268,7 +268,7 @@ def to_serializable_pt(p: Point) -> WriteablePoint:
     return WriteablePoint(lat=p["lat"], lon=p["lon"])
 
 
-def pt_id(p: Point) -> str:
+def pt_id(p: AnyPoint) -> str:
     """
     Get the ID of a point.
 
@@ -315,7 +315,7 @@ class PlaceSemantics(TypedDict):
 
 # TODO: rename houses to places and re-run
 class Block(TypedDict):
-    houses: dict[str, PlaceGeography]
+    places: dict[str, PlaceGeography]
     nodes: node_list_t
     type: str
 

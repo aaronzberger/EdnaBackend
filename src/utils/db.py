@@ -35,19 +35,23 @@ class Database:
     def set_dict(self, key: str, value: dict, database: int):
         self.set_str(key, json.dumps(value), database)
 
-    def get_dict(self, key: str, database: int) -> Optional[dict]:
+    def get_dict(self, key: str, database: int) -> dict:
         retrieved = self.get_str(key, database)
-        return None if retrieved is None else json.loads(retrieved)
+        return json.loads(retrieved)
 
     def set_str(self, key: str, value: str, database: int):
         self.db.select(database)
         self.db.set(key, value)
 
-    def get_str(self, key: str, database: int) -> Optional[str]:
+    def set_multiple_str(self, key_value_pairs: dict[str, str], database: int):
+        self.db.select(database)
+        self.db.mset(key_value_pairs)
+
+    def get_str(self, key: str, database: int) -> str:
         self.db.select(database)
         return self.db.get(key)
 
-    def get_multiple_str(self, keys: list[str], database: int) -> list[Optional[str]]:
+    def get_multiple_str(self, keys: list[str], database: int) -> list[str]:
         self.db.select(database)
         return self.db.mget(keys)
 
@@ -59,7 +63,7 @@ class Database:
         self.db.select(database)
         return self.db.lrange(key, 0, -1)
 
-    def get_list_length(self, key: str, database: int) -> Awaitable[int] | int:
+    def get_list_length(self, key: str, database: int) -> int:
         self.db.select(database)
         return self.db.llen(key)
 
@@ -67,15 +71,15 @@ class Database:
         self.db.select(database)
         self.db.sadd(key, value)
 
-    def get_set(self, key: str, database: int):
+    def get_set(self, key: str, database: int) -> set[str]:
         self.db.select(database)
         return self.db.smembers(key)
 
-    def get_set_length(self, key: str, database: int) -> Awaitable[int] | int:
+    def get_set_length(self, key: str, database: int) -> int:
         self.db.select(database)
         return self.db.scard(key)
 
-    def is_in_set(self, key: str, value: str, database: int) -> Awaitable[bool] | bool:
+    def is_in_set(self, key: str, value: str, database: int) -> bool:
         self.db.select(database)
         return self.db.sismember(key, value)
 
@@ -87,7 +91,7 @@ class Database:
         self.db.select(database)
         self.db.delete(key)
 
-    def get_keys(self, database: int):
+    def get_keys(self, database: int) -> list[str]:
         self.db.select(database)
         return self.db.keys()
 
@@ -98,10 +102,15 @@ class Database:
         values = self.db.mget(keys)
         return dict(zip(keys, [None if v is None else json.loads(v) for v in values]))
 
-    def get_multiple(self, keys: list[str], database: int):
+    def get_multiple(self, keys: list[str], database: int) -> dict[str, dict]:
         self.db.select(database)
         values = self.db.mget(keys)
         return dict(zip(keys, [None if v is None else json.loads(v) for v in values]))
+    
+    def set_multiple_dict(self, key_value_pairs: dict[str, dict], database: int):
+        self.db.select(database)
+        casted: dict[str, str] = {str(k): json.dumps(v) for k, v in key_value_pairs.items()}
+        self.db.mset(casted)
 
     def get_type(self, key: str, database: int):
         self.db.select(database)

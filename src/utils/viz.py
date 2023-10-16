@@ -31,7 +31,7 @@ from src.config import (
     node_coords_file,
     house_to_voters_file,
     turnout_predictions_file,
-    BLOCK_DB_IDX
+    BLOCK_DB_IDX,
 )
 from src.utils.gps import SubBlock
 from src.utils.db import Database
@@ -120,10 +120,11 @@ def display_blocks() -> set[tuple[float, float]]:
     db = Database()
     blocks = db.get_multiple(db.get_keys(BLOCK_DB_IDX), BLOCK_DB_IDX)
 
-    m = generate_starter_map(blocks)
+    m = folium.Map()
+    # m = generate_starter_map(blocks)
     cmap = ColorMap(0, len(blocks.values()))
 
-    num_houses_per_block = [len(b["houses"]) for b in blocks.values()]
+    num_houses_per_block = [len(b["places"]) for b in blocks.values()]
     min_houses, max_houses = min(num_houses_per_block), max(num_houses_per_block)
     num_duplicate_coords = 0
 
@@ -133,7 +134,7 @@ def display_blocks() -> set[tuple[float, float]]:
         index = randint(0, len(blocks))
         word = humanhash.humanize(str(hash(b_id)), words=1)
         weight = (
-            4 + ((len(block["houses"]) - min_houses) / (max_houses - min_houses)) * 8
+            4 + ((len(block["places"]) - min_houses) / (max_houses - min_houses)) * 8
         )
         folium.PolyLine(
             [[p["lat"], p["lon"]] for p in block["nodes"]],
@@ -143,7 +144,7 @@ def display_blocks() -> set[tuple[float, float]]:
             tooltip=word,
         ).add_to(m)
 
-        for house_info in block["houses"].values():
+        for house_info in block["places"].values():
             lat = float(Decimal(house_info["lat"]).quantize(Decimal("0.000001")))
             lon = float(Decimal(house_info["lon"]).quantize(Decimal("0.000001")))
 
@@ -158,7 +159,9 @@ def display_blocks() -> set[tuple[float, float]]:
                 color=cmap.get(index),
                 opacity=1.0,
                 radius=1,
-                tooltip="{}: {}, {}".format(house_info["display_address"], word, house_info["side"]),
+                tooltip="{}: {}, {}".format(
+                    house_info["display_address"], word, house_info["side"]
+                ),
             ).add_to(m)
 
     print(
@@ -225,9 +228,13 @@ def display_blocks_and_unassociated(
 
 
 def display_clustered_blocks(
-    blocks: blocks_file_t, labels: list[int], centers: Optional[list[Point]]
-) -> folium.Map:
-    m = generate_starter_map(blocks)
+    block_ids: list[str], labels: list[int], centers: Optional[list[Point]]
+):
+    # Retrieve the blocks from the database
+    db = Database()
+    blocks = db.get_multiple(block_ids, BLOCK_DB_IDX)
+    m = folium.Map()
+    # m = generate_starter_map(blocks)
     cmap = ColorMap(0, max(labels))
 
     for block, label in zip(blocks.values(), labels):
@@ -257,7 +264,9 @@ def display_clustered_blocks(
                 ),
             ).add_to(m)
 
-    return m
+    m.fit_bounds(m.get_bounds())
+
+    m.save(os.path.join(BASE_DIR, "viz", "clusters.html"))
 
 
 def display_distance_matrix(points: list[Point], distances_file: str) -> folium.Map:
@@ -401,7 +410,6 @@ def display_walk_list(walk_list: list[SubBlock], color: str) -> folium.Map:
         tooltip = ""
         last_point = None
         for house, next_house in itertools.pairwise(sub_block.houses):
-
             voter_info = house_to_voters[house["id"]]
 
             house_counter += 1

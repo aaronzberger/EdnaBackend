@@ -88,7 +88,7 @@ for list_name in uploaded_lists:
 
     address_to_uuid = {}
     for block in list_file["blocks"]:
-        for house in block["houses"]:
+        for house in block["places"]:
             if house['uuid'] in address_to_uuid:
                 print(f'Duplicate UUID: {house["uuid"]} with address {house["display_address"]} from list {list_name}')
             else:
@@ -98,7 +98,7 @@ for list_name in uploaded_lists:
 
     # Read all houses from the file
     for block in file_data["blocks"]:
-        for house in block["houses"]:
+        for house in block["places"]:
             uuid = address_to_uuid[house["address"]]
 
             # Remove the address from the dict
@@ -177,7 +177,7 @@ for uuid in uuids_unvisited.union(uuids_miss):
 masonic_file = list_file = json.load(open(os.path.join(files_dir, 'rosselli-29-0.json')))
 
 for block in masonic_file["blocks"]:
-    for house in block["houses"]:
+    for house in block["places"]:
         uuid = house["uuid"]
 
         voter_info = house_to_voters[uuid]

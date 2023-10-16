@@ -15,6 +15,7 @@ from src.config import (
     Point,
     pt_id,
     PLACE_DB_IDX,
+    BLOCK_DB_IDX,
     HOUSE_DISTANCE_MATRIX_DB_IDX,
     generate_place_id_pair,
 )
@@ -56,23 +57,24 @@ def unstore(value: int) -> tuple[int, int]:
 class HouseDistances:
     MAX_STORAGE_DISTANCE = 1600
     _db = Database()
+    _db_write_buffer: dict[str, str] = {}
 
     @classmethod
     def _insert_point(cls, pt: Point, b: Block):
-        b_houses = b["houses"]
+        b_houses = b["places"]
 
         if len(b_houses) == 0:
             return
 
         # Calculate the distances between the segment endpoints
-        dc_to_start = NodeDistances.get_distance(pt, b["nodes"][0])
+        dc_to_start = cls._node_distances_snapshot.get_distance(pt, b["nodes"][0])
         if dc_to_start is None:
             dc_to_start = (
                 (get_distance(pt, b["nodes"][0]), 0)
                 if USE_COST_METRIC
                 else get_distance(pt, b["nodes"][0])
             )
-        dc_to_end = NodeDistances.get_distance(pt, b["nodes"][-1])
+        dc_to_end = cls._node_distances_snapshot.get_distance(pt, b["nodes"][-1])
         if dc_to_end is None:
             dc_to_end = (
                 (get_distance(pt, b["nodes"][-1]), 0)
@@ -95,20 +97,24 @@ class HouseDistances:
                     through_start if through_start[0] < through_end[0] else through_end
                 )
 
-                cls._db.set_str(
-                    generate_place_id_pair(pt_id(pt), address),
-                    str(store(round(distance), round(cost))),
-                    HOUSE_DISTANCE_MATRIX_DB_IDX,
-                )
+                cls._db_write_buffer[generate_place_id_pair(pt_id(pt), address)] = str(store(round(distance), round(cost)))
+
+                # cls._db.set_str(
+                #     generate_place_id_pair(pt_id(pt), address),
+                #     str(store(round(distance), round(cost))),
+                #     HOUSE_DISTANCE_MATRIX_DB_IDX,
+                # )
             else:
                 through_start = dc_to_start + info["distance_to_start"]
                 through_end = dc_to_end + info["distance_to_end"]
 
-                cls._db.set_str(
-                    generate_place_id_pair(pt_id(pt), address),
-                    str(round(min(through_start, through_end))),
-                    HOUSE_DISTANCE_MATRIX_DB_IDX,
-                )
+                cls._db_write_buffer[generate_place_id_pair(pt_id(pt), address)] = str(round(min(through_start, through_end)))
+
+                # cls._db.set_str(
+                #     generate_place_id_pair(pt_id(pt), address),
+                #     str(round(min(through_start, through_end))),
+                #     HOUSE_DISTANCE_MATRIX_DB_IDX,
+                # )
 
     @classmethod
     def _insert_pair(cls, b1: Block, b1_id: str, b2: Block, b2_id: str):
@@ -123,8 +129,8 @@ class HouseDistances:
                 )
                 return 0
 
-        b1_houses = b1["houses"]
-        b2_houses = b2["houses"]
+        b1_houses = b1["places"]
+        b2_houses = b2["places"]
 
         if len(b1_houses) == 0 or len(b2_houses) == 0:
             return
@@ -135,11 +141,12 @@ class HouseDistances:
                 b1_houses.items(), b2_houses.items()
             ):
                 if id_1 == id_2:
-                    cls._db.set_str(
-                        generate_place_id_pair(id_1, id_2),
-                        str(store(0, 0)),
-                        HOUSE_DISTANCE_MATRIX_DB_IDX,
-                    )
+                    cls._db_write_buffer[generate_place_id_pair(id_1, id_2)] = str(store(0, 0))
+                    # cls._db.set_str(
+                    #     generate_place_id_pair(id_1, id_2),
+                    #     str(store(0, 0)),
+                    #     HOUSE_DISTANCE_MATRIX_DB_IDX,
+                    # )
                     # cls._house_matrix[id_1][id_2] = store(0, 0) if USE_COST_METRIC else 0
                 else:
                     distance_to_road = (
@@ -168,26 +175,28 @@ class HouseDistances:
                             distance += distance_to_road
 
                     if not USE_COST_METRIC:
-                        cls._db.set_str(
-                            generate_place_id_pair(id_1, id_2),
-                            str(round(distance)),
-                            HOUSE_DISTANCE_MATRIX_DB_IDX,
-                        )
+                        cls._db_write_buffer[generate_place_id_pair(id_1, id_2)] = str(round(distance))
+                        # cls._db.set_str(
+                        #     generate_place_id_pair(id_1, id_2),
+                        #     str(round(distance)),
+                        #     HOUSE_DISTANCE_MATRIX_DB_IDX,
+                        # )
                     else:
                         cost = 0
                         if info_1["side"] != info_2["side"]:
                             cost += crossing_penalty(b1)
 
-                        cls._db.set_str(
-                            generate_place_id_pair(id_1, id_2),
-                            str(store(round(distance), cost)),
-                            HOUSE_DISTANCE_MATRIX_DB_IDX,
-                        )
+                        cls._db_write_buffer[generate_place_id_pair(id_1, id_2)] = str(store(round(distance), cost))
+                        # cls._db.set_str(
+                        #     generate_place_id_pair(id_1, id_2),
+                        #     str(store(round(distance), cost)),
+                        #     HOUSE_DISTANCE_MATRIX_DB_IDX,
+                        # )
             return
 
         # Calculate the distances between the segment endpoints
         end_distances = [
-            NodeDistances.get_distance(i, j)
+            cls._node_distances_snapshot.get_distance(i, j)
             for i, j in [
                 (b1["nodes"][0], b2["nodes"][0]),
                 (b1["nodes"][0], b2["nodes"][-1]),
@@ -237,17 +246,20 @@ class HouseDistances:
                 cost += DIFFERENT_BLOCK_COST
                 distance = min(distances)
 
-                cls._db.set_str(
-                    generate_place_id_pair(id_1, id_2),
-                    str(store(round(distance), round(cost))),
-                    HOUSE_DISTANCE_MATRIX_DB_IDX,
-                )
+                cls._db_write_buffer[generate_place_id_pair(id_1, id_2)] = str(store(round(distance), round(cost)))
+
+                # cls._db.set_str(
+                #     generate_place_id_pair(id_1, id_2),
+                #     str(store(round(distance), round(cost))),
+                #     HOUSE_DISTANCE_MATRIX_DB_IDX,
+                # )
             else:
-                cls._db.set_str(
-                    generate_place_id_pair(id_1, id_2),
-                    str(round(min(distances)) + DIFFERENT_BLOCK_COST),
-                    HOUSE_DISTANCE_MATRIX_DB_IDX,
-                )
+                cls._db_write_buffer[generate_place_id_pair(id_1, id_2)] = str(round(min(distances)) + DIFFERENT_BLOCK_COST)
+                # cls._db.set_str(
+                #     generate_place_id_pair(id_1, id_2),
+                #     str(round(min(distances)) + DIFFERENT_BLOCK_COST),
+                #     HOUSE_DISTANCE_MATRIX_DB_IDX,
+                # )
 
     @classmethod
     def _update(cls, blocks: dict[str, Block], depot: Optional[Point] = None):
@@ -274,10 +286,11 @@ class HouseDistances:
                     progress.update()
 
     @classmethod
-    def __init__(cls, block_ids, depot: Optional[Point] = None):
+    def __init__(cls, block_ids: list[str], depot: Optional[Point] = None):
+        cls._node_distances_snapshot = NodeDistances.snapshot()
         blocks: dict[str, Block] = {}
         for block_id in block_ids:
-            block = cls._db.get_dict(block_id, PLACE_DB_IDX)
+            block = cls._db.get_dict(block_id, BLOCK_DB_IDX)
 
             if block is None:
                 raise KeyError(
@@ -288,10 +301,8 @@ class HouseDistances:
 
         cls._update(blocks, depot)
 
-        # There should always be a square number of elements in the distance matrix
-        assert (
-            math.sqrt(len(cls._db.get_keys(HOUSE_DISTANCE_MATRIX_DB_IDX))) % 1 == 0
-        ), "The number of entries in the distance matrix is not a square number"
+        # Write any changes in the buffer
+        cls._db.set_multiple_str(cls._db_write_buffer, HOUSE_DISTANCE_MATRIX_DB_IDX)
 
     @classmethod
     def get_distance(

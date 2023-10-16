@@ -1,5 +1,5 @@
 """
-Associate houses with blocks. Take in block_output.json and generate blocks.json and houses.json.
+Associate places with blocks. Take in block_output.json and write blocks and places to the database
 """
 
 # TODO: See Covode Pl and Wendover Pl (both have same-named streets, to which all the houses on pl have been wrongly assigned)
@@ -81,13 +81,13 @@ if DEBUG:
 # region Load files
 
 # Load the file (unorganized) containing house coordinates (and info)
-print("Loading coordinates of houses...")
+print("Loading coordinates of places...")
 house_points_file = open(address_pts_file)
-num_houses = -1
+num_places = -1
 for _ in house_points_file:
-    num_houses += 1
+    num_places += 1
 house_points_file.seek(0)
-house_points_reader = csv.DictReader(house_points_file)
+place_points_reader = csv.DictReader(house_points_file)
 
 # Load the block_output file, containing the blocks returned from the OSM query
 print("Loading node and way coordinations query...")
@@ -97,16 +97,13 @@ blocks: dict[str, Any] = json.load(open(block_output_file))
 print("Loading list of street suffixes")
 street_suffixes: dict[str, str] = json.load(open(street_suffixes_file))
 
-# Map segment IDs to a dict containting the addresses and node IDs
-# segments_by_id: blocks_file_t = {}
-
 # NOTE/TODO: This file is temporary, and will be eliminated when we transition to place keys
-addresses_to_id: addresses_file_t = {}
+# addresses_to_id: addresses_file_t = {}
 
 # NOTE/TODO: This file is also temporary, and is only used for manual matching (eliminated with place keys)
-id_to_addresses: dict[str, dict[str, str]] = {}
+# id_to_addresses: dict[str, dict[str, str]] = {}
 
-reverse_geocode: list[tuple[float, float, dict[str, str]]] = []
+# reverse_geocode: list[tuple[float, float, dict[str, str]]] = []
 
 
 @dataclass
@@ -221,7 +218,7 @@ with tqdm(
                 all_nodes.append(WriteablePoint(lat=float(coords["lat"]), lon=float(coords["lon"])))
 
             block_to_write = Block(
-                houses={},
+                places={},
                 nodes=all_nodes,
                 type=block[2]["ways"][0][1]["highway"],
             )
@@ -247,7 +244,7 @@ with tqdm(
             )
         progress.update(1)
 
-num_failed_houses = 0
+num_failed_places = 0
 
 
 def keys_with_value(d: dict[str, list[str]], target: str) -> list[str]:
@@ -386,11 +383,11 @@ def filter_segments(house_point):
     return filtered_ids
 
 
-# Next, add the houses to the blocks
+# Next, add the places to the blocks
 with tqdm(
-    total=num_houses, desc="Associating houses", unit="rows", colour="green"
+    total=num_places, desc="Associating places", unit="rows", colour="green"
 ) as progress:
-    for item in house_points_reader:
+    for item in place_points_reader:
         progress.update(1)
         # if item['municipality'].strip().upper() != 'PITTSBURGH' or \
         #         int(item['zip_code']) != 15217:
@@ -432,9 +429,9 @@ with tqdm(
             None,  # TODO: add function to sanitize state names
             item["zip_code"],
         )
-        reverse_geocode.append(
-            (house_pt["lat"], house_pt["lon"], dataclasses.asdict(formatted_address))
-        )
+        # reverse_geocode.append(
+        #     (house_pt["lat"], house_pt["lon"], dataclasses.asdict(formatted_address))
+        # )
 
         best_segment: Optional[
             Segment
@@ -572,27 +569,27 @@ with tqdm(
                 zip=item["zip_code"],
             )
 
-            # Add this association to the houses file
+            # Add this association to the places file
             lat_rounded = Decimal(str(house_pt["lat"])).quantize(Decimal("0.0001"))
             lon_rounded = Decimal(str(house_pt["lon"])).quantize(Decimal("0.0001"))
             uuid_input = item["full_address"] + str(lat_rounded) + str(lon_rounded)
             house_uuid = uuid.uuid5(UUID_NAMESPACE, uuid_input)
 
-            addresses_to_id[formatted_address] = (str(best_segment.id), str(house_uuid))
+            # addresses_to_id[formatted_address] = (str(best_segment.id), str(house_uuid))
 
-            id_to_addresses[str(house_uuid)] = dataclasses.asdict(formatted_address)
+            # id_to_addresses[str(house_uuid)] = dataclasses.asdict(formatted_address)
 
             # Add the house to the block (Note that we expect the block to already exist in the database most of the time)
             old_block = db.get_dict(str(best_segment.id), BLOCK_DB_IDX)
-            old_block["houses"][str(house_uuid)] = house_geography
+            old_block["places"][str(house_uuid)] = house_geography
 
             db.set_dict(str(best_segment.id), old_block, BLOCK_DB_IDX)
 
-            # Add the house to the houses file
+            # Add the house to the places file
             db.set_dict(str(house_uuid), dict(house_semantics), PLACE_DB_IDX)
 
         else:
-            num_failed_houses += 1
+            num_failed_places += 1
             if DEBUG:
                 print(f"Failed to associate house with point: {house_pt}", file=buffer)
                 print(f'Raw street name {item["st_name"]}', file=buffer)
@@ -615,19 +612,18 @@ with tqdm(
             buffer.truncate()  # truncate the buffer from the current position
 
 print(
-    "Failed to associate {} out of {} total houses".format(
-        num_failed_houses, num_houses
+    "Failed to associate {} out of {} total places".format(
+        num_failed_places, num_places
     )
 )
 
 # Write the output to files
 print("Writing temporary files (deprecated soon)...")
 
-json.dump(id_to_addresses, open(id_to_addresses_file, "w"))
-json.dump(reverse_geocode, open(reverse_geocode_file, "w"))
+# json.dump(id_to_addresses, open(id_to_addresses_file, "w"))
+# json.dump(reverse_geocode, open(reverse_geocode_file, "w"))
 
-with open(addresses_file, "w") as outfile:
-    outfile.write(jsonpickle.encode(addresses_to_id, keys=True))
+# with open(addresses_file, "w") as outfile:
+#     outfile.write(jsonpickle.encode(addresses_to_id, keys=True))
 
-# TODO: Viz is a no-argument call which saves the viz to a file as well
-# display_blocks(segments_by_id)[0].save(os.path.join(BASE_DIR, "viz", "segments.html"))
+display_blocks()

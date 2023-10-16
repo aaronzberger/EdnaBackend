@@ -26,7 +26,8 @@ from src.config import (
 )
 from src.utils.gps import great_circle_distance
 
-SERVER = "http://172.18.0.4:5000"
+# TODO: Automatically generate this from a docker inspect command
+SERVER = "http://172.18.0.3:5000"
 # SERVER = "localhost:5001"
 
 

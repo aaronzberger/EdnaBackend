@@ -44,7 +44,7 @@ for list_id in details.keys():
     if "blocks" not in output:
         print(list_id, "has no blocks")
     for block in output["blocks"]:
-        for house in block["houses"]:
+        for house in block["places"]:
             num_voters += len(house["voter_info"])
 
     details[list_id]["num_voters"] = num_voters
