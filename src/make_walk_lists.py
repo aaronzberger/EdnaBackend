@@ -14,6 +14,8 @@ from sklearn.cluster import DBSCAN, AgglomerativeClustering
 from termcolor import colored
 import argparse
 
+from tqdm import tqdm
+
 from src.config import (
     BLOCK_DB_IDX,
     CAMPAIGN_NAME,
@@ -23,6 +25,7 @@ from src.config import (
     PROBLEM_TYPE,
     NODE_COORDS_DB_IDX,
     VOTER_DB_IDX,
+    PlaceSemantics,
     Problem_Types,
     CAMPAIGN_SUBSET_DB_IDX,
     NUM_LISTS,
@@ -71,6 +74,14 @@ for voter in voter_ids:
     if place is None:
         print(colored("Voter {} not found in database".format(voter), color="red"))
         sys.exit(1)
+
+    # Ensure the corresponding place has this voter
+    this_place: PlaceSemantics = db.get_dict(place["place"], PLACE_DB_IDX)
+
+    if "voters" not in this_place:
+        print(colored("Place {} does not have voters".format(place["place"]), color="red"))
+        sys.exit(1)
+    
     place_ids.add(place["place"])
 
 print('Found {} places'.format(len(place_ids)))
@@ -111,12 +122,12 @@ else:
     match PROBLEM_TYPE:
         case Problem_Types.turf_split:
             clustered = DBSCAN(metric="precomputed", eps=400, min_samples=10).fit(distance_matrix)
-        case Problem_Types.completed_group_canvas:
+        case Problem_Types.completed_group_canvas | Problem_Types.group_canvas:
             clustered = AgglomerativeClustering(
                 n_clusters=None, linkage="complete", distance_threshold=1000, metric="precomputed"
             ).fit(distance_matrix)
         case _:
-            print(colored("Invalid problem type", color="red"))
+            print(colored("Invalid problem type for clustering. Exiting...", color="red"))
             sys.exit(1)
 
     labels: list[int] = clustered.labels_  # type: ignore
@@ -139,6 +150,10 @@ else:
             # Duplicate addresses from apartments may occur. For now, only insert once
 
             for place_id, place_data in block["places"].items():
+                if place_id not in place_ids:
+                    # This place is on the block but does not have a voter in this campaign's universe
+                    continue
+
                 # TODO: Maybe do this earlier to get rid of this method
                 points.append(
                     Point(
@@ -172,12 +187,16 @@ else:
 
     clustered_points: list[list[Point]] = [cluster_to_places(c) for c in clustered_blocks]
 
+    print("179: Total of {} points".format(sum([len(c) for c in clustered_points])))
+
     # Print the clusters with too few houses
     for i, cluster in enumerate(clustered_points):
         if len(cluster) < 10:
-            print(colored("Cluster {} has only {} houses".format(i, len(cluster)), color="red"))
+            print(colored("Cluster {}s has only {} houses".format(i, len(cluster)), color="red"))
 
     centers: list[Point] = []
+    print("Getting centers for {} clusters".format(len(clustered_blocks)))
+    node_distance_snapshot = NodeDistances.snapshot()
     for cluster in clustered_blocks:
         insertections: list[Point] = cluster_to_intersections(cluster)
 
@@ -187,7 +206,7 @@ else:
         for intersection in insertections:
             sum = 0
             for other_intersection in insertections:
-                distance = NodeDistances.get_distance(intersection, other_intersection)
+                distance = node_distance_snapshot.get_distance(intersection, other_intersection)
                 if distance is None:
                     distance = 1600
                 sum += distance
@@ -200,6 +219,7 @@ else:
             sys.exit()
 
         centers.append(min_intersection)
+    del node_distance_snapshot
 
     display_clustered_blocks(list(block_ids), labels, centers)
 
@@ -221,7 +241,7 @@ else:
 # Use all blocks as a single area
 # areas = [i for i in range(len(clustered_blocks))]
 
-areas = [44]
+areas = [63]
 area = clustered_points[areas[0]]
 area_blocks = deepcopy(clustered_blocks[areas[0]])
 for i in range(1, len(areas)):
@@ -262,11 +282,13 @@ match PROBLEM_TYPE:
         optimizer = TurfSplit(houses=area, depots=depots, num_lists=NUM_LISTS)
 
     case Problem_Types.group_canvas:
-        try:
-            result = db.get_dict(DEPOT, NODE_COORDS_DB_IDX)
-        except KeyError:
-            print(colored("Depot not found in node_coords_file", color="red"))
-            sys.exit()
+        # try:
+        #     result = db.get_dict(DEPOT, NODE_COORDS_DB_IDX)
+        # except KeyError:
+        #     print(colored("Depot not found in node_coords_file", color="red"))
+        #     sys.exit()
+
+        result = centers[areas[0]]
 
         depot = Point(
             lat=result["lat"],
@@ -332,8 +354,8 @@ match PROBLEM_TYPE:
             process_solution(
                 solution=solution,
                 optimizer_points=optimizer.points,
+                place_ids=place_ids,
                 viz_path=viz_dir,
-                problem_path=problem_dir,
                 id=str(i)
             )
     case _:
@@ -369,4 +391,5 @@ solution: Solution = Optimizer.process_solution(default_solution_path)
 process_solution(
     solution=solution,
     optimizer_points=optimizer_points,
+    place_ids=place_ids,
 )

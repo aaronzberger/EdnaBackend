@@ -25,6 +25,9 @@ from typing import Awaitable, Optional
 import redis
 
 
+# TODO: Make static. Multiple Databases is confusing.
+
+
 class Database:
     def __init__(self):
         self.db = redis.Redis(host='redis-container', port=6379, password='votefalcon12', decode_responses=True)

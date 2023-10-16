@@ -45,6 +45,9 @@ def handle_universe_file(universe_file: str, turnouts: dict[str, float]):
 
     associater = Associater()
 
+    # Clear this campaign's subset of the database
+    db.delete(CAMPAIGN_NAME, CAMPAIGN_SUBSET_DB_IDX)
+
     def add_voter(universe_row: dict, place: str, custom_unit_num: Optional[str]):
         """
         Add a voter to the requested voters dictionary.

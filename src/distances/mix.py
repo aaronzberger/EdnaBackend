@@ -7,26 +7,24 @@ from termcolor import colored
 
 from src.config import (
     NODE_TOO_FAR_DISTANCE,
+    Block,
     NodeType,
     Point,
-    blocks_file,
-    requested_blocks_file,
-    blocks_file_t,
-    house_id_to_block_id_file,
     pt_id,
+    BLOCK_DB_IDX,
+    PLACE_DB_IDX,
 )
 
 from src.distances.houses import HouseDistances
 from src.distances.nodes import NodeDistances
 from src.utils.route import get_distance
+from src.utils.db import Database
 
 
 class MixDistances:
     @classmethod
     def __init__(cls):
-        cls.blocks: blocks_file_t = json.load(open(blocks_file))
-        cls.requested_blocks: blocks_file_t = json.load(open(requested_blocks_file))
-        cls.house_id_to_block_id: dict[str, str] = json.load(open(house_id_to_block_id_file))
+        cls._db = Database()
 
     @classmethod
     def get_distance_through_ends(
@@ -45,19 +43,20 @@ class MixDistances:
             Optional[float]: the distance from the intersection to the house through the start of the segment
             Optional[float]: the distance from the intersection to the house through the end of the segment
         """
-        block_id = cls.house_id_to_block_id[house["id"]]
-        block_start = Point(lat=cls.blocks[block_id]["nodes"][0]["lat"], lon=cls.blocks[block_id]["nodes"][0]["lon"], type=NodeType.node, id="block_start")
+        block_id = cls._db.get_dict(house["id"], PLACE_DB_IDX)["block_id"]
+        block: Block = cls._db.get_dict(block_id, BLOCK_DB_IDX)
+        block_start = Point(lat=block["nodes"][0]["lat"], lon=block["nodes"][0]["lon"], type=NodeType.node, id="block_start")
         through_start = NodeDistances.get_distance(node, block_start)
 
         if through_start is not None:
-            through_start += cls.requested_blocks[block_id]["addresses"][pt_id(house)][
+            through_start += block["places"][pt_id(house)][
                 "distance_to_start"
             ]
 
-        block_end = Point(lat=cls.blocks[block_id]["nodes"][-1]["lat"], lon=cls.blocks[block_id]["nodes"][-1]["lon"], type=NodeType.node, id="block_end")
+        block_end = Point(lat=block["nodes"][-1]["lat"], lon=block["nodes"][-1]["lon"], type=NodeType.node, id="block_end")
         through_end = NodeDistances.get_distance(node, block_end)
         if through_end is not None:
-            through_end += cls.requested_blocks[block_id]["addresses"][pt_id(house)][
+            through_end += block["places"][pt_id(house)][
                 "distance_to_end"
             ]
         return through_start, through_end

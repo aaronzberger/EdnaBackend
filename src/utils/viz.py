@@ -20,16 +20,17 @@ from tqdm import tqdm
 from src.config import (
     BASE_DIR,
     DEPOT,
+    PLACE_DB_IDX,
     STYLE_COLOR,
     USE_COST_METRIC,
+    VOTER_DB_IDX,
     NodeType,
+    Person,
+    PlaceGeography,
+    PlaceSemantics,
     Point,
-    address_pts_file,
-    blocks_file,
     blocks_file_t,
     generate_pt_id,
-    node_coords_file,
-    house_to_voters_file,
     turnout_predictions_file,
     BLOCK_DB_IDX,
 )
@@ -387,8 +388,7 @@ def display_walk_list(walk_list: list[SubBlock], color: str) -> folium.Map:
     # lats = [i["lat"] for i in points]
     # lons = [i["lon"] for i in points]
     # m = generate_starter_map(lats=lats, lons=lons)
-
-    house_to_voters = json.load(open(house_to_voters_file))
+    db = Database()
     turnout_predictions = json.load(open(turnout_predictions_file))
 
     m = folium.Map()
@@ -410,7 +410,14 @@ def display_walk_list(walk_list: list[SubBlock], color: str) -> folium.Map:
         tooltip = ""
         last_point = None
         for house, next_house in itertools.pairwise(sub_block.houses):
-            voter_info = house_to_voters[house["id"]]
+            place: PlaceSemantics = db.get_dict(house["id"], PLACE_DB_IDX)
+            if isinstance(place["voters"], list):
+                voters: list[Person] = [
+                    db.get_dict(v, VOTER_DB_IDX) for v in place["voters"]
+                ]
+            else:
+                # TODO: Deal with apartments
+                voters = []
 
             house_counter += 1
             point = generate_pt_id(house)
@@ -419,10 +426,10 @@ def display_walk_list(walk_list: list[SubBlock], color: str) -> folium.Map:
                 last_point = point
 
                 # Add the address to the tooltip, but delete any unit number
-                tooltip = voter_info["display_address"].split("Unit")[0]
+                tooltip = place["display_address"].split("Unit")[0]
 
             # Add the voter names to the tooltip
-            for person in voter_info["voter_info"]:
+            for person in voters:
                 turnout: float = turnout_predictions[person["voter_id"]]
                 tooltip += f"<br>{person['name'].title()} ({person['party']}): <b>{round(turnout * 100)}%</b>"
 
@@ -448,7 +455,8 @@ def display_walk_list(walk_list: list[SubBlock], color: str) -> folium.Map:
         house_counter += 1
 
         # Add the last house
-        voter_info = house_to_voters[sub_block.houses[-1]["id"]]
+        voter_info = db.get_dict(sub_block.houses[-1]["id"], PLACE_DB_IDX)
+        voters = [db.get_dict(v, VOTER_DB_IDX) for v in voter_info["voters"]]
         point = generate_pt_id(sub_block.houses[-1])
         if point != last_point:
             display_num = str(house_counter)
@@ -458,7 +466,7 @@ def display_walk_list(walk_list: list[SubBlock], color: str) -> folium.Map:
             tooltip = voter_info["display_address"]
 
         # Add the voter names to the tooltip
-        for person in voter_info["voter_info"]:
+        for person in voters:
             turnout: float = float(turnout_predictions[person["voter_id"]])
             tooltip += f"<br>{person['name'].title()} ({person['party']}): <b>{round(turnout * 100)}%</b>"
 

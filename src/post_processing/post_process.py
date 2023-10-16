@@ -46,12 +46,14 @@ from src.utils.db import Database
 
 
 class PostProcess:
-    def __init__(self, optimizer_points: list[Point]):
+    def __init__(self, optimizer_points: list[Point], place_ids: set[str]):
         # self._all_blocks: blocks_file_t = json.load(open(blocks_file))
         # self.house_id_to_block_id: dict[str, str] = json.load(
         #     open(house_id_to_block_id_file)
         # )
         # self.house_to_voters = json.load(open(house_to_voters_file))
+
+        self.universe_place_ids = place_ids
 
         self.db = Database()
 
@@ -158,7 +160,7 @@ class PostProcess:
         if through_start is None and through_end is None:
             print(
                 colored(
-                    "Unable to find distance through start or end of block in post-processing. Quitting.",
+                    f"Unable to find distance through start/end of block. Final house {intersection}, next house {next_house}. Quitting.",
                     "red",
                 )
             )
@@ -740,9 +742,15 @@ class PostProcess:
                 # Lookup this entry by uuid
                 try:
                     place: PlaceSemantics = self.db.get_dict(house["id"], PLACE_DB_IDX)
-                    voters: list[Person] = [
-                        self.db.get_dict(v, VOTER_DB_IDX) for v in place["voters"]
-                    ]
+
+                    if isinstance(place["voters"], list):
+                        voters: list[Person] = [
+                            self.db.get_dict(v, VOTER_DB_IDX) for v in place["voters"]
+                        ]
+                    else:
+                        # TODO: Deal with apartments
+                        voters = []
+
                     place_geo: PlaceGeography = self.db.get_dict(
                         place["block_id"], BLOCK_DB_IDX
                     )["places"][house["id"]]
@@ -820,6 +828,7 @@ def get_distance_cost(idx1: int, idx2: int, distances_file: str) -> tuple[float,
 def process_solution(
     solution: Solution,
     optimizer_points: list[Point],
+    place_ids: set[str],
     viz_path: str = VIZ_PATH,
     distances_path: str = default_distances_path,
     id: str = CAMPAIGN_NAME,
@@ -832,6 +841,12 @@ def process_solution(
             point_orders[i].append(
                 (optimizer_points[stop["location"]["index"]], stop["location"]["index"])
             )
+
+    # Ensure that every place in point orders is in the universe
+    for sublist in point_orders:
+        for pt in sublist:
+            assert pt[0]["id"] in place_ids, f"Point {pt[0]['id']} not in universe"
+
 
     # display_distance_matrix(
     #     optimizer_points, os.path.join(problem_path, "distances.json")
@@ -857,7 +872,7 @@ def process_solution(
     else:
         details = {}
 
-    post_processor = PostProcess(optimizer_points=optimizer_points)
+    post_processor = PostProcess(optimizer_points=optimizer_points, place_ids=place_ids)
     walk_lists: list[list[SubBlock]] = []
     for i, tour in enumerate(solution["tours"]):
         # Do not count the startingg location service at the start or end
@@ -893,6 +908,15 @@ def process_solution(
         }
 
     json.dump(details, open(details_file, "w"))
+
+    all_list_places = set()
+    for walk_list in walk_lists:
+        for sub_block in walk_list:
+            for house in sub_block.houses:
+                all_list_places.add(house["id"])
+    
+    for id in all_list_places:
+        assert id in place_ids, f"Place {id} not in universe"
 
     list_visualizations = display_individual_walk_lists(walk_lists)
     for i, walk_list in enumerate(list_visualizations):
