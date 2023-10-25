@@ -158,7 +158,7 @@ class NodeDistances:
         """
         Create a snapshot of the current distance matrix, and return it
         """
-        snapshot = cls._db.get_all(NODE_DISTANCE_MATRIX_DB_IDX)
+        snapshot = cls._db.get_all_dict(NODE_DISTANCE_MATRIX_DB_IDX)
         return NodeDistancesSnapshot(snapshot)
 
     @classmethod

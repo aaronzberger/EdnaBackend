@@ -133,7 +133,7 @@ class BlockDistances:
     @classmethod
     def get_distance_matrix(cls, block_ids: set[str]):
         # Take a snapshot of the block distances
-        snapshot = BlockDistancesSnapshot(cls._db.get_all(BLOCK_DISTANCE_MATRIX_DB_IDX))
+        snapshot = BlockDistancesSnapshot(cls._db.get_all_dict(BLOCK_DISTANCE_MATRIX_DB_IDX))
 
         matrix = np.empty((len(block_ids), len(block_ids)), dtype=np.float32)
         with tqdm(

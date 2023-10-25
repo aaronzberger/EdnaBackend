@@ -119,7 +119,7 @@ def display_blocks() -> set[tuple[float, float]]:
 
     # Retrieve the blocks from the database
     db = Database()
-    blocks = db.get_multiple(db.get_keys(BLOCK_DB_IDX), BLOCK_DB_IDX)
+    blocks = db.get_multiple_dict(db.get_keys(BLOCK_DB_IDX), BLOCK_DB_IDX)
 
     m = folium.Map()
     # m = generate_starter_map(blocks)
@@ -233,7 +233,7 @@ def display_clustered_blocks(
 ):
     # Retrieve the blocks from the database
     db = Database()
-    blocks = db.get_multiple(block_ids, BLOCK_DB_IDX)
+    blocks = db.get_multiple_dict(block_ids, BLOCK_DB_IDX)
     m = folium.Map()
     # m = generate_starter_map(blocks)
     cmap = ColorMap(0, max(labels))

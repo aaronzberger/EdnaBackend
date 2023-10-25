@@ -23,14 +23,7 @@ STYLE_COLOR = "#0F6BF5"
 street_suffixes_file = os.path.join(BASE_DIR, "src", "street_suffixes.json")
 
 region_dir = os.path.join(BASE_DIR, "regions", CAMPAIGN_NAME)
-store_dir = os.path.join(region_dir, "store")
 input_dir = os.path.join(region_dir, "input")
-
-# Per-region storage files
-node_distance_table_file = os.path.join(store_dir, "node_distances.json")
-house_distance_table_file = os.path.join(store_dir, "house_distances.json")
-block_distance_matrix_file = os.path.join(store_dir, "segment_distance_matrix.json")
-node_coords_file = os.path.join(store_dir, "node_coords.json")
 
 # Per-region input files
 block_output_file = os.path.join(input_dir, "block_output.json")
@@ -38,20 +31,14 @@ adjacency_list_file = os.path.join(input_dir, "adjacency_list.json")
 coords_node_file = os.path.join(input_dir, "coords_node.json")
 overpass_file = os.path.join(input_dir, "overpass.json")
 manual_match_output_file = os.path.join(input_dir, "manual_match_output.json")
-mail_data_file = os.path.join(BASE_DIR, "input", "mail_data_9-29-23.json")
+mail_data_file = os.path.join(BASE_DIR, "input", "mail_data_10-20-23.json")
 
 # Map addresses to block IDs
 addresses_file = os.path.join(region_dir, "addresses.json")
 manual_match_input_file = os.path.join(region_dir, "manual_match_input.json")
 reverse_geocode_file = os.path.join(region_dir, "reverse_geocode.json")
 
-# TODO: About to be deprecated
-house_id_to_block_id_file = os.path.join(region_dir, "house_id_to_block_id.json")
-
 id_to_addresses_file = os.path.join(region_dir, "id_to_addresses.json")
-requested_blocks_file = os.path.join(region_dir, "requested_blocks.json")
-house_to_voters_file = os.path.join(region_dir, "house_to_voters.json")
-blocks_file = os.path.join(region_dir, "blocks.json")
 
 # Per-problem pickle files
 optimizer_points_pickle_file = os.path.join(region_dir, "points.pkl")

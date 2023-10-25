@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-import json
+import argparse
 import os
 import pickle
 import sys
@@ -12,33 +12,13 @@ from typing import Optional
 
 from sklearn.cluster import DBSCAN, AgglomerativeClustering
 from termcolor import colored
-import argparse
 
-from tqdm import tqdm
-
-from src.config import (
-    BLOCK_DB_IDX,
-    CAMPAIGN_NAME,
-    BASE_DIR,
-    DEPOT,
-    PLACE_DB_IDX,
-    PROBLEM_TYPE,
-    NODE_COORDS_DB_IDX,
-    VOTER_DB_IDX,
-    PlaceSemantics,
-    Problem_Types,
-    CAMPAIGN_SUBSET_DB_IDX,
-    NUM_LISTS,
-    NodeType,
-    Point,
-    Solution,
-    blocks_file_t,
-    node_coords_file,
-    optimizer_points_pickle_file,
-    pt_id,
-    default_solution_path,
-    clustering_pickle_file
-)
+from src.config import (BASE_DIR, BLOCK_DB_IDX, CAMPAIGN_NAME,
+                        CAMPAIGN_SUBSET_DB_IDX, NUM_LISTS, PLACE_DB_IDX,
+                        PROBLEM_TYPE, VOTER_DB_IDX, NodeType, PlaceSemantics,
+                        Point, Problem_Types, Solution, blocks_file_t,
+                        clustering_pickle_file, default_solution_path,
+                        optimizer_points_pickle_file, pt_id)
 from src.distances.blocks import BlockDistances
 from src.distances.houses import HouseDistances
 from src.distances.mix import MixDistances
@@ -48,16 +28,26 @@ from src.optimize.group_canvas import GroupCanvas
 from src.optimize.optimizer import Optimizer
 from src.optimize.turf_split import TurfSplit
 from src.post_processing.post_process import process_solution
-from src.utils.viz import display_clustered_blocks
 from src.utils.db import Database
-
+from src.utils.viz import display_clustered_blocks
 
 parser = argparse.ArgumentParser(
     prog="make_walk_lists.py",
     description="Generate walk lists",
-    epilog="Developed by VoteFalcon")
-parser.add_argument("-n", "--no-optimize", action="store_true", help="Skip the optimization step, post-process only")
-parser.add_argument("-r", "--restart", action="store_true", help="Force-perform the optimization on all clusters")
+    epilog="Developed by VoteFalcon",
+)
+parser.add_argument(
+    "-n",
+    "--no-optimize",
+    action="store_true",
+    help="Skip the optimization step, post-process only",
+)
+parser.add_argument(
+    "-r",
+    "--restart",
+    action="store_true",
+    help="Force-perform the optimization on all clusters",
+)
 args = parser.parse_args()
 
 db = Database()
@@ -66,7 +56,7 @@ db = Database()
 # To retrieve all nodes, take the first and last node from all blocks with places which have voters in this campaign
 voter_ids = db.get_set(CAMPAIGN_NAME, CAMPAIGN_SUBSET_DB_IDX)
 
-print(f'Found {len(voter_ids)} voters')
+print(f"Found {len(voter_ids)} voters")
 
 place_ids: set[str] = set()
 for voter in voter_ids:
@@ -79,12 +69,14 @@ for voter in voter_ids:
     this_place: PlaceSemantics = db.get_dict(place["place"], PLACE_DB_IDX)
 
     if "voters" not in this_place:
-        print(colored("Place {} does not have voters".format(place["place"]), color="red"))
+        print(
+            colored("Place {} does not have voters".format(place["place"]), color="red")
+        )
         sys.exit(1)
-    
+
     place_ids.add(place["place"])
 
-print('Found {} places'.format(len(place_ids)))
+print("Found {} places".format(len(place_ids)))
 
 block_ids: set[str] = set()
 for place in place_ids:
@@ -94,7 +86,7 @@ for place in place_ids:
         sys.exit(1)
     block_ids.add(place_data["block_id"])
 
-print('Found {} blocks'.format(len(block_ids)))
+print("Found {} blocks".format(len(block_ids)))
 
 # Generate node distance matrix
 NodeDistances(block_ids=block_ids, skip_update=True)
@@ -121,13 +113,20 @@ if os.path.exists(clustering_pickle_file):
 else:
     match PROBLEM_TYPE:
         case Problem_Types.turf_split:
-            clustered = DBSCAN(metric="precomputed", eps=400, min_samples=10).fit(distance_matrix)
+            clustered = DBSCAN(metric="precomputed", eps=400, min_samples=10).fit(
+                distance_matrix
+            )
         case Problem_Types.completed_group_canvas | Problem_Types.group_canvas:
             clustered = AgglomerativeClustering(
-                n_clusters=None, linkage="complete", distance_threshold=1000, metric="precomputed"
+                n_clusters=None,
+                linkage="complete",
+                distance_threshold=1000,
+                metric="precomputed",
             ).fit(distance_matrix)
         case _:
-            print(colored("Invalid problem type for clustering. Exiting...", color="red"))
+            print(
+                colored("Invalid problem type for clustering. Exiting...", color="red")
+            )
             sys.exit(1)
 
     labels: list[int] = clustered.labels_  # type: ignore
@@ -185,14 +184,21 @@ else:
 
         return points
 
-    clustered_points: list[list[Point]] = [cluster_to_places(c) for c in clustered_blocks]
+    clustered_points: list[list[Point]] = [
+        cluster_to_places(c) for c in clustered_blocks
+    ]
 
     print("179: Total of {} points".format(sum([len(c) for c in clustered_points])))
 
     # Print the clusters with too few houses
     for i, cluster in enumerate(clustered_points):
         if len(cluster) < 10:
-            print(colored("Cluster {}s has only {} houses".format(i, len(cluster)), color="red"))
+            print(
+                colored(
+                    "Cluster {}s has only {} houses".format(i, len(cluster)),
+                    color="red",
+                )
+            )
 
     centers: list[Point] = []
     print("Getting centers for {} clusters".format(len(clustered_blocks)))
@@ -206,7 +212,9 @@ else:
         for intersection in insertections:
             sum = 0
             for other_intersection in insertections:
-                distance = node_distance_snapshot.get_distance(intersection, other_intersection)
+                distance = node_distance_snapshot.get_distance(
+                    intersection, other_intersection
+                )
                 if distance is None:
                     distance = 1600
                 sum += distance
@@ -230,7 +238,7 @@ else:
             "centers": centers,
         },
         open(clustering_pickle_file, "wb"),
-        )
+    )
 # endregion
 
 "-------------------------------------------------------------------------------------------------------"
@@ -317,10 +325,14 @@ match PROBLEM_TYPE:
 match PROBLEM_TYPE:
     case Problem_Types.completed_group_canvas:
         for i, (cluster, center) in enumerate(zip(clustered_points, centers)):
-            if not args.restart and os.path.exists(os.path.join(BASE_DIR, "regions", CAMPAIGN_NAME, "areas", str(i))):
+            if not args.restart and os.path.exists(
+                os.path.join(BASE_DIR, "regions", CAMPAIGN_NAME, "areas", str(i))
+            ):
                 continue
             print(colored("Optimizing cluster {}".format(i), color="green"))
-            save_path = os.path.join(BASE_DIR, "regions", CAMPAIGN_NAME, "areas", str(i))
+            save_path = os.path.join(
+                BASE_DIR, "regions", CAMPAIGN_NAME, "areas", str(i)
+            )
 
             # Remove the old files (and all subdirectories)
             if os.path.isdir(save_path):
@@ -336,7 +348,9 @@ match PROBLEM_TYPE:
             optimizer = CompletedGroupCanvas(houses=cluster, depot=center)
             optimizer.optimize()
 
-            pickle.dump(optimizer.points, open(os.path.join(problem_dir, "points.pkl"), "wb"))
+            pickle.dump(
+                optimizer.points, open(os.path.join(problem_dir, "points.pkl"), "wb")
+            )
 
             solution = optimizer.process_solution(
                 os.path.join(problem_dir, "solution.json")
@@ -356,7 +370,7 @@ match PROBLEM_TYPE:
                 optimizer_points=optimizer.points,
                 place_ids=place_ids,
                 viz_path=viz_dir,
-                id=str(i)
+                id=str(i),
             )
     case _:
         if optimizer is None:
@@ -371,7 +385,9 @@ match PROBLEM_TYPE:
                 sys.exit()
 
             pickle.dump(optimizer.points, open(optimizer_points_pickle_file, "wb"))
-            print(colored("Generated lists and pickled optimizer points", color="green"))
+            print(
+                colored("Generated lists and pickled optimizer points", color="green")
+            )
 
 
 "-----------------------------------------------------------------------------------------"

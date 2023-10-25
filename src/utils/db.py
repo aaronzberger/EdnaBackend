@@ -21,19 +21,32 @@ Voters (VOTER_DB_IDX):
 """
 
 import json
-from typing import Awaitable, Optional
+
 import redis
 
 
-# TODO: Make static. Multiple Databases is confusing.
-
-
 class Database:
+    def __new__(cls):
+        if not hasattr(cls, "instance"):
+            cls._instance = super(Database, cls).__new__(cls)
+            cls._instance.initialized = False
+        return cls._instance
+
     def __init__(self):
-        self.db = redis.Redis(host='redis-container', port=6379, password='votefalcon12', decode_responses=True)
+        # Do not re-initialize if already initialized
+        if self.initialized:
+            return
+        self.initialized = True
+
+        self.db = redis.Redis(
+            host="redis-container",
+            port=6379,
+            password="votefalcon12",
+            decode_responses=True,
+        )
 
         if not self.db.ping():
-            raise ConnectionError('Redis server failed to respond to ping.')
+            raise ConnectionError("Redis server failed to respond to ping.")
 
     def set_dict(self, key: str, value: dict, database: int):
         self.set_str(key, json.dumps(value), database)
@@ -52,11 +65,11 @@ class Database:
 
     def get_str(self, key: str, database: int) -> str:
         self.db.select(database)
-        return self.db.get(key)
+        return self.db.get(key)  # type: ignore
 
     def get_multiple_str(self, keys: list[str], database: int) -> list[str]:
         self.db.select(database)
-        return self.db.mget(keys)
+        return self.db.mget(keys)  # type: ignore
 
     def add_to_list(self, key: str, value: str, database: int):
         self.db.select(database)
@@ -68,7 +81,7 @@ class Database:
 
     def get_list_length(self, key: str, database: int) -> int:
         self.db.select(database)
-        return self.db.llen(key)
+        return self.db.llen(key)  # type: ignore
 
     def add_to_set(self, key: str, value: str, database: int):
         self.db.select(database)
@@ -76,15 +89,15 @@ class Database:
 
     def get_set(self, key: str, database: int) -> set[str]:
         self.db.select(database)
-        return self.db.smembers(key)
+        return self.db.smembers(key)  # type: ignore
 
     def get_set_length(self, key: str, database: int) -> int:
         self.db.select(database)
-        return self.db.scard(key)
+        return self.db.scard(key)  # type: ignore
 
     def is_in_set(self, key: str, value: str, database: int) -> bool:
         self.db.select(database)
-        return self.db.sismember(key, value)
+        return self.db.sismember(key, value)  # type: ignore
 
     def exists(self, key: str, database: int) -> bool:
         self.db.select(database)
@@ -96,23 +109,21 @@ class Database:
 
     def get_keys(self, database: int) -> list[str]:
         self.db.select(database)
-        return self.db.keys()
+        return self.db.keys()  # type: ignore
 
-    def get_all(self, database: int):
-        """Get a dictionary of (key, value) pairs for all keys in the database."""
+    def get_multiple_dict(self, keys: list[str], database: int) -> dict[str, dict]:
         self.db.select(database)
-        keys = self.db.keys()
-        values = self.db.mget(keys)
-        return dict(zip(keys, [None if v is None else json.loads(v) for v in values]))
+        values: list[str] = self.db.mget(keys)  # type: ignore
+        return dict(zip(keys, [None if v is None else json.loads(v) for v in values]))  # type: ignore
 
-    def get_multiple(self, keys: list[str], database: int) -> dict[str, dict]:
-        self.db.select(database)
-        values = self.db.mget(keys)
-        return dict(zip(keys, [None if v is None else json.loads(v) for v in values]))
-    
+    def get_all_dict(self, database: int) -> dict[str, dict]:
+        return self.get_multiple_dict(self.get_keys(database), database)
+
     def set_multiple_dict(self, key_value_pairs: dict[str, dict], database: int):
         self.db.select(database)
-        casted: dict[str, str] = {str(k): json.dumps(v) for k, v in key_value_pairs.items()}
+        casted: dict[str, str] = {
+            str(k): json.dumps(v) for k, v in key_value_pairs.items()
+        }
         self.db.mset(casted)
 
     def get_type(self, key: str, database: int):
@@ -124,5 +135,5 @@ class Database:
         self.db.flushdb()
 
     def __del__(self):
-        print('Saving database to disk...')
+        print("Saving database to disk...")
         self.db.save()

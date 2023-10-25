@@ -4,8 +4,8 @@ import json
 import os
 from collections import defaultdict
 from decimal import Decimal
-import sys
 from typing import Any
+import subprocess
 
 import polyline
 import requests
@@ -18,17 +18,38 @@ from src.config import (
     PlaceGeography,
     Point,
     adjacency_list_file,
-    blocks_file,
-    blocks_file_t,
     coords_node_file,
-    node_coords_file,
-    node_list_t,
+    NODE_COORDS_DB_IDX,
+    BLOCK_DB_IDX,
+    node_list_t
 )
 from src.utils.gps import great_circle_distance
+from src.utils.db import Database
 
-# TODO: Automatically generate this from a docker inspect command
-SERVER = "http://172.18.0.3:5000"
-# SERVER = "localhost:5001"
+
+def get_osrm_ip() -> str:
+    # Run docker inspect redis-container and get the JSON output
+    try:
+        output = subprocess.check_output(["docker", "inspect", "osrm_container"])
+        output = json.loads(output)[0]
+
+        if output["State"]["Running"] is False:
+            raise RuntimeError("OSRM container is not running")
+
+        ip = output["NetworkSettings"]["Networks"]["falcon_backend"]["IPAddress"]
+
+        ports = output["NetworkSettings"]["Ports"]
+        if "5000/tcp" not in ports:
+            raise RuntimeError("Expected OSRM container to be running on port 5000")
+
+        return "http://" + ip + ":5000"
+    except subprocess.CalledProcessError:
+        raise RuntimeError("Could not find OSRM container")
+    except KeyError:
+        raise RuntimeError("Could not find IP address of OSRM container")
+
+
+SERVER = get_osrm_ip()
 
 
 def get_distance(start: AnyPoint, end: AnyPoint) -> float:
@@ -97,10 +118,9 @@ def get_route(start: AnyPoint, end: AnyPoint) -> dict[str, Any]:
 
 
 class RouteMaker:
-    _blocks: blocks_file_t = json.load(open(blocks_file))
-    _node_coords = json.load(open(node_coords_file))
     _node_table = {}
     _adjacency_list = {}
+    _db = Database()
 
     @classmethod
     def id(cls, lat: Decimal, lon: Decimal) -> str:
@@ -125,7 +145,7 @@ class RouteMaker:
             cls._node_table = json.load(open(coords_node_file))
         else:
             print("Creating node table...", end=" ")
-            for node_id, node in cls._node_coords.items():
+            for node_id, node in cls._db.get_all_dict(NODE_COORDS_DB_IDX).items():
                 lat = Decimal(node["lat"]).quantize(Decimal("0.0001"))
                 lon = Decimal(node["lon"]).quantize(Decimal("0.0001"))
                 if cls.id(lat, lon) not in cls._node_table:
@@ -139,7 +159,7 @@ class RouteMaker:
             cls._adjacency_list = json.load(open(adjacency_list_file))
         else:
             print("Creating adjacency list...", end=" ")
-            for block_id in cls._blocks.keys():
+            for block_id in cls._db.get_keys(BLOCK_DB_IDX):
                 node_1, node_2, _ = block_id.split(":")
                 if node_1 not in cls._adjacency_list:
                     cls._adjacency_list[node_1] = []
@@ -177,11 +197,11 @@ class RouteMaker:
             """Get the block, and the appropriate ID, for two given nodes."""
             for i in range(3):
                 id1 = node_1 + ":" + node_2 + ":" + str(i)
-                if id1 in cls._blocks:
-                    return id1, cls._blocks[id1]
+                if cls._db.exists(id1, BLOCK_DB_IDX):
+                    return id1, cls._db.get_dict(id1, BLOCK_DB_IDX)
                 id2 = node_2 + ":" + node_1 + ":" + str(i)
-                if id2 in cls._blocks:
-                    return id2, cls._blocks[id2]
+                if cls._db.exists(id2, BLOCK_DB_IDX):
+                    return id2, cls._db.get_dict(id2, BLOCK_DB_IDX)
 
         # Initialize the distance and previous nodes
         distances = defaultdict(lambda: float("inf"))
@@ -231,7 +251,7 @@ class RouteMaker:
         distance = 0
         for first, second in itertools.pairwise(path):
             distance += great_circle_distance(
-                cls._node_coords[first], cls._node_coords[second]
+                cls._db.get_dict(first, NODE_COORDS_DB_IDX), cls._db.get_dict(second, NODE_COORDS_DB_IDX)
             )
 
         # These are the nodes that make up the blocks, so convert them to blocks
@@ -391,186 +411,3 @@ class RouteMaker:
         #   If the angle is in the range between the angle to the previous node and the angle to the next node, then we don't need to cross
         #   If we don't cross, the current point can be kept
         #   If we do cross, the new point is a point 1 degree away from the angle to the next node, in the opposite direction of the angle to the previous node
-
-
-if __name__ == "__main__":
-    # Call on a specific house
-    house_1_info = PlaceGeography(
-        {
-            "lat": 40.5494095015337,
-            "lon": -80.1919223610264,
-            "distance_to_start": 53,
-            "distance_to_end": 82,
-            "side": False,
-            "distance_to_road": 18,
-            "subsegment": [1, 2],
-        }
-    )
-
-    block1 = Block(
-        {
-            "addresses": {
-                "413 CHESTNUT RD": {
-                    "lat": 40.5495888473418,
-                    "lon": -80.1916865917007,
-                    "distance_to_start": 82,
-                    "distance_to_end": 53,
-                    "side": False,
-                    "distance_to_road": 19,
-                    "subsegment": [1, 2],
-                },
-                "421 CHESTNUT RD": {
-                    "lat": 40.5498797591104,
-                    "lon": -80.1912777518144,
-                    "distance_to_start": 129,
-                    "distance_to_end": 6,
-                    "side": False,
-                    "distance_to_road": 21,
-                    "subsegment": [2, 3],
-                },
-                "411 CHESTNUT RD": {
-                    "lat": 40.5495374878237,
-                    "lon": -80.1917390879274,
-                    "distance_to_start": 74,
-                    "distance_to_end": 61,
-                    "side": False,
-                    "distance_to_road": 18,
-                    "subsegment": [1, 2],
-                },
-                "415 CHESTNUT RD": {
-                    "lat": 40.549633328746,
-                    "lon": -80.1916216066886,
-                    "distance_to_start": 89,
-                    "distance_to_end": 46,
-                    "side": False,
-                    "distance_to_road": 20,
-                    "subsegment": [1, 2],
-                },
-                "407 CHESTNUT RD": {
-                    "lat": 40.5494095015337,
-                    "lon": -80.1919223610264,
-                    "distance_to_start": 53,
-                    "distance_to_end": 82,
-                    "side": False,
-                    "distance_to_road": 18,
-                    "subsegment": [1, 2],
-                },
-                "417 CHESTNUT RD": {
-                    "lat": 40.5497490533519,
-                    "lon": -80.1914598474343,
-                    "distance_to_start": 108,
-                    "distance_to_end": 27,
-                    "side": False,
-                    "distance_to_road": 20,
-                    "subsegment": [1, 2],
-                },
-                "419 CHESTNUT RD": {
-                    "lat": 40.5498196749462,
-                    "lon": -80.1913533315585,
-                    "distance_to_start": 120,
-                    "distance_to_end": 15,
-                    "side": False,
-                    "distance_to_road": 20,
-                    "subsegment": [2, 3],
-                },
-                "409 CHESTNUT RD": {
-                    "lat": 40.5495111555207,
-                    "lon": -80.1918418101735,
-                    "distance_to_start": 66,
-                    "distance_to_end": 69,
-                    "side": False,
-                    "distance_to_road": 22,
-                    "subsegment": [1, 2],
-                },
-                "415 1/2 CHESTNUT RD": {
-                    "lat": 40.5498489234183,
-                    "lon": -80.1918536352896,
-                    "distance_to_start": 90,
-                    "distance_to_end": 45,
-                    "side": False,
-                    "distance_to_road": 51,
-                    "subsegment": [1, 2],
-                },
-            },
-            "nodes": [
-                {"lat": 40.5489748, "lon": -80.1922636},
-                {"lat": 40.5491672, "lon": -80.1919728},
-                {"lat": 40.54967, "lon": -80.191213},
-                {"lat": 40.5497717, "lon": -80.1910593},
-            ],
-            "type": "residential",
-        } # type: ignore
-    )
-
-    house_2_info = PlaceGeography(
-        {
-            "lat": 40.551660346094,
-            "lon": -80.1929784945178,
-            "distance_to_start": 40,
-            "distance_to_end": 47,
-            "side": False,
-            "distance_to_road": 28,
-            "subsegment": [0, 1],
-        }
-    )
-
-    block2 = Block(
-        {
-            "addresses": {
-                "408 EDGEWORTH LN": {
-                    "lat": 40.5512499628013,
-                    "lon": -80.1925553719882,
-                    "distance_to_start": 37,
-                    "distance_to_end": 50,
-                    "side": True,
-                    "distance_to_road": 30,
-                    "subsegment": [0, 1],
-                },
-                "409 EDGEWORTH LN": {
-                    "lat": 40.5517668969989,
-                    "lon": -80.1927570000412,
-                    "distance_to_start": 62,
-                    "distance_to_end": 25,
-                    "side": False,
-                    "distance_to_road": 24,
-                    "subsegment": [0, 1],
-                },
-                "407 EDGEWORTH LN": {
-                    "lat": 40.551660346094,
-                    "lon": -80.1929784945178,
-                    "distance_to_start": 40,
-                    "distance_to_end": 47,
-                    "side": False,
-                    "distance_to_road": 28,
-                    "subsegment": [0, 1],
-                },
-                "406 EDGEWORTH LN": {
-                    "lat": 40.5510804070503,
-                    "lon": -80.1928346982635,
-                    "distance_to_start": 7,
-                    "distance_to_end": 80,
-                    "side": True,
-                    "distance_to_road": 29,
-                    "subsegment": [0, 1],
-                },
-                "410 EDGEWORTH LN": {
-                    "lat": 40.551482311351,
-                    "lon": -80.1923974797763,
-                    "distance_to_start": 64,
-                    "distance_to_end": 23,
-                    "side": True,
-                    "distance_to_road": 19,
-                    "subsegment": [0, 1],
-                },
-            },
-            "nodes": [
-                {"lat": 40.5512341, "lon": -80.1931227},
-                {"lat": 40.5517477, "lon": -80.1923449},
-            ],
-            "type": "residential",
-        } # type: ignore
-    )
-
-    RouteMaker()
-
-    RouteMaker.get_route_cost(house_1_info, block1, house_2_info, block2)

@@ -16,14 +16,17 @@ from src.config import (
     NodeType,
     Person,
     Point,
-    blocks_file,
-    blocks_file_t,
+    # blocks_file,
+    # blocks_file_t,
     turnout_predictions_file,
     mail_data_file,
-    house_to_voters_file
+    BLOCK_DB_IDX,
+    PLACE_DB_IDX,
+    VOTER_DB_IDX
 )
 from src.process_universe import Associater
 from src.utils.viz import display_targeting_voters
+from src.utils.db import Database
 
 
 class AddressAndHouse(NamedTuple):
@@ -39,25 +42,28 @@ stats = {
     "num_sending": 0,
     "num_indeps": 0,
     "num_dems": 0,
+    "num_reps": 0,
     "num_ballot_already_sent": 0,
     "num_too_unlikely": 0,
     "num_houses": 0,
     "num_failed": 0,
 }
 
-# FRANKLIN PK
-PRECINCT_CODES = [
-    "1450101",
-    "1450102",
-    "1450103",
-    "1450201",
-    "1450202",
-    "1450203",
-    "1450301",
-    "1450302",
-    "1450303",
-    "MN145"
-]
+db = Database()
+
+# # FRANKLIN PK
+# PRECINCT_CODES = [
+#     "1450101",
+#     "1450102",
+#     "1450103",
+#     "1450201",
+#     "1450202",
+#     "1450203",
+#     "1450301",
+#     "1450302",
+#     "1450303",
+#     "MN145"
+# ]
 
 # num_voters = 0
 # voter_to_uuid: dict[str, str] = {}
@@ -80,7 +86,7 @@ VISTA_FIELDNAMES = ["Salutation", "First name", "Middle", "Name", "Suffix", "Tit
 
 
 def handle_universe_file(
-    universe_file: str, blocks: blocks_file_t, turnouts: dict[str, float], mail_data: dict[str, dict]
+    universe_file: str, turnouts: dict[str, float], mail_data: dict[str, dict]
 ):
     universe_file_opened = open(universe_file)
     num_voters = -1
@@ -91,13 +97,19 @@ def handle_universe_file(
 
     associater = Associater()
 
-    output_file = open(os.path.join(BASE_DIR, "franklin_park_target_25.csv"), "w")
+    output_file_d = open(os.path.join(BASE_DIR, "election_day_di.csv"), "w")
     writer_d = csv.DictWriter(
-        output_file, VISTA_FIELDNAMES
+        output_file_d, VISTA_FIELDNAMES
     )
     writer_d.writeheader()
 
-    output_file_store = open(os.path.join(BASE_DIR, "franklin_park_target_store_25.csv"), "w")
+    output_file_r = open(os.path.join(BASE_DIR, "election_day_r.csv"), "w")
+    writer_r = csv.DictWriter(
+        output_file_r, VISTA_FIELDNAMES
+    )
+    writer_r.writeheader()
+
+    output_file_store = open(os.path.join(BASE_DIR, "election_day_store.csv"), "w")
     store_writer = csv.DictWriter(
         output_file_store, fieldnames=VISTA_FIELDNAMES + ["PA-ID"]
     )
@@ -127,11 +139,11 @@ def handle_universe_file(
             else ("R" if universe_row["Party Code"] == "R" else "I")
         )
 
-        if party == "R":
-            return False
+        # if party == "R":
+        #     return False
 
-        if universe_row["Precinct Code"] not in PRECINCT_CODES:
-            return False
+        # if universe_row["Precinct Code"] not in PRECINCT_CODES:
+        #     return False
 
         try:
             turnout: float = turnouts[universe_row["ID Number"]]
@@ -168,54 +180,59 @@ def handle_universe_file(
         stats["num_voters"] += 1
 
         # Criteria for adding a voter:
-        if turnout < 0.25:
+        if turnout < 0.65:
             stats["num_too_unlikely"] += 1
+            return False
+
+        stats["num_sending"] += 1
+        if party == "D":
+            stats["num_dems"] += 1
+        elif party == "I":
+            stats["num_indeps"] += 1
         else:
-            stats["num_sending"] += 1
-            if party == "D":
-                stats["num_dems"] += 1
-            else:
-                stats["num_indeps"] += 1
+            stats["num_reps"] += 1
 
-            if address in previously_inserted:
-                # Insert this name into the previous address
-                for voter in voters:
-                    if voter.address == address:
-                        voter.people.append(
-                            Person(
-                                name=name.casefold().title(),
-                                age=0,
-                                party=party,
-                                voting_history={},
-                                value=turnout,
-                                turnout=turnout,
-                                voter_id=universe_row["ID Number"],
-                            )
-                        )
-                        return False
-            else:
-                stats["num_houses"] += 1
-                previously_inserted.add(address)
-
-            voters.append(
-                AddressAndHouse(
-                    address=address,
-                    people=[
+        if address in previously_inserted:
+            # Insert this name into the previous address
+            for voter in voters:
+                if voter.address == address:
+                    voter.people.append(
                         Person(
                             name=name.casefold().title(),
                             age=0,
                             party=party,
+                            voter_id=universe_row["ID Number"],
+                            place="",
                             voting_history={},
                             value=turnout,
                             turnout=turnout,
-                            voter_id=universe_row["ID Number"],
                         )
-                    ],
-                    address_line_1=address_line_1,
-                    address_line_2=address_line_2,
-                    coords=Point(lat=-1, lon=-1, type=NodeType.other, id=""),
-                )
+                    )
+                    return False
+        else:
+            stats["num_houses"] += 1
+            previously_inserted.add(address)
+
+        voters.append(
+            AddressAndHouse(
+                address=address,
+                people=[
+                    Person(
+                        name=name.casefold().title(),
+                        age=0,
+                        party=party,
+                        place="",
+                        voter_id=universe_row["ID Number"],
+                        voting_history={},
+                        value=turnout,
+                        turnout=turnout,
+                    )
+                ],
+                address_line_1=address_line_1,
+                address_line_2=address_line_2,
+                coords=Point(lat=-1, lon=-1, type=NodeType.other, id=""),
             )
+        )
         return True
 
     # Process each requested house
@@ -254,8 +271,9 @@ def handle_universe_file(
         result = associater.associate(voter.address)
         if result is not None:
             block_id, uuid, _ = result
-            voter.coords["lat"] = blocks[block_id]["addresses"][uuid]["lat"]
-            voter.coords["lon"] = blocks[block_id]["addresses"][uuid]["lon"]
+            house = db.get_dict(block_id, BLOCK_DB_IDX)["places"][uuid]
+            voter.coords["lat"] = house["lat"]
+            voter.coords["lon"] = house["lon"]
 
         names = [person["name"] for person in voter.people]
 
@@ -286,30 +304,34 @@ def handle_universe_file(
             "Zip Code (Required. 5- or 9- digits)": voter.address.zip_code,
         }
 
-        # If any voter is independent, send to the independent list
-        writer_d.writerow(output)
+        # If any voter is D or I, write to the D file
+        if any(person["party"] != "R" for person in voter.people):
+            writer_d.writerow(output)
+        else:
+            writer_r.writerow(output)
 
         store_output = deepcopy(output)
         store_output["PA-ID"] = combined_ids
         store_writer.writerow(store_output)
 
-    display_targeting_voters(voters).save(os.path.join(BASE_DIR, "viz", "franklin_park_25.html"))
+    display_targeting_voters(voters).save(os.path.join(BASE_DIR, "viz", "election_day.html"))
 
     print(f"Of {stats['num_voters']} voters:")
     print(f"  {stats['num_sending']} ({stats['num_sending'] / stats['num_voters'] * 100:.2f}%) are being sent to")
     print(f"  {stats['num_houses']} are unique houses")
     print(f"  {stats['num_indeps']} ({stats['num_indeps'] / stats['num_voters'] * 100:.2f}%) are independents")
     print(f"  {stats['num_dems']} ({stats['num_dems'] / stats['num_voters'] * 100:.2f}%) are democrats")
+    print(f"  {stats['num_reps']} ({stats['num_reps'] / stats['num_voters'] * 100:.2f}%) are republicans")
     print(f"  {stats['num_ballot_already_sent']} ({stats['num_ballot_already_sent'] / stats['num_voters'] * 100:.2f}%) have already been sent a ballot")
     print(f"  {stats['num_too_unlikely']} ({stats['num_too_unlikely'] / stats['num_voters'] * 100:.2f}%) are too unlikely to vote")
     print(f"  {stats['num_failed']} ({stats['num_failed'] / stats['num_voters'] * 100:.2f}%) failed to be processed")
 
-    output_file.close()
+    output_file_d.close()
+    output_file_r.close()
+    output_file_store.close()
 
 
 if __name__ == "__main__":
-    all_blocks: blocks_file_t = json.load(open(blocks_file))
-
     turnouts: dict[str, float] = json.load(open(turnout_predictions_file))
 
     mail_data: dict[str, dict] = json.load(open(mail_data_file))
@@ -318,4 +340,4 @@ if __name__ == "__main__":
         print("Usage: python3 mail_list.py <universe_file>")
         sys.exit(1)
 
-    handle_universe_file(sys.argv[1], all_blocks, turnouts, mail_data)
+    handle_universe_file(sys.argv[1], turnouts, mail_data)
