@@ -184,7 +184,7 @@ class NodeDistances:
 
         # Flatten the list of tuples
         flattened: list[str] = [id for pair in ids for id in pair]
-        results = cls._db.get_multiple_str(flattened, NODE_DISTANCE_MATRIX_DB_IDX)
+        results = list(cls._db.get_multiple_str(flattened, NODE_DISTANCE_MATRIX_DB_IDX).values())
 
         # Split the results back into pairs
         distances = []

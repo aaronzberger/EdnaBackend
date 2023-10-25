@@ -67,9 +67,13 @@ class Database:
         self.db.select(database)
         return self.db.get(key)  # type: ignore
 
-    def get_multiple_str(self, keys: list[str], database: int) -> list[str]:
+    def get_multiple_str(self, keys: list[str], database: int) -> dict[str, str]:
         self.db.select(database)
-        return self.db.mget(keys)  # type: ignore
+        values: list[str] = self.db.mget(keys)  # type: ignore
+        return dict(zip(keys, values))
+
+    def get_all_str(self, database: int) -> dict[str, str]:
+        return self.get_multiple_str(self.get_keys(database), database)  # type: ignore
 
     def add_to_list(self, key: str, value: str, database: int):
         self.db.select(database)
@@ -133,6 +137,10 @@ class Database:
     def clear_db(self, database: int):
         self.db.select(database)
         self.db.flushdb()
+
+    def delete_keys(self, keys: list[str], database: int):
+        self.db.select(database)
+        self.db.delete(*keys)
 
     def __del__(self):
         print("Saving database to disk...")
