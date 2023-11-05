@@ -31,7 +31,7 @@ adjacency_list_file = os.path.join(input_dir, "adjacency_list.json")
 coords_node_file = os.path.join(input_dir, "coords_node.json")
 overpass_file = os.path.join(input_dir, "overpass.json")
 manual_match_output_file = os.path.join(input_dir, "manual_match_output.json")
-mail_data_file = os.path.join(BASE_DIR, "input", "mail_data_10-20-23.json")
+mail_data_file = os.path.join(BASE_DIR, "input", "mail_data_10-27-23.json")
 
 # Map addresses to block IDs
 addresses_file = os.path.join(region_dir, "addresses.json")
@@ -128,6 +128,15 @@ def house_value(voter_values: list[float]) -> float:
     # in_order = sorted(voter_values, reverse=True)
     # total = in_order[0] + (0.2 * sum(in_order[1:]))
     # return round(total)
+
+
+class Singleton(type):
+    _instance = None
+
+    def __call__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instance
 
 
 "----------------------------------------------------------------------------------"

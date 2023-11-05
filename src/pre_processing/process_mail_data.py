@@ -5,7 +5,7 @@ import pandas as pd
 from src.config import BASE_DIR
 
 
-NAME = "mail_data_10-20-23"
+NAME = "mail_data_10-27-23"
 
 
 # Read the data from the file and take first row as header
@@ -42,4 +42,4 @@ data = data[
 ]
 
 # Write to json
-# data.to_json(os.path.join(BASE_DIR, "input", f"{NAME}.json"), orient="index")
+data.to_json(os.path.join(BASE_DIR, "input", f"{NAME}.json"), orient="index")

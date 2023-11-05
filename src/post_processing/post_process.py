@@ -2,7 +2,6 @@ import itertools
 import json
 import math
 import os
-import pickle
 import sys
 from copy import deepcopy
 
@@ -10,7 +9,6 @@ from termcolor import colored
 
 from src.config import (
     CAMPAIGN_NAME,
-    BASE_DIR,
     default_distances_path,
     PROBLEM_TYPE,
     Person,
@@ -18,9 +16,7 @@ from src.config import (
     PlaceSemantics,
     Problem_Types,
     VIZ_PATH,
-    Block,
     HouseOutput,
-    HousePeople,
     NodeType,
     Point,
     Solution,
@@ -32,11 +28,8 @@ from src.config import (
     BLOCK_DB_IDX,
     VOTER_DB_IDX,
 )
-from src.distances.blocks import BlockDistances
 from src.distances.mix import MixDistances
-from src.distances.nodes import NodeDistances
 from src.utils.gps import SubBlock, project_to_line
-from src.optimize.optimizer import Optimizer
 from src.utils.route import RouteMaker
 from src.utils.viz import (
     display_house_orders,
@@ -46,7 +39,7 @@ from src.utils.db import Database
 
 
 class PostProcess:
-    def __init__(self, optimizer_points: list[Point], place_ids: set[str]):
+    def __init__(self, optimizer_points: list[Point], place_ids: set[str], mix_distances: MixDistances):
         # self._all_blocks: blocks_file_t = json.load(open(blocks_file))
         # self.house_id_to_block_id: dict[str, str] = json.load(
         #     open(house_id_to_block_id_file)
@@ -64,6 +57,8 @@ class PostProcess:
         # Map block IDs to the UUIDs on this route on that block
         self.blocks_on_route: dict[str, list[str]] = {}
         self.inserted_houses: set[str] = set()
+
+        self.mix_distances = mix_distances
 
     def _calculate_exit(self, final_house: Point, next_house: Point) -> Point:
         """
@@ -85,7 +80,7 @@ class PostProcess:
         end_node = deepcopy(origin_block["nodes"][-1])
         end_node["type"] = NodeType.node
 
-        through_end = MixDistances.get_distance(p1=end_node, p2=next_house)
+        through_end = self.mix_distances.get_distance(p1=end_node, p2=next_house)
 
         if through_end is not None:
             through_end += origin_block["places"][final_house["id"]]["distance_to_end"]
@@ -93,7 +88,7 @@ class PostProcess:
         start_node = deepcopy(origin_block["nodes"][0])
         start_node["type"] = NodeType.node
 
-        through_start = MixDistances.get_distance(p1=start_node, p2=next_house)
+        through_start = self.mix_distances.get_distance(p1=start_node, p2=next_house)
 
         if through_start is not None:
             through_start += origin_block["places"][final_house["id"]][
@@ -139,18 +134,21 @@ class PostProcess:
         ]
         destination_block = self.db.get_dict(destination_block_id, BLOCK_DB_IDX)
 
-        through_end = NodeDistances.get_distance(
-            intersection, destination_block["nodes"][-1]
-        )
+        intersection["type"] = NodeType.node
+        end_node = deepcopy(destination_block["nodes"][-1])
+        end_node["type"] = NodeType.node
+
+        through_end = self.mix_distances.get_distance(p1=intersection, p2=end_node)
 
         if through_end is not None:
             through_end += destination_block["places"][next_house["id"]][
                 "distance_to_end"
             ]
 
-        through_start = NodeDistances.get_distance(
-            intersection, destination_block["nodes"][0]
-        )
+        start_node = deepcopy(destination_block["nodes"][0])
+        start_node["type"] = NodeType.node
+
+        through_start = self.mix_distances.get_distance(p1=intersection, p2=start_node)
 
         if through_start is not None:
             through_start += destination_block["places"][next_house["id"]][
@@ -829,6 +827,7 @@ def process_solution(
     solution: Solution,
     optimizer_points: list[Point],
     place_ids: set[str],
+    mix_distances: MixDistances,
     viz_path: str = VIZ_PATH,
     distances_path: str = default_distances_path,
     id: str = CAMPAIGN_NAME,
@@ -872,7 +871,7 @@ def process_solution(
     else:
         details = {}
 
-    post_processor = PostProcess(optimizer_points=optimizer_points, place_ids=place_ids)
+    post_processor = PostProcess(optimizer_points=optimizer_points, place_ids=place_ids, mix_distances=mix_distances)
     walk_lists: list[list[SubBlock]] = []
     for i, tour in enumerate(solution["tours"]):
         # Do not count the startingg location service at the start or end
@@ -914,7 +913,7 @@ def process_solution(
         for sub_block in walk_list:
             for house in sub_block.houses:
                 all_list_places.add(house["id"])
-    
+
     for id in all_list_places:
         assert id in place_ids, f"Place {id} not in universe"
 

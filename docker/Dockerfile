@@ -64,7 +64,10 @@ RUN pip install --no-cache-dir\
     urllib3\
     utm\
     humanhash3\
-    names
+    names\
+    redis[hiredis]\
+    typing_extensions\
+    pandas
 
 # set up default locale
 RUN locale-gen en_US.UTF-8

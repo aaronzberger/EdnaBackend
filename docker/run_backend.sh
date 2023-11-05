@@ -59,4 +59,4 @@ fi
 
 echo "Starting container with name $tag"
 # docker run -it --platform $platform --rm --privileged --net=bridge --name=$CONTAINER_NAME --security-opt seccomp=unconfined -v "$(pwd):/home/user/$destdir" -w "/home/user/$destdir" $tag
-docker run -it --platform $platform --rm --privileged --net falcon_backend --name=$CONTAINER_NAME --security-opt seccomp=unconfined -v "$(pwd):/home/user/$destdir" -w "/home/user/$destdir" $tag
+docker run -it --platform $platform --rm --privileged --net falcon_backend --name=$CONTAINER_NAME --security-opt seccomp=unconfined -v /var/run/docker.sock:/var/run/docker.sock -v "$(pwd):/home/user/$destdir" -w "/home/user/$destdir" $tag

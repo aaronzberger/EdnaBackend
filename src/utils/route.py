@@ -26,30 +26,32 @@ from src.config import (
 from src.utils.gps import great_circle_distance
 from src.utils.db import Database
 
-
-def get_osrm_ip() -> str:
-    # Run docker inspect redis-container and get the JSON output
-    try:
-        output = subprocess.check_output(["docker", "inspect", "osrm_container"])
-        output = json.loads(output)[0]
-
-        if output["State"]["Running"] is False:
-            raise RuntimeError("OSRM container is not running")
-
-        ip = output["NetworkSettings"]["Networks"]["falcon_backend"]["IPAddress"]
-
-        ports = output["NetworkSettings"]["Ports"]
-        if "5000/tcp" not in ports:
-            raise RuntimeError("Expected OSRM container to be running on port 5000")
-
-        return "http://" + ip + ":5000"
-    except subprocess.CalledProcessError:
-        raise RuntimeError("Could not find OSRM container")
-    except KeyError:
-        raise RuntimeError("Could not find IP address of OSRM container")
+SERVER = "http://172.18.0.3:5000"
 
 
-SERVER = get_osrm_ip()
+# def get_osrm_ip() -> str:
+#     # Run docker inspect redis-container and get the JSON output
+#     try:
+#         output = subprocess.check_output(["docker", "inspect", "osrm_container"])
+#         output = json.loads(output)[0]
+
+#         if output["State"]["Running"] is False:
+#             raise RuntimeError("OSRM container is not running")
+
+#         ip = output["NetworkSettings"]["Networks"]["falcon_backend"]["IPAddress"]
+
+#         ports = output["NetworkSettings"]["Ports"]
+#         if "5000/tcp" not in ports:
+#             raise RuntimeError("Expected OSRM container to be running on port 5000")
+
+#         return "http://" + ip + ":5000"
+#     except subprocess.CalledProcessError:
+#         raise RuntimeError("Could not find OSRM container")
+#     except KeyError:
+#         raise RuntimeError("Could not find IP address of OSRM container")
+
+
+# SERVER = get_osrm_ip()
 
 
 def get_distance(start: AnyPoint, end: AnyPoint) -> float:

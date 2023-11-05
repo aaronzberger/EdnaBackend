@@ -18,26 +18,24 @@ Voters (VOTER_DB_IDX):
     Key: Voter ID
     Value: Person object
 
+Node Distances (NODE_DISTANCE_MATRIX_DB_IDX):
+    Key: str representing both nodes, created from config.generate_pt_id_pair
+    Value: str castable to float representing distance between nodes
+
+Place Distances (PLACE_DISTANCE_MATRIX_DB_IDX):
+    Key: str representing both places, created from config.generate_place_id_pair
+    Value: 0-8 digit number: first four digits representing distance, last four digits representing some cost
+
 """
 
 import json
 
 import redis
+from src.config import Singleton
 
 
-class Database:
-    def __new__(cls):
-        if not hasattr(cls, "instance"):
-            cls._instance = super(Database, cls).__new__(cls)
-            cls._instance.initialized = False
-        return cls._instance
-
+class Database(metaclass=Singleton):
     def __init__(self):
-        # Do not re-initialize if already initialized
-        if self.initialized:
-            return
-        self.initialized = True
-
         self.db = redis.Redis(
             host="redis-container",
             port=6379,

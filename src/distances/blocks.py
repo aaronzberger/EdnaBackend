@@ -1,11 +1,9 @@
 from __future__ import annotations
-import math
 
 from typing import Optional
 
 import numpy as np
 from tqdm import tqdm
-import time
 
 from src.config import (
     ARBITRARY_LARGE_DISTANCE,
@@ -13,6 +11,7 @@ from src.config import (
     BLOCK_DISTANCE_MATRIX_DB_IDX,
     generate_block_id_pair,
     BLOCK_DB_IDX,
+    Singleton
 )
 from src.distances.nodes import NodeDistances
 from src.utils.db import Database
@@ -33,21 +32,18 @@ class BlockDistancesSnapshot:
         return None
 
 
-class BlockDistances:
-    _db = Database()
-
-    @classmethod
-    def _insert_pair(cls, b1: Block, b1_id: str, b2: Block, b2_id: str):
+class BlockDistances(metaclass=Singleton):
+    def _insert_pair(self, b1: Block, b1_id: str, b2: Block, b2_id: str):
         pair_1, pair_2 = generate_block_id_pair(b1_id, b2_id), generate_block_id_pair(
             b2_id, b1_id
         )
-        if cls._db.exists(pair_1, BLOCK_DISTANCE_MATRIX_DB_IDX) or cls._db.exists(
+        if self._db.exists(pair_1, BLOCK_DISTANCE_MATRIX_DB_IDX) or self._db.exists(
             pair_2, BLOCK_DISTANCE_MATRIX_DB_IDX
         ):
             return
 
         routed_distances = [
-            cls._snapshot.get_distance(i, j)
+            self._snapshot.get_distance(i, j)
             for (i, j) in [
                 (b1["nodes"][0], b2["nodes"][0]),
                 (b1["nodes"][0], b2["nodes"][-1]),
@@ -58,12 +54,11 @@ class BlockDistances:
 
         existing_distances = [i for i in routed_distances if i is not None]
         if len(existing_distances) > 0:
-            cls._db.set_str(
+            self._db.set_str(
                 pair_1, str(min(existing_distances)), BLOCK_DISTANCE_MATRIX_DB_IDX
             )
 
-    @classmethod
-    def _update(cls, blocks: dict[str, Block]):
+    def _update(self, blocks: dict[str, Block]):
         """
         Update the block distance table by adding any missing blocks
 
@@ -80,17 +75,19 @@ class BlockDistances:
         ) as progress:
             for b_id, block in blocks.items():
                 for other_b_id, other_block in blocks.items():
-                    cls._insert_pair(block, b_id, other_block, other_b_id)
+                    self._insert_pair(block, b_id, other_block, other_b_id)
                     progress.update()
 
-    @classmethod
-    def __init__(cls, block_ids: set[str], skip_update: bool = False):
+    def __init__(self, block_ids: set[str], node_distances: NodeDistances, skip_update: bool = False):
+        self._db = Database()
+        self._node_distances = node_distances
+
         if skip_update:
             return
 
         blocks: dict[str, Block] = {}
         for block_id in block_ids:
-            block = cls._db.get_dict(block_id, BLOCK_DB_IDX)
+            block = self._db.get_dict(block_id, BLOCK_DB_IDX)
 
             if block is None:
                 raise KeyError(
@@ -100,12 +97,11 @@ class BlockDistances:
             # TODO: Decide globally if we should unpack into a Block (Block(**block))), or assume written correctly
             blocks[block_id] = block
 
-        cls._snapshot = NodeDistances.snapshot()
+        self._snapshot = self._node_distances.snapshot()
 
-        cls._update(blocks)
+        self._update(blocks)
 
-    @classmethod
-    def get_distance(cls, b1_id: str, b2_id: str) -> Optional[float]:
+    def get_distance(self, b1_id: str, b2_id: str) -> Optional[float]:
         """
         Get the distance between two blocks by their coordinates
 
@@ -120,20 +116,19 @@ class BlockDistances:
             b2_id, b1_id
         )
 
-        pair_1_r = cls._db.get_str(pair_1, BLOCK_DISTANCE_MATRIX_DB_IDX)
+        pair_1_r = self._db.get_str(pair_1, BLOCK_DISTANCE_MATRIX_DB_IDX)
         if pair_1_r is not None:
             return float(pair_1_r)
 
-        pair_2_r = cls._db.get_str(pair_2, BLOCK_DISTANCE_MATRIX_DB_IDX)
+        pair_2_r = self._db.get_str(pair_2, BLOCK_DISTANCE_MATRIX_DB_IDX)
         if pair_2_r is not None:
             return float(pair_2_r)
 
         return None
 
-    @classmethod
-    def get_distance_matrix(cls, block_ids: set[str]):
+    def get_distance_matrix(self, block_ids: set[str]):
         # Take a snapshot of the block distances
-        snapshot = BlockDistancesSnapshot(cls._db.get_all_dict(BLOCK_DISTANCE_MATRIX_DB_IDX))
+        snapshot = BlockDistancesSnapshot(self._db.get_all_dict(BLOCK_DISTANCE_MATRIX_DB_IDX))
 
         matrix = np.empty((len(block_ids), len(block_ids)), dtype=np.float32)
         with tqdm(

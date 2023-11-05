@@ -89,13 +89,10 @@ for place in place_ids:
 print("Found {} blocks".format(len(block_ids)))
 
 # Generate node distance matrix
-NodeDistances(block_ids=block_ids, skip_update=True)
+node_distances = NodeDistances(block_ids=block_ids, skip_update=True)
 
 # Generate block distance matrix
-BlockDistances(block_ids=block_ids, skip_update=True)
-
-# Initialize calculator for mixed distances
-MixDistances()
+block_distances = BlockDistances(block_ids=block_ids, node_distances=node_distances, skip_update=True)
 
 "-------------------------------------------------------------------------------------------------------"
 "                                      Cluster                                                          "
@@ -103,7 +100,7 @@ MixDistances()
 " Clusters are used for partitioning the space into more reasonable and optimizable areas               "
 "-------------------------------------------------------------------------------------------------------"
 # region Cluster
-distance_matrix = BlockDistances.get_distance_matrix(block_ids=block_ids)
+distance_matrix = block_distances.get_distance_matrix(block_ids=block_ids)
 
 if os.path.exists(clustering_pickle_file):
     clustered = pickle.load(open(clustering_pickle_file, "rb"))
@@ -202,7 +199,7 @@ else:
 
     centers: list[Point] = []
     print("Getting centers for {} clusters".format(len(clustered_blocks)))
-    node_distance_snapshot = NodeDistances.snapshot()
+    node_distance_snapshot = node_distances.snapshot()
     for cluster in clustered_blocks:
         insertections: list[Point] = cluster_to_intersections(cluster)
 
@@ -284,10 +281,12 @@ match PROBLEM_TYPE:
                 unique_intersection_ids.add(pt_id(new_pt))
 
         # Generate the house distance matrix
-        HouseDistances(block_ids=list(area_blocks.keys()))
+        house_distances = HouseDistances(block_ids=list(area_blocks.keys()), node_distances=node_distances)
+
+        mix_distances = MixDistances(node_distances=node_distances, house_distances=house_distances)
 
         # Create the optimizer
-        optimizer = TurfSplit(houses=area, depots=depots, num_lists=NUM_LISTS)
+        optimizer = TurfSplit(houses=area, depots=depots, num_lists=NUM_LISTS, mix_distances=mix_distances)
 
     case Problem_Types.group_canvas:
         # try:
@@ -304,16 +303,21 @@ match PROBLEM_TYPE:
             type=NodeType.other,
             id="depot",
         )
-        HouseDistances(block_ids=list(area_blocks.keys()), depot=depot)
+        house_distances = HouseDistances(block_ids=list(area_blocks.keys()), depot=depot, node_distances=node_distances)
 
-        optimizer = GroupCanvas(houses=area, depot=depot, num_lists=NUM_LISTS)
-        optimizer.build_problem()
+        mix_distances = MixDistances(node_distances=node_distances, house_distances=house_distances)
+
+        optimizer = GroupCanvas(houses=area, depot=depot, num_lists=NUM_LISTS, mix_distances=mix_distances)
 
     case Problem_Types.completed_group_canvas:
-        HouseDistances(block_ids=list(area_blocks.keys()))
+        house_distances = HouseDistances(block_ids=list(area_blocks.keys()), node_distances=node_distances)
+
+        mix_distances = MixDistances(node_distances=node_distances, house_distances=house_distances)
 
         # The problem is created and ran at "optimize"-time
-
+    case _:
+        print(colored("Invalid problem type", color="red"))
+        sys.exit(1)
 
 "-----------------------------------------------------------------------------------------"
 "                                      Optimize                                           "
@@ -345,7 +349,7 @@ match PROBLEM_TYPE:
             os.makedirs(viz_dir, exist_ok=True)
             os.makedirs(problem_dir, exist_ok=True)
 
-            optimizer = CompletedGroupCanvas(houses=cluster, depot=center)
+            optimizer = CompletedGroupCanvas(houses=cluster, depot=center, mix_distances=mix_distances)
             optimizer.optimize()
 
             pickle.dump(
@@ -369,6 +373,7 @@ match PROBLEM_TYPE:
                 solution=solution,
                 optimizer_points=optimizer.points,
                 place_ids=place_ids,
+                mix_distances=mix_distances,
                 viz_path=viz_dir,
                 id=str(i),
             )
@@ -408,4 +413,5 @@ process_solution(
     solution=solution,
     optimizer_points=optimizer_points,
     place_ids=place_ids,
+    mix_distances=mix_distances
 )
