@@ -8,6 +8,7 @@ from src.config import (
     DIFFERENT_BLOCK_COST,
     DIFFERENT_SIDE_COST,
     DISTANCE_TO_ROAD_MULTIPLIER,
+    MAX_STORAGE_DISTANCE,
     USE_COST_METRIC,
     AnyPoint,
     Block,
@@ -51,6 +52,23 @@ def unstore(value: int) -> tuple[int, int]:
         (int, int): a tuple of the distance and cost encoded by this value
     """
     return (value // 10000, value % 10000)
+
+
+class HouseDistancesSnapshot:
+    def __init__(self, snapshot: dict[str, str]):
+        self.snapshot = snapshot
+
+    def get_distance(self, p1: AnyPoint, p2: AnyPoint) -> Optional[tuple[float, float]]:
+        p1_id, p2_id = pt_id(p1), pt_id(p2)
+        id_pair_1, id_pair_2 = generate_place_id_pair(p1_id, p2_id), generate_place_id_pair(
+            p2_id, p1_id
+        )
+
+        if id_pair_1 in self.snapshot:
+            return unstore(int(self.snapshot[id_pair_1]))
+        if id_pair_2 in self.snapshot:
+            return unstore(int(self.snapshot[id_pair_2]))
+        return None
 
 
 class HouseDistances(metaclass=Singleton):
@@ -120,7 +138,7 @@ class HouseDistances(metaclass=Singleton):
                         distance += distance_to_road
 
                 if not USE_COST_METRIC:
-                    self._db_write_buffer[generate_place_id_pair(id_1, id_2)] = str(round(distance))
+                    self._db_write_buffer[generate_place_id_pair(id_1, id_2)] = str(store(round(distance), 0))
                 else:
                     cost = 0
                     if info_1["side"] != info_2["side"]:
@@ -153,7 +171,7 @@ class HouseDistances(metaclass=Singleton):
         end_distances = [d for d in end_distances if d is not None]
 
         # If this pair is too far away, don't add to the table.
-        if len(end_distances) != 4 or min(end_distances) > self.MAX_STORAGE_DISTANCE:
+        if len(end_distances) != 4 or min(end_distances) > MAX_STORAGE_DISTANCE:
             return
 
         # Iterate over every possible pair of houses
@@ -221,7 +239,6 @@ class HouseDistances(metaclass=Singleton):
                     progress.update()
 
     def __init__(self, block_ids: list[str], node_distances: NodeDistances, depot: Optional[Point] = None):
-        self.MAX_STORAGE_DISTANCE = 1600
         self._db = Database()
         self._db_write_buffer: dict[str, str] = {}
 
@@ -264,10 +281,21 @@ class HouseDistances(metaclass=Singleton):
 
         pair_1_r = self._db.get_str(pair_1, HOUSE_DISTANCE_MATRIX_DB_IDX)
         if pair_1_r is not None:
-            return unstore(int(pair_1_r)) if USE_COST_METRIC else int(pair_1_r)
+            return unstore(int(pair_1_r))
 
         pair_2_r = self._db.get_str(pair_2, HOUSE_DISTANCE_MATRIX_DB_IDX)
         if pair_2_r is not None:
-            return unstore(int(pair_2_r)) if USE_COST_METRIC else int(pair_2_r)
+            return unstore(int(pair_2_r))
 
         return None
+
+    def snapshot(self) -> HouseDistancesSnapshot:
+        """
+        Get a snapshot of the current house distances table
+
+        Returns
+        -------
+            HouseDistancesSnapshot: a snapshot of the current house distances table
+        """
+        snapshot = self._db.get_all_str(HOUSE_DISTANCE_MATRIX_DB_IDX)
+        return HouseDistancesSnapshot(snapshot)

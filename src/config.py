@@ -52,6 +52,7 @@ default_distances_path = os.path.join(BASE_DIR, "optimize", "distances.json")
 
 details_file = os.path.join(region_dir, "details.json")
 files_dir = os.path.join(region_dir, "files")
+vizs_dir = os.path.join(region_dir, "vizs")
 
 # Global input files
 street_view_failed_uuids_file = os.path.join(
@@ -149,7 +150,7 @@ SEARCH_MODE_DEEP = False
 TIMEOUT = timedelta(seconds=100)
 
 Problem_Types = Enum("Problem", ["turf_split", "group_canvas", "completed_group_canvas"])
-PROBLEM_TYPE = Problem_Types.group_canvas
+PROBLEM_TYPE = Problem_Types.turf_split
 
 
 "----------------------------------------------------------------------------------"
@@ -171,6 +172,8 @@ CLUSTERING_CONNECTED_THRESHOLD = 100  # Meters where blocks are connected
 DISTANCE_TO_ROAD_MULTIPLIER = 0.5
 ALD_BUFFER = 150  # Meters after a block ends where a house is still on the block
 DIFFERENT_BLOCK_COST = 25
+
+MAX_STORAGE_DISTANCE = 1600
 
 # Number of meters to store if nodes are too far away from each other
 NODE_TOO_FAR_DISTANCE = 10000
@@ -223,8 +226,14 @@ def generate_pt_id(*args, **kwargs) -> str:
         lat = args[0]
         lon = args[1]
     elif len(args) == 1:
-        lat = args[0]["lat"]
-        lon = args[0]["lon"]
+        if "lat" in args[0] and "lon" in args[0]:
+            lat = args[0]["lat"]
+            lon = args[0]["lon"]
+        elif "latitude" in args[0] and "longitude" in args[0]:
+            lat = args[0]["latitude"]
+            lon = args[0]["longitude"]
+        else:
+            raise ValueError("Either lat/lon or pt must be provided")
     else:
         raise ValueError("Either lat/lon or pt must be provided")
     return str("{:.7f}".format(lat)) + ":" + str("{:.7f}".format(lon))

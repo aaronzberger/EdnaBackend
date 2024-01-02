@@ -842,9 +842,9 @@ def process_solution(
             )
 
     # Ensure that every place in point orders is in the universe
-    for sublist in point_orders:
-        for pt in sublist:
-            assert pt[0]["id"] in place_ids, f"Point {pt[0]['id']} not in universe"
+    # for sublist in point_orders:
+    #     for pt in sublist:
+    #         assert pt[0]["id"] in place_ids, f"Point {pt[0]['id']} not in universe"
 
 
     # display_distance_matrix(

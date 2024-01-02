@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
 
-setup(name='WLC', version='0.0', description='Generate better walk lists, faster',
-      author='Aaron Berger & Benjamin Tarr', author_email='aaronzberger@gmail.com',
-      url='https://github.com/aaronzberger/WLC', packages=find_packages())
+setup(name='EdnaBackend', version='0.0', description='Generate better walk lists',
+      author='Aaron Berger', author_email='aaronberger@college.harvard.edu',
+      url='https://github.com/aaronzberger/EdnaBackend', packages=find_packages())

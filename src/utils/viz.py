@@ -14,6 +14,7 @@ import folium
 import humanhash
 import matplotlib
 from folium.features import DivIcon
+from nptyping import NDArray
 from termcolor import colored
 from tqdm import tqdm
 
@@ -38,40 +39,6 @@ from src.utils.gps import SubBlock
 from src.utils.db import Database
 
 
-def generate_starter_map(
-    blocks: Optional[blocks_file_t] = None,
-    lats: Optional[list[float]] = None,
-    lons: Optional[list[float]] = None,
-) -> folium.Map:
-    # Store all the latitudes and longitudes
-    if lats is None and lons is None and blocks is not None:
-        lats = list(
-            itertools.chain.from_iterable(
-                (i["nodes"][0]["lat"], i["nodes"][-1]["lat"]) for i in blocks.values()
-            )
-        )
-        lons = list(
-            itertools.chain.from_iterable(
-                (i["nodes"][0]["lon"], i["nodes"][-1]["lon"]) for i in blocks.values()
-            )
-        )
-    # Check if it's not the only other possible correct arguments
-    elif not ((lats is not None and lons is not None) and blocks is None):
-        raise RuntimeError(
-            "Must pass either 'lats' and 'lons' argument, or 'segments', not both or neither"
-        )
-
-    if len(lats) == 0:
-        raise RuntimeError(
-            "Unable to create map with no coordinates. Passed in data had no points."
-        )
-
-    return folium.Map(
-        location=[(min(lats) + max(lats)) / 2, (min(lons) + max(lons)) / 2],
-        # zoom_start=30
-    )
-
-
 class ColorMap:
     def __init__(self, min: float, max: float, cmap: str = "hsv"):
         self.norm = matplotlib.colors.Normalize(vmin=min, vmax=max)
@@ -88,9 +55,7 @@ class ColorMap:
 
 
 def display_targeting_voters(voters):
-    lats = [v.coords["lat"] for v in voters if v != -1]
-    lons = [v.coords["lon"] for v in voters if v != -1]
-    m = generate_starter_map(lats=lats, lons=lons)
+    m = folium.Map()
 
     for voter in voters:
         if voter.coords["lat"] == -1 or voter.coords["lon"] == -1:
@@ -185,9 +150,7 @@ def display_blocks() -> set[tuple[float, float]]:
 def display_visited_and_unvisited(
     visited: list[Point], unvisited: list[Point], tooltips: dict[str, str]
 ) -> folium.Map:
-    lats = [i["lat"] for i in visited]
-    lons = [i["lon"] for i in visited]
-    m = generate_starter_map(lats=lats, lons=lons)
+    m = folium.Map()
 
     for pt in visited:
         folium.Marker(
@@ -270,10 +233,8 @@ def display_clustered_blocks(
     m.save(os.path.join(BASE_DIR, "viz", "clusters.html"))
 
 
-def display_distance_matrix(points: list[Point], distances_file: str) -> folium.Map:
-    lats = [i["lat"] for i in points]
-    lons = [i["lon"] for i in points]
-    m = generate_starter_map(lats=lats, lons=lons)
+def display_distance_matrix_from_file(points: list[Point], distances_file: str) -> folium.Map:
+    m = folium.Map()
 
     distances = json.load(open(distances_file))
 
@@ -283,7 +244,7 @@ def display_distance_matrix(points: list[Point], distances_file: str) -> folium.
 
     for i, p1 in enumerate(points):
         for j, p2 in enumerate(points):
-            # Skip 9 out of every 10 elements randomly
+            # Skip most of the lines
             if randint(0, 19) != 0:
                 continue
             if i == j:
@@ -297,6 +258,31 @@ def display_distance_matrix(points: list[Point], distances_file: str) -> folium.
                 tooltip=distance,
             ).add_to(m)
 
+    m.fit_bounds(m.get_bounds())
+
+    return m
+
+
+def display_distance_matrix(points: list[Point], distances: NDArray) -> folium.Map:
+    m = folium.Map()
+
+    for i, p1 in enumerate(tqdm(points)):
+        for j, p2 in enumerate(points):
+            # Skip most of the lines
+            if randint(0, 299) != 0:
+                continue
+            if i == j:
+                continue
+            distance = distances[i][j]
+            folium.PolyLine(
+                [[p1["lat"], p1["lon"]], [p2["lat"], p2["lon"]]],
+                weight=5,
+                color="red",
+                opacity=0.5,
+                tooltip=distance,
+            ).add_to(m)
+
+    m.fit_bounds(m.get_bounds())
     return m
 
 
@@ -318,9 +304,7 @@ def display_house_orders(
     -------
         A folium map with the house orders displayed.
     """
-    lats = [i["lat"] for walk_list in walk_lists for i in walk_list]
-    lons = [i["lon"] for walk_list in walk_lists for i in walk_list]
-    m = generate_starter_map(lats=lats, lons=lons)
+    m = folium.Map()
 
     if cmap is None:
         cmap = ColorMap(0, len(walk_lists) - 1, cmap="tab10")

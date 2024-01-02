@@ -5,6 +5,7 @@ from tqdm import tqdm
 
 from src.config import (
     BLOCK_DB_IDX,
+    MAX_STORAGE_DISTANCE,
     NODE_DISTANCE_MATRIX_DB_IDX,
     AnyPoint,
     Point,
@@ -64,7 +65,7 @@ class NodeDistances(metaclass=Singleton):
         distance = great_circle_distance(node_1, node_2)
 
         # Only calculate and insert the routed distance if needed
-        if distance <= self.MAX_STORAGE_DISTANCE:
+        if distance <= MAX_STORAGE_DISTANCE:
             self._db.set_str(
                 generate_pt_id_pair(generate_pt_id(node_1), generate_pt_id(node_2)),
                 str(get_distance(node_1, node_2)),
@@ -95,7 +96,6 @@ class NodeDistances(metaclass=Singleton):
                     progress.update()
 
     def __init__(self, block_ids: set[str], skip_update: bool = False):
-        self.MAX_STORAGE_DISTANCE = 1600
         self._db = Database()
         if skip_update:
             return

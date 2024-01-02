@@ -67,7 +67,10 @@ RUN pip install --no-cache-dir\
     names\
     redis[hiredis]\
     typing_extensions\
-    pandas
+    ortools\
+    pandas\
+    boto3\
+    python-dotenv
 
 # set up default locale
 RUN locale-gen en_US.UTF-8

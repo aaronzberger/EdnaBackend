@@ -27,6 +27,8 @@ from src.optimize.completed_group_canvas import CompletedGroupCanvas
 from src.optimize.group_canvas import GroupCanvas
 from src.optimize.optimizer import Optimizer
 from src.optimize.turf_split import TurfSplit
+from src.optimize.turf_split_or_tools import TurfSplitORTools
+from src.optimize.turf_split_testing import TurfSplitTesting
 from src.post_processing.post_process import process_solution
 from src.utils.db import Database
 from src.utils.viz import display_clustered_blocks
@@ -185,7 +187,7 @@ else:
         cluster_to_places(c) for c in clustered_blocks
     ]
 
-    print("179: Total of {} points".format(sum([len(c) for c in clustered_points])))
+    print("Total of {} points".format(sum([len(c) for c in clustered_points])))
 
     # Print the clusters with too few houses
     for i, cluster in enumerate(clustered_points):
@@ -246,7 +248,7 @@ else:
 # Use all blocks as a single area
 # areas = [i for i in range(len(clustered_blocks))]
 
-areas = [63]
+areas = [6]
 area = clustered_points[areas[0]]
 area_blocks = deepcopy(clustered_blocks[areas[0]])
 for i in range(1, len(areas)):
@@ -286,7 +288,14 @@ match PROBLEM_TYPE:
         mix_distances = MixDistances(node_distances=node_distances, house_distances=house_distances)
 
         # Create the optimizer
-        optimizer = TurfSplit(houses=area, depots=depots, num_lists=NUM_LISTS, mix_distances=mix_distances)
+        # optimizer = TurfSplit(houses=area, depots=depots, num_lists=NUM_LISTS, mix_distances=mix_distances)
+
+        optimizer = TurfSplitORTools(houses=area, depots=depots, num_lists=NUM_LISTS, mix_distances=mix_distances)
+
+        # optimizer = TurfSplitTesting(houses=area, depots=depots, num_lists=NUM_LISTS, mix_distances=mix_distances)
+
+        # TODO: Remove this to get post_init automatically calling
+        optimizer.build_problem()
 
     case Problem_Types.group_canvas:
         # try:
@@ -383,7 +392,15 @@ match PROBLEM_TYPE:
             sys.exit(1)
         if not args.no_optimize:
             optimizer.optimize()
-            solution = optimizer.process_solution(default_solution_path)
+            solution = optimizer.translate_solution()
+            # solution = optimizer.process_solution(default_solution_path)
+
+            process_solution(
+                solution=solution,
+                optimizer_points=optimizer.points,
+                place_ids=place_ids,
+                mix_distances=mix_distances
+            )
 
             if solution is None:
                 print(colored("Failed to generate lists", color="red"))
@@ -406,7 +423,7 @@ match PROBLEM_TYPE:
 optimizer_points = pickle.load(open(optimizer_points_pickle_file, "rb"))
 
 # Load the solution file
-solution: Solution = Optimizer.process_solution(default_solution_path)
+# solution: Solution = Optimizer.process_solution(default_solution_path)
 
 # Process the solution
 process_solution(

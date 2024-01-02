@@ -5,7 +5,7 @@ ERR='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m'
 
-CONTAINER_NAME=WLC
+CONTAINER_NAME=EdnaBackend
 OSRM_CONTAINER_NAME=osrm_container
 
 if docker ps -a | grep $CONTAINER_NAME
@@ -59,4 +59,4 @@ fi
 
 echo "Starting container with name $tag"
 # docker run -it --platform $platform --rm --privileged --net=bridge --name=$CONTAINER_NAME --security-opt seccomp=unconfined -v "$(pwd):/home/user/$destdir" -w "/home/user/$destdir" $tag
-docker run -it --platform $platform --rm --privileged --net falcon_backend --name=$CONTAINER_NAME --security-opt seccomp=unconfined -v /var/run/docker.sock:/var/run/docker.sock -v "$(pwd):/home/user/$destdir" -w "/home/user/$destdir" $tag
+docker run -it --platform $platform --rm --privileged --net edna --name=$CONTAINER_NAME --security-opt seccomp=unconfined -v /var/run/docker.sock:/var/run/docker.sock -v "$(pwd):/home/user/$destdir" -w "/home/user/$destdir" $tag
