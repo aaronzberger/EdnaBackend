@@ -215,14 +215,14 @@ class HouseDistances(metaclass=Singleton):
             else:
                 self._db_write_buffer[generate_place_id_pair(id_1, id_2)] = str(store(round(distance), 0))
 
-    def _update(self, blocks: dict[str, Block], depot: Optional[Point] = None):
+    def _update(self, blocks: dict[str, Block], depots: Optional[list[Point]] = None):
         """
         Update the block distance table by adding any missing blocks
 
         Parameters
         ----------
             blocks (dict[str, Block]): the blocks to confirm are in the table, and to add if they are not
-            depot (Optional[Point]): the depot to add to the table
+            depots (Optional[list[Point]]): the depots to add to the table
 
         Notes
         -----
@@ -232,17 +232,20 @@ class HouseDistances(metaclass=Singleton):
             total=len(blocks) ** 2, desc="Updating houses", unit="pairs", colour="green"
         ) as progress:
             for b1_id, b1 in blocks.items():
-                if depot is not None:
-                    self._insert_point(depot, b1)
+                if depots is not None:
+                    for depot in depots:
+                        self._insert_point(depot, b1)
                 for b2_id, b2 in blocks.items():
                     self._insert_pair(b1, b1_id, b2, b2_id)
                     progress.update()
 
-    def __init__(self, block_ids: list[str], node_distances: NodeDistances, depot: Optional[Point] = None):
+    def __init__(self, block_ids: list[str], node_distances: NodeDistances, depots: Optional[list[Point]] = None):
         self._db = Database()
         self._db_write_buffer: dict[str, str] = {}
 
+        # To speed up runtime retrieval, take a snapshot of the node distances object
         self._node_distances_snapshot = node_distances.snapshot()
+
         blocks: dict[str, Block] = {}
         for block_id in block_ids:
             block = self._db.get_dict(block_id, BLOCK_DB_IDX)
@@ -254,7 +257,7 @@ class HouseDistances(metaclass=Singleton):
 
             blocks[block_id] = block
 
-        self._update(blocks, depot)
+        self._update(blocks, depots)
 
         # Write any changes in the buffer
         self._db.set_multiple_str(self._db_write_buffer, HOUSE_DISTANCE_MATRIX_DB_IDX)

@@ -3,26 +3,56 @@ import os
 import uuid
 from datetime import timedelta
 from enum import Enum
-from typing import Any, Literal, TypedDict
+from typing import Literal, TypedDict
 from typing_extensions import NotRequired
+import json
+
+BASE_DIR = os.path.abspath(os.path.join(__file__, "../../"))
+
+"----------------------------------------------------------------------------------"
+"                             Problem Parameters                                   "
+"----------------------------------------------------------------------------------"
+
+problem_path = os.path.join(BASE_DIR, "problem.json")
+problem_params = json.load(open(problem_path))
+
+assert "campaign_id" in problem_params
+CAMPAIGN_ID = problem_params["campaign_id"]
+
+Problem_Types = Enum("Problem", ["turf_split", "group_canvas"])
+
+PROBLEM_TYPE = Problem_Types.group_canvas if "depot" in problem_params else Problem_Types.turf_split
+
+assert "num_lists" in problem_params and int(problem_params["num_lists"])
+NUM_LISTS = problem_params["num_lists"]
+
+if PROBLEM_TYPE == Problem_Types.turf_split:
+    assert "depot" not in problem_params, \
+        "For turf_split, do not provide any depots. They are decided by optimality at runtime"
+elif PROBLEM_TYPE == Problem_Types.group_canvas:
+    assert "depot" in problem_params and len(problem_params["depot"]) == NUM_LISTS, \
+        "For group_canvas, you must provide a list of depots of the same length as num_lists"
+    DEPOTS = problem_params["depot"]
+
+assert "timeout_s" in problem_params and int(problem_params["timeout_s"])
+TIMEOUT = timedelta(seconds=problem_params["timeout_s"])
+
+assert "super_clustering" in problem_params and bool(problem_params["super_clustering"])
+SUPER_CLUSTERING = problem_params["super_clustering"]
 
 "----------------------------------------------------------------------------------"
 "                                     File Paths                                   "
 "----------------------------------------------------------------------------------"
 
-
-BASE_DIR = os.path.abspath(os.path.join(__file__, "../../"))
-VRP_CLI_PATH = "/home/user/.cargo/bin/vrp-cli"
-
-CAMPAIGN_NAME = "rosselli"
+# NOTE: Right now, there's no standardized way to map campaign id to a physical area
+# This may not need to be solved, if we end up processing entire states and such in advance.
 AREA_BBOX = [40.5147085, -80.2215597, 40.6199697, -80.0632736]
 
-USE_COST_METRIC = False
 STYLE_COLOR = "#0F6BF5"
 
 street_suffixes_file = os.path.join(BASE_DIR, "src", "street_suffixes.json")
 
-region_dir = os.path.join(BASE_DIR, "regions", CAMPAIGN_NAME)
+region_dir = os.path.join(BASE_DIR, "regions", CAMPAIGN_ID)
 input_dir = os.path.join(region_dir, "input")
 
 # Per-region input files
@@ -64,7 +94,6 @@ turnout_predictions_file = os.path.join(
 )
 
 VIZ_PATH = os.path.join(BASE_DIR, "viz")
-# PROBLEM_PATH = os.path.join(VIZ_PATH, "problem")
 
 "----------------------------------------------------------------------------------"
 "                                     Database                                     "
@@ -87,6 +116,8 @@ TESTING_DB_IDX = 11
 "----------------------------------------------------------------------------------"
 "                               Problem Parameters                                 "
 "----------------------------------------------------------------------------------"
+
+USE_COST_METRIC = False
 
 
 def sigmoid(x: float, k: float, a: float) -> float:
@@ -138,19 +169,6 @@ class Singleton(type):
         if cls._instance is None:
             cls._instance = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instance
-
-
-"----------------------------------------------------------------------------------"
-"                             Optimization Parameters                              "
-"----------------------------------------------------------------------------------"
-NUM_LISTS = 3
-DEPOT = "107503392"
-
-SEARCH_MODE_DEEP = False
-TIMEOUT = timedelta(seconds=100)
-
-Problem_Types = Enum("Problem", ["turf_split", "group_canvas", "completed_group_canvas"])
-PROBLEM_TYPE = Problem_Types.turf_split
 
 
 "----------------------------------------------------------------------------------"
@@ -402,171 +420,3 @@ class HouseOutput(TypedDict):
 
 
 voters_file_t = dict[str, HousePeople]
-
-
-"----------------------------------------------------------------------------------"
-"                                 Solution Type Hints                              "
-"----------------------------------------------------------------------------------"
-
-
-class Statistic(TypedDict):
-    cost: float
-    distance: float
-    duration: float
-    times: dict[str, int]
-
-
-class Location(TypedDict):
-    index: int
-
-
-class Time(TypedDict):
-    arrival: str
-    departure: str
-
-
-class Stop(TypedDict):
-    location: Location
-    time: Time
-    distance: int
-    load: list[int]
-    activities: list[dict[str, str]]
-
-
-class Tour(TypedDict):
-    vehicleId: str
-    typeId: str
-    shiftIndex: int
-    stops: list[Stop]
-
-
-class Solution(TypedDict):
-    statistic: Statistic
-    tours: list[Tour]
-    unassigned: list[Any]
-
-
-"----------------------------------------------------------------------------------"
-"                                  Problem Type Hints                              "
-"----------------------------------------------------------------------------------"
-
-
-class Profile(TypedDict):
-    matrix: str
-
-
-class Costs(TypedDict):
-    fixed: int
-    distance: int
-    time: int
-
-
-class ShiftStart(TypedDict):
-    earliest: str
-    location: Location
-
-
-class ShiftEnd(TypedDict):
-    latest: str
-    location: Location
-
-
-class Shift(TypedDict):
-    start: ShiftStart
-    end: ShiftEnd
-
-
-class Limit(TypedDict):
-    max: int
-    start: str
-    end: str
-
-
-class Dispatch(TypedDict):
-    location: Location
-    limits: list[Limit]
-
-
-class ShiftDispatch(TypedDict):
-    start: ShiftStart
-    dispatch: list[Dispatch]
-
-
-class VehicleLimits(TypedDict):
-    shiftTime: int
-    maxDistance: int
-
-
-class Vehicle(TypedDict):
-    typeId: str
-    vehicleIds: list[str]
-    profile: Profile
-    costs: Costs
-    shifts: list[Shift]
-    capacity: list[int]
-    limits: VehicleLimits
-
-
-class VehicleProfile(TypedDict):
-    name: str
-
-
-class Fleet(TypedDict):
-    vehicles: list[Vehicle]
-    profiles: list[VehicleProfile]
-
-
-class PlaceTW(TypedDict):
-    location: Location
-    duration: int
-    times: list[list[str]]
-
-
-class Place(TypedDict):
-    location: Location
-    duration: int
-
-
-class Service(TypedDict):
-    places: list[PlaceTW | Place]
-
-
-class Job(TypedDict):
-    id: str
-    services: list[Service]
-    value: int
-
-
-class Plan(TypedDict):
-    jobs: list[Job]
-
-
-class Objective(TypedDict):
-    type: str
-
-
-class Problem(TypedDict):
-    plan: Plan
-    fleet: Fleet
-    objectives: list[list[Objective]]
-
-
-class DistanceMatrix(TypedDict):
-    profile: str
-    travelTimes: list[int]
-    distances: list[int]
-
-
-"----------------------------------------------------------------------------------"
-"                             Optimization Parameters                              "
-"----------------------------------------------------------------------------------"
-OPTIM_COSTS = Costs(fixed=0, distance=3, time=1)
-
-OPTIM_OBJECTIVES = [
-    [Objective(type="maximize-value")],
-    [Objective(type="minimize-cost")],
-]
-
-# OPTIM_OBJECTIVES = [
-#     [Objective(type="maximize-value")],
-# ]

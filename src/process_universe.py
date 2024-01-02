@@ -18,7 +18,7 @@ from tqdm import tqdm
 
 from src.associate import Associater
 from src.config import (
-    CAMPAIGN_NAME,
+    CAMPAIGN_ID,
     CAMPAIGN_SUBSET_DB_IDX,
     PLACE_DB_IDX,
     VOTER_DB_IDX,
@@ -46,7 +46,7 @@ def handle_universe_file(universe_file: str, turnouts: dict[str, float]):
     associater = Associater()
 
     # Clear this campaign's subset of the database
-    db.delete(CAMPAIGN_NAME, CAMPAIGN_SUBSET_DB_IDX)
+    db.delete(CAMPAIGN_ID, CAMPAIGN_SUBSET_DB_IDX)
 
     def add_voter(universe_row: dict, place: str, custom_unit_num: Optional[str]):
         """
@@ -63,7 +63,7 @@ def handle_universe_file(universe_file: str, turnouts: dict[str, float]):
             bool: whether or not the voter was added
         """
         voter_id = universe_row["ID Number"]
-        if db.is_in_set(CAMPAIGN_NAME, voter_id, CAMPAIGN_SUBSET_DB_IDX):
+        if db.is_in_set(CAMPAIGN_ID, voter_id, CAMPAIGN_SUBSET_DB_IDX):
             # This also means the voter has been accounted for in the place and block databases
             return False
 
@@ -157,7 +157,7 @@ def handle_universe_file(universe_file: str, turnouts: dict[str, float]):
         db.set_dict(voter_id, dict(person), VOTER_DB_IDX)
 
         # Add voter to this campaign
-        db.add_to_set(CAMPAIGN_NAME, voter_id, CAMPAIGN_SUBSET_DB_IDX)
+        db.add_to_set(CAMPAIGN_ID, voter_id, CAMPAIGN_SUBSET_DB_IDX)
 
         # Add the voter to the place
         db.set_dict(place, semantic_house_info, PLACE_DB_IDX)

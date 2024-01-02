@@ -7,34 +7,6 @@ from src.distances.mix import MixDistances
 from src.optimize.optimizer import Optimizer, ProblemInfo
 
 
-def distance_matrix_subset(distance_matrix, selected_indices):
-    """
-    Given a distance matrix, return a subset of the distance matrix
-    corresponding to the selected indices
-
-    Parameters
-    ----------
-        distance_matrix (list): a list of lists, where each sublist is a row of the distance matrix
-        selected_indices (list): a list of indices to keep
-
-    Returns
-    -------
-        subset_distance_matrix (list): a list of lists, where each sublist is a row of the distance matrix
-    """
-    subset_distance_matrix = []
-
-    # Remove the extra rows
-    subset_distance_matrix = [distance_matrix[i] for i in selected_indices]
-
-    # Remove the extra columns
-    for i in range(len(subset_distance_matrix)):
-        subset_distance_matrix[i] = [
-            subset_distance_matrix[i][j] for j in selected_indices
-        ]
-
-    return subset_distance_matrix
-
-
 class TurfSplit(Optimizer):
     def __init__(
         self,

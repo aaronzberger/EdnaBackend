@@ -8,7 +8,7 @@ from copy import deepcopy
 from termcolor import colored
 
 from src.config import (
-    CAMPAIGN_NAME,
+    CAMPAIGN_ID,
     default_distances_path,
     PROBLEM_TYPE,
     Person,
@@ -830,7 +830,7 @@ def process_solution(
     mix_distances: MixDistances,
     viz_path: str = VIZ_PATH,
     distances_path: str = default_distances_path,
-    id: str = CAMPAIGN_NAME,
+    id: str = CAMPAIGN_ID,
 ):
     point_orders: list[list[tuple[Point, int]]] = []
 
@@ -887,7 +887,7 @@ def process_solution(
 
         walk_lists.append(post_processor.post_process(tour))
 
-        list_id = f"{CAMPAIGN_NAME}-{id}-{i}"
+        list_id = f"{CAMPAIGN_ID}-{id}-{i}"
         if list_id in details:
             print(colored(f"Warning: List {list_id} already exists in details"))
 
@@ -919,14 +919,14 @@ def process_solution(
 
     list_visualizations = display_individual_walk_lists(walk_lists)
     for i, walk_list in enumerate(list_visualizations):
-        walk_list.save(os.path.join(viz_path, f"{CAMPAIGN_NAME}-{id}-{i}.html"))
+        walk_list.save(os.path.join(viz_path, f"{CAMPAIGN_ID}-{id}-{i}.html"))
 
     form = json.load(
-        open(os.path.join("regions", CAMPAIGN_NAME, "input", "form.json"), "r")
+        open(os.path.join("regions", CAMPAIGN_ID, "input", "form.json"), "r")
     )
 
     for i in range(len(walk_lists)):
-        list_id = f"{CAMPAIGN_NAME}-{id}-{i}"
+        list_id = f"{CAMPAIGN_ID}-{id}-{i}"
         post_processor.generate_file(
             walk_lists[i],
             os.path.join(viz_path, f"{list_id}.json"),
