@@ -1,23 +1,8 @@
-from src.config import (
-    MAX_TOURING_TIME,
-    TIME_AT_HOUSE,
-    OPTIM_OBJECTIVES,
-    WALKING_M_PER_S,
-    DistanceMatrix,
-    Job,
-    Location,
-    NodeType,
-    PlaceTW,
-    Plan,
-    Point,
-    Problem,
-    Service,
-    pt_id,
-)
+from ortools.constraint_solver import pywrapcp, routing_enums_pb2
+
+from src.config import MAX_TOURING_TIME, TIME_AT_HOUSE, WALKING_M_PER_S, Point
 from src.distances.mix import MixDistances
 from src.optimize.optimizer import Optimizer, ProblemInfo
-
-from ortools.constraint_solver import pywrapcp, routing_enums_pb2
 
 
 class GroupCanvas(Optimizer):
@@ -36,7 +21,6 @@ class GroupCanvas(Optimizer):
         super().__init__(mix_distances=mix_distances)
 
         self.points = depots + houses
-        self.start_idx = 0
 
         num_depots = len(depots)
 

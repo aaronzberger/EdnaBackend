@@ -164,6 +164,7 @@ UUID_NAMESPACE = uuid.UUID("ccf207c6-3b15-11ee-be56-0242ac120002")
 # Maximum distance between two nodes where they should be stored
 ARBITRARY_LARGE_DISTANCE = 10000
 MAX_TOURING_TIME = timedelta(minutes=180)
+TIME_AT_HOUSE = timedelta(minutes=1.5)
 MAX_TOURING_DISTANCE = 10000
 WALKING_M_PER_S = 1.2
 MINS_PER_HOUSE = 1.5
