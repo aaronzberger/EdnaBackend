@@ -38,7 +38,7 @@ from src.distances.nodes import NodeDistances
 from src.optimize.group_canvas import GroupCanvas
 from src.optimize.optimizer import Optimizer
 from src.optimize.turf_split import TurfSplit
-from src.post_processing.post_process import process_solution
+# from src.post_processing.post_process import process_solution
 from src.utils.db import Database
 from src.utils.viz import display_clustered_blocks
 
@@ -105,11 +105,23 @@ for place in place_ids:
 print(f"Found {len(block_ids)} blocks")
 
 # Generate node distance matrix
-node_distances = NodeDistances(block_ids=block_ids, skip_update=True)
+node_distances = NodeDistances(
+    block_ids=block_ids, skip_update=True
+)
 
 # Generate block distance matrix
 block_distances = BlockDistances(
     block_ids=block_ids, node_distances=node_distances, skip_update=True
+)
+
+# Generate house distance matrix
+house_distances = HouseDistances(
+    block_ids=block_ids, node_distances=node_distances, skip_update=True
+)
+
+# Generate mix distance matrix
+mix_distances = MixDistances(
+    node_distances=node_distances, house_distances=house_distances
 )
 
 
@@ -128,7 +140,8 @@ def cluster_to_places(cluster: blocks_file_t) -> list[Point]:
     """
     points: list[Point] = []
 
-    for block in cluster.values():
+    for block in cluster:
+        block = db.get_dict(block, BLOCK_DB_IDX)
         # Duplicate addresses from apartments may occur. For now, only insert once
 
         for place_id, place_data in block["places"].items():
@@ -164,7 +177,8 @@ def cluster_to_intersections(cluster: blocks_file_t) -> list[Point]:
     points: list[Point] = []
     inserted_point_ids: set[str] = set()
 
-    for block in cluster.values():
+    for block in cluster:
+        block = db.get_dict(block, BLOCK_DB_IDX)
         for i in [0, -1]:
             if pt_id(block["nodes"][i]) not in inserted_point_ids:
                 points.append(
@@ -306,14 +320,14 @@ for block_id_cluster, place_id_cluster, voter_id_cluster in zip(
         case Problem_Types.turf_split:
             depots: list[Point] = cluster_to_intersections(block_id_cluster)
 
-            # TODO: We're not providing depots here. Is it calling live? If so, provide them here (edit init method of HouseDistances)
-            house_distances = HouseDistances(
-                block_ids=block_id_cluster, node_distances=node_distances, depots=depots
-            )
+            # # TODO: We're not providing depots here. Is it calling live? If so, provide them here (edit init method of HouseDistances)
+            # house_distances = HouseDistances(
+            #     block_ids=block_id_cluster, node_distances=node_distances, depots=depots
+            # )
 
-            mix_distances = MixDistances(
-                node_distances=node_distances, house_distances=house_distances
-            )
+            # mix_distances = MixDistances(
+            #     node_distances=node_distances, house_distances=house_distances
+            # )
 
             optimizer = TurfSplit(
                 houses=abode_points,
@@ -341,15 +355,15 @@ for block_id_cluster, place_id_cluster, voter_id_cluster in zip(
                     )
                 )
 
-            house_distances = HouseDistances(
-                block_ids=block_id_cluster,
-                node_distances=node_distances,
-                depots=depot_points,
-            )
+            # house_distances = HouseDistances(
+            #     block_ids=block_id_cluster,
+            #     node_distances=node_distances,
+            #     depots=depot_points,
+            # )
 
-            mix_distances = MixDistances(
-                node_distances=node_distances, house_distances=house_distances
-            )
+            # mix_distances = MixDistances(
+            #     node_distances=node_distances, house_distances=house_distances
+            # )
 
             optimizer = GroupCanvas(
                 houses=abode_points, depots=depot_points, mix_distances=mix_distances
@@ -367,14 +381,14 @@ for block_id_cluster, place_id_cluster, voter_id_cluster in zip(
     if not args.no_optimize:
         routes: list[list[Point]] = optimizer(debug=True, time_limit_s=60)
 
-        process_solution(
-            solution=solution,
-            optimizer_points=optimizer.points,
-            place_ids=place_ids,
-            mix_distances=mix_distances,
-        )
+        # process_solution(
+        #     routes=routes,
+        #     optimizer_points=optimizer.points,
+        #     place_ids=place_ids,
+        #     mix_distances=mix_distances,
+        # )
 
-        if solution is None:
+        if routes is None:
             print(colored("Failed to generate lists", color="red"))
             sys.exit()
 
@@ -391,13 +405,10 @@ for block_id_cluster, place_id_cluster, voter_id_cluster in zip(
     # Load the optimizer points from pickle
     optimizer_points = pickle.load(open(optimizer_points_pickle_file, "rb"))
 
-    # Load the solution file
-    # solution: Solution = Optimizer.process_solution(default_solution_path)
-
     # Process the solution
-    process_solution(
-        solution=solution,
-        optimizer_points=optimizer_points,
-        place_ids=place_ids,
-        mix_distances=mix_distances,
-    )
+    # process_solution(
+    #     routes=routes,
+    #     optimizer_points=optimizer_points,
+    #     place_ids=place_ids,
+    #     mix_distances=mix_distances,
+    # )

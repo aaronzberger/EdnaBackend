@@ -26,7 +26,7 @@ from src.config import (
 from src.utils.gps import great_circle_distance
 from src.utils.db import Database
 
-SERVER = "http://172.18.0.3:5000"
+SERVER = "http://172.19.0.3:5000"
 
 
 # def get_osrm_ip() -> str:

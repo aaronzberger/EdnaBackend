@@ -10,13 +10,16 @@ class GroupCanvas(Optimizer):
         self, houses: list[Point], depots: list[Point], mix_distances: MixDistances
     ):
         """
-        Create a group canvas problem
+        Create a group canvas problem.
 
         Parameters
         ----------
-        houses
-        depots
-        mix_distances
+        houses : list[Point]
+            The houses to visit.
+        depots : list[Point]
+            The depots to start from.
+        mix_distances : MixDistances
+            The distance matrix to use.
         """
         super().__init__(mix_distances=mix_distances)
 

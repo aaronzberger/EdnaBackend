@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-import csv
 import itertools
 import json
 import math
 import os
 from decimal import Decimal
 from random import randint
-import sys
 from typing import Optional
 
 import folium
@@ -20,23 +18,20 @@ from tqdm import tqdm
 
 from src.config import (
     BASE_DIR,
-    DEPOT,
+    BLOCK_DB_IDX,
     PLACE_DB_IDX,
     STYLE_COLOR,
     USE_COST_METRIC,
     VOTER_DB_IDX,
-    NodeType,
     Person,
-    PlaceGeography,
     PlaceSemantics,
     Point,
     blocks_file_t,
     generate_pt_id,
     turnout_predictions_file,
-    BLOCK_DB_IDX,
 )
-from src.utils.gps import SubBlock
 from src.utils.db import Database
+from src.utils.gps import SubBlock
 
 
 class ColorMap:
@@ -233,7 +228,9 @@ def display_clustered_blocks(
     m.save(os.path.join(BASE_DIR, "viz", "clusters.html"))
 
 
-def display_distance_matrix_from_file(points: list[Point], distances_file: str) -> folium.Map:
+def display_distance_matrix_from_file(
+    points: list[Point], distances_file: str
+) -> folium.Map:
     m = folium.Map()
 
     distances = json.load(open(distances_file))

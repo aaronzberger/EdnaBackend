@@ -1,6 +1,5 @@
 import itertools
 import json
-import math
 import os
 import sys
 from copy import deepcopy
@@ -9,18 +8,13 @@ from termcolor import colored
 
 from src.config import (
     CAMPAIGN_ID,
-    default_distances_path,
-    PROBLEM_TYPE,
     Person,
     PlaceGeography,
     PlaceSemantics,
-    Problem_Types,
     VIZ_PATH,
     HouseOutput,
     NodeType,
     Point,
-    Solution,
-    Tour,
     generate_pt_id,
     pt_id,
     details_file,
@@ -181,7 +175,7 @@ class PostProcess:
         nav_pts_1 = sub_block.navigation_points[
             : len(sub_block.navigation_points) // 2 + 1
         ]
-        nav_pts_2 = sub_block.navigation_points[len(sub_block.navigation_points) // 2 :]
+        nav_pts_2 = sub_block.navigation_points[len(sub_block.navigation_points) // 2:]
 
         assert nav_pts_1[-1] == nav_pts_2[0]
 
@@ -290,9 +284,9 @@ class PostProcess:
             extremum = (start_extremum, extremum[1])
 
             navigation_points = (
-                list(reversed(block["nodes"][extremum_house["subsegment"][1] :]))
+                list(reversed(block["nodes"][extremum_house["subsegment"][1]:]))
                 + [start_extremum]
-                + block["nodes"][extremum_house["subsegment"][1] :]
+                + block["nodes"][extremum_house["subsegment"][1]:]
             )
 
         else:
@@ -338,7 +332,7 @@ class PostProcess:
                         ),
                     )
 
-                    for remaining_house in houses[i + 1 :]:
+                    for remaining_house in houses[i + 1:]:
                         if (
                             block_houses[remaining_house["id"]]["side"] == running_side
                             and block_houses[remaining_house["id"]][metric]
@@ -480,7 +474,7 @@ class PostProcess:
 
             # For the back houses, they are on the second half of the subsegments
             for i, house in enumerate(back_side):
-                back_nav_nodes = navigation_points[len(navigation_points) // 2 :]
+                back_nav_nodes = navigation_points[len(navigation_points) // 2:]
                 # print('BACK NAV', back_nav_nodes, flush=True)
                 sub_start = block["nodes"][block_houses[house["id"]]["subsegment"][0]]
                 sub_end = block["nodes"][block_houses[house["id"]]["subsegment"][1]]
@@ -793,78 +787,17 @@ class PostProcess:
         json.dump(list_out, open(output_file, "w"))
 
 
-def get_distance_cost(idx1: int, idx2: int, distances_file: str) -> tuple[float, float]:
-    """
-    Get the distance and cost from the routing input for two indices.
-
-    Parameters
-    ----------
-        idx1 (int): The first index
-        idx2 (int): The second index
-
-    Returns
-    -------
-        float: The distance between the two indices
-        float: The cost between the two indices
-    """
-    distance_costs = json.load(open(distances_file))
-
-    # Distances are stored as a flattened matrix
-    # The index of the distance between two points is calculated as follows:
-    #   (idx1 * num_points) + idx2
-    #   (idx2 * num_points) + idx1
-
-    num_points = math.sqrt(len(distance_costs["distances"]))
-    assert num_points == int(num_points), "Number of points is not an integer"
-
-    return (
-        distance_costs["travelTimes"][(idx1 * int(num_points)) + idx2],
-        distance_costs["distances"][(idx1 * int(num_points)) + idx2],
-    )
-
-
 def process_solution(
-    solution: Solution,
+    routes: list[list[Point]],
     optimizer_points: list[Point],
     place_ids: set[str],
     mix_distances: MixDistances,
     viz_path: str = VIZ_PATH,
-    distances_path: str = default_distances_path,
     id: str = CAMPAIGN_ID,
 ):
-    point_orders: list[list[tuple[Point, int]]] = []
-
-    for i, route in enumerate(solution["tours"]):
-        point_orders.append([])
-        for stop in route["stops"][1:-1]:
-            point_orders[i].append(
-                (optimizer_points[stop["location"]["index"]], stop["location"]["index"])
-            )
-
-    # Ensure that every place in point orders is in the universe
-    # for sublist in point_orders:
-    #     for pt in sublist:
-    #         assert pt[0]["id"] in place_ids, f"Point {pt[0]['id']} not in universe"
-
-
-    # display_distance_matrix(
-    #     optimizer_points, os.path.join(problem_path, "distances.json")
-    # ).save(os.path.join(viz_path, "distances.html"))
-
     # house_dcs = [[HouseDistances.get_distance(i, j) for (i, j) in itertools.pairwise(list)] for list in point_orders]
-    house_dcs = [
-        [
-            get_distance_cost(i[1], j[1], default_distances_path)
-            for (i, j) in itertools.pairwise(list)
-        ]
-        for list in point_orders
-    ]
 
-    points = [[i[0] for i in list] for list in point_orders]
-
-    display_house_orders(points, dcs=house_dcs).save(
-        os.path.join(viz_path, "direct_output.html")
-    )
+    display_house_orders(routes, dcs=None).save(os.path.join(viz_path, "direct_output.html"))
 
     if os.path.exists(details_file):
         details = json.load(open(details_file))
@@ -872,32 +805,22 @@ def process_solution(
         details = {}
 
     post_processor = PostProcess(optimizer_points=optimizer_points, place_ids=place_ids, mix_distances=mix_distances)
-    walk_lists: list[list[SubBlock]] = []
-    for i, tour in enumerate(solution["tours"]):
-        # Do not count the startingg location service at the start or end
-        tour["stops"] = (
-            tour["stops"][1:-1]
-            if PROBLEM_TYPE == Problem_Types.turf_split
-            else tour["stops"]
-        )
-
-        if len(tour["stops"]) == 0:
-            print(f"List {i} has 0 stops")
-            continue
-
-        walk_lists.append(post_processor.post_process(tour))
+    routes: list[list[SubBlock]] = []
+    for i, route in enumerate(routes):
+        # Process the route
+        routes.append(post_processor.post_process(route))
 
         list_id = f"{CAMPAIGN_ID}-{id}-{i}"
         if list_id in details:
             print(colored(f"Warning: List {list_id} already exists in details"))
 
-        num_houses = sum([len(sub_block.houses) for sub_block in walk_lists[-1]])
+        num_houses = sum([len(sub_block.houses) for sub_block in routes[-1]])
         distance = 0
-        for sub_block in walk_lists[-1]:
+        for sub_block in routes[-1]:
             distance += sub_block.length
         start_point = {
-            "lat": walk_lists[-1][0].start["lat"],
-            "lon": walk_lists[-1][0].start["lon"],
+            "lat": routes[-1][0].start["lat"],
+            "lon": routes[-1][0].start["lon"],
         }
 
         details[list_id] = {
@@ -909,7 +832,7 @@ def process_solution(
     json.dump(details, open(details_file, "w"))
 
     all_list_places = set()
-    for walk_list in walk_lists:
+    for walk_list in routes:
         for sub_block in walk_list:
             for house in sub_block.houses:
                 all_list_places.add(house["id"])
@@ -917,7 +840,7 @@ def process_solution(
     for id in all_list_places:
         assert id in place_ids, f"Place {id} not in universe"
 
-    list_visualizations = display_individual_walk_lists(walk_lists)
+    list_visualizations = display_individual_walk_lists(routes)
     for i, walk_list in enumerate(list_visualizations):
         walk_list.save(os.path.join(viz_path, f"{CAMPAIGN_ID}-{id}-{i}.html"))
 
@@ -925,10 +848,10 @@ def process_solution(
         open(os.path.join("regions", CAMPAIGN_ID, "input", "form.json"), "r")
     )
 
-    for i in range(len(walk_lists)):
+    for i in range(len(routes)):
         list_id = f"{CAMPAIGN_ID}-{id}-{i}"
         post_processor.generate_file(
-            walk_lists[i],
+            routes[i],
             os.path.join(viz_path, f"{list_id}.json"),
             id=list_id,
             form=form,

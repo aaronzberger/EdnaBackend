@@ -93,7 +93,8 @@ class HouseDistances(metaclass=Singleton):
 
             distance = min(through_start, through_end)
 
-            self._db_write_buffer[generate_place_id_pair(pt_id(pt), address)] = str(store(round(distance), 0))
+            if distance < MAX_STORAGE_DISTANCE:
+                self._db_write_buffer[generate_place_id_pair(pt_id(pt), address)] = str(store(round(distance), 0))
 
     def _crossing_penalty(self, block: Block) -> int:
         try:
@@ -138,13 +139,15 @@ class HouseDistances(metaclass=Singleton):
                         distance += distance_to_road
 
                 if not USE_COST_METRIC:
-                    self._db_write_buffer[generate_place_id_pair(id_1, id_2)] = str(store(round(distance), 0))
+                    if distance < MAX_STORAGE_DISTANCE:
+                        self._db_write_buffer[generate_place_id_pair(id_1, id_2)] = str(store(round(distance), 0))
                 else:
                     cost = 0
                     if info_1["side"] != info_2["side"]:
                         cost += self._crossing_penalty(b)
 
-                    self._db_write_buffer[generate_place_id_pair(id_1, id_2)] = str(store(round(distance), cost))
+                    if distance < MAX_STORAGE_DISTANCE:
+                        self._db_write_buffer[generate_place_id_pair(id_1, id_2)] = str(store(round(distance), cost))
 
     def _insert_pair(self, b1: Block, b1_id: str, b2: Block, b2_id: str):
         b1_houses = b1["places"]
@@ -211,9 +214,11 @@ class HouseDistances(metaclass=Singleton):
                 cost = mean([self._crossing_penalty(b1), self._crossing_penalty(b2)])
                 cost += DIFFERENT_BLOCK_COST
 
-                self._db_write_buffer[generate_place_id_pair(id_1, id_2)] = str(store(round(distance), round(cost)))
+                if distance < MAX_STORAGE_DISTANCE:
+                    self._db_write_buffer[generate_place_id_pair(id_1, id_2)] = str(store(round(distance), round(cost)))
             else:
-                self._db_write_buffer[generate_place_id_pair(id_1, id_2)] = str(store(round(distance), 0))
+                if distance < MAX_STORAGE_DISTANCE:
+                    self._db_write_buffer[generate_place_id_pair(id_1, id_2)] = str(store(round(distance), 0))
 
     def _update(self, blocks: dict[str, Block], depots: Optional[list[Point]] = None):
         """

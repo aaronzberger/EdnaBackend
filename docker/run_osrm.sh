@@ -48,5 +48,3 @@ echo -e "${GREEN}Running the final OSRM container server${NC}"
 # Map port 5001 on local to 5000 on docker (5000 is sometimes busy on local hosts)
 # docker run -t -i -p 5001:5000 --net edna -v "${PWD}:/data" --name ${CONTAINER_NAME} osrm/osrm-backend osrm-routed --algorithm mld /data/"$filename".osrm
 docker run -t -i -p "127.0.0.1:5001:5000" --net edna -v "${PWD}:/data" --name ${CONTAINER_NAME} osrm/osrm-backend osrm-routed --algorithm mld /data/"$filename".osrm
-
-# docker run -t -i -p "127.0.0.1:6379:6379" --net edna -v "${PWD}/redis-data/:/data" --name redis-container -d redis redis-server --requirepass votefalcon12 --save 60 1 --loglevel warning

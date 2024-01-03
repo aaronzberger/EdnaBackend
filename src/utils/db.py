@@ -39,7 +39,7 @@ class Database(metaclass=Singleton):
         self.db = redis.Redis(
             host="redis-container",
             port=6379,
-            password="votefalcon12",
+            password="edna12",
             decode_responses=True,
         )
 

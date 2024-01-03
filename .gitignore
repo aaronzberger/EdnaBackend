@@ -19,9 +19,6 @@ WLC.egg-info/**
 # Comparison baseline lists
 control_lists/**
 
-# Instance-specific optimization files
-optimize/
-
 # For privacy. Contact for access
 input/example_universe.csv
 debug.txt

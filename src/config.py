@@ -37,7 +37,7 @@ elif PROBLEM_TYPE == Problem_Types.group_canvas:
 assert "timeout_s" in problem_params and int(problem_params["timeout_s"])
 TIMEOUT = timedelta(seconds=problem_params["timeout_s"])
 
-assert "super_clustering" in problem_params and bool(problem_params["super_clustering"])
+assert "super_clustering" in problem_params
 SUPER_CLUSTERING = problem_params["super_clustering"]
 
 "----------------------------------------------------------------------------------"

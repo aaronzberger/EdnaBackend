@@ -16,14 +16,18 @@ class TurfSplit(Optimizer):
         mix_distances: MixDistances,
     ):
         """
-        Create a group canvas problem
+        Create a turf split problem.
 
         Parameters
         ----------
-        houses
-        potential_depots
-        num_routes
-        mix_distances
+        houses : list[Point]
+            The houses to visit.
+        potential_depots : list[Point]
+            The depots to start from.
+        num_routes : int
+            The number of routes to create.
+        mix_distances : MixDistances
+            The distance matrix to use.
         """
         super().__init__(mix_distances=mix_distances)
 
