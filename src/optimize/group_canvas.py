@@ -1,13 +1,77 @@
-from ortools.constraint_solver import pywrapcp, routing_enums_pb2
-
-from src.config import MAX_TOURING_TIME, TIME_AT_HOUSE, WALKING_M_PER_S, Point
+import sys
+from src.config import BLOCK_DB_IDX, NodeType, Point
 from src.distances.mix import MixDistances
 from src.optimize.optimizer import Optimizer, ProblemInfo
+from src.optimize.base_solver import BaseSolver
+from src.distances.blocks import BlockDistances
+from src.distances.houses import HouseDistances
+from src.distances.nodes import NodeDistances
+from src.config import MAX_TOURING_DISTANCE
+from src.utils.db import Database
+from src.utils.gps import great_circle_distance
 
 
 class GroupCanvas(Optimizer):
-    def __init__(
-        self, houses: list[Point], depots: list[Point], mix_distances: MixDistances
+    def __init__(self, block_ids: set[str], place_ids: set[str], voter_ids: set[str], depot: Point):
+        """
+        Create a group canvas problem.
+
+        Parameters
+        ----------
+        block_ids : set[str]
+            The blocks to visit.
+        place_ids : set[str]
+            The places to visit.
+        voter_ids : set[str]
+            The voters to visit.
+        """
+        super().__init__(block_ids=block_ids, place_ids=place_ids, voter_ids=voter_ids)
+
+        self.db = Database()
+
+        self.depot = depot
+        radius = MAX_TOURING_DISTANCE / 2
+
+        self.local_block_ids = set()
+        self.local_places: list[Point] = []
+
+        # region Retrieve area subsection
+        for block_id in block_ids:
+            block = self.db.get_dict(block_id, BLOCK_DB_IDX)
+            if block is None:
+                print(f"Block {block_id} not found in database")
+                sys.exit(1)
+
+            if great_circle_distance(block["nodes"][0], self.depot) < radius or great_circle_distance(block["nodes"][1], self.depot) < radius:
+                self.local_block_ids.add(block_id)
+
+                # Find which places on this block are in the universe
+                self.matching_place_ids = set(block["places"].keys()).intersection(self.place_ids)
+
+                # Add the places to the list of places to visit
+                self.local_places.extend(
+                    Point(lat=block["places"][i]["lat"], lon=block["places"][i]["lon"], id=i, type=NodeType.house) for i in self.matching_place_ids)
+        # endregion
+
+        # region Load distance matrices
+        self.node_distances = NodeDistances(
+            block_ids=self.local_block_ids, skip_update=True)
+
+        self.block_distances = BlockDistances(
+            block_ids=self.local_block_ids, node_distances=self.node_distances, skip_update=True
+        )
+
+        self.house_distances = HouseDistances(
+            block_ids=self.local_block_ids, node_distances=self.node_distances)
+
+        self.mix_distances = MixDistances(
+            house_distances=self.house_distances, node_distances=self.node_distances)
+        # endregion
+
+        self.build_problem(houses=self.local_places, depot=self.depot, mix_distances=self.mix_distances)
+
+    def build_problem(
+        self, houses: list[Point], depot: Point, num_routes: int, mix_distances: MixDistances,
     ):
         """
         Create a group canvas problem.
@@ -16,101 +80,27 @@ class GroupCanvas(Optimizer):
         ----------
         houses : list[Point]
             The houses to visit.
-        depots : list[Point]
-            The depots to start from.
+        depot : Point
+            The depot to start from.
+        num_routes : int
+            The number of routes to create.
         mix_distances : MixDistances
             The distance matrix to use.
         """
-        super().__init__(mix_distances=mix_distances)
+        super().build_problem(mix_distances=mix_distances)
 
-        self.points = depots + houses
-
-        num_depots = len(depots)
+        self.points = [depot] * num_routes + houses
 
         self.problem_info = ProblemInfo(
-            num_vehicles=num_depots,
-            num_depots=num_depots,
-            num_points=num_depots + len(houses),
-            starts=[i for i in range(len(depots))],
-            ends=[i for i in range(len(depots))],
+            points=self.points,
+            num_vehicles=num_routes,
+            num_depots=num_routes,
+            num_points=num_routes + len(houses),
+            starts=[i for i in range(num_routes)],
+            ends=[i for i in range(num_routes)],
         )
 
     def __call__(self, debug=False, time_limit_s=60):
-        # Construct the distance matrix
-        distance_matrix = self.mix_distances.get_distance_matrix(self.points)
-
-        print(
-            "Distance matrix has shape {}".format(
-                (len(distance_matrix), len(distance_matrix[0]))
-            )
-        )
-
-        # Convert distance matrix to input format
-        distance_matrix = (
-            (distance_matrix / WALKING_M_PER_S).round().astype(int).tolist()
-        )
-
-        # Build the problem
-        manager = pywrapcp.RoutingIndexManager(
-            self.problem_info["num_points"],
-            self.problem_info["num_vehicles"],
-            self.problem_info["starts"],
-            self.problem_info["ends"],
-        )
-        routing = pywrapcp.RoutingModel(manager)
-
-        transit_callback_index = routing.RegisterTransitMatrix(distance_matrix)
-        routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
-
-        # Add Time constraint
-        time_dimension_name = "Time"
-        routing.AddDimension(
-            transit_callback_index,
-            TIME_AT_HOUSE.seconds,  # time at each node
-            MAX_TOURING_TIME.seconds,  # walker maximum travel time
-            True,  # start cumul to zero
-            time_dimension_name,
-        )
-        distance_dimension = routing.GetDimensionOrDie(time_dimension_name)
-        distance_dimension.SetGlobalSpanCostCoefficient(100)
-
-        # Allow dropping houses
-        penalty = 10000
-        for node in range(
-            self.problem_info["num_depots"], self.problem_info["num_points"]
-        ):
-            routing.AddDisjunction([manager.NodeToIndex(node)], penalty)
-
-        search_parameters = pywrapcp.DefaultRoutingSearchParameters()
-        search_parameters.first_solution_strategy = (
-            routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
-        )
-        search_parameters.log_search = debug
-        search_parameters.time_limit.seconds = time_limit_s
-
-        solution = routing.SolveWithParameters(search_parameters)
-
-        # Process the solution
-        if not solution:
-            raise RuntimeError("solution from optimizer was empty.")
-
-        routes = []
-        for vehicle_id in range(self.problem_info["num_vehicles"]):
-            index = routing.Start(vehicle_id)
-            route = []
-            while not routing.IsEnd(index):
-                node_index = manager.IndexToNode(index)
-                route.append(node_index)
-                index = solution.Value(routing.NextVar(index))
-            routes.append(route)
-            print(route)
-
-        # Convert to universal format
-        house_routes: list[list[Point]] = []
-        for route in routes:
-            house_route = []
-            for node in route:
-                house_route.append(self.points[node])
-            house_routes.append(house_route)
-
-        return house_routes
+        return BaseSolver(
+            problem_info=self.problem_info, mix_distances=self.mix_distances
+        )()

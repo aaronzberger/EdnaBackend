@@ -30,9 +30,9 @@ if PROBLEM_TYPE == Problem_Types.turf_split:
     assert "depot" not in problem_params, \
         "For turf_split, do not provide any depots. They are decided by optimality at runtime"
 elif PROBLEM_TYPE == Problem_Types.group_canvas:
-    assert "depot" in problem_params and len(problem_params["depot"]) == NUM_LISTS, \
-        "For group_canvas, you must provide a list of depots of the same length as num_lists"
-    DEPOTS = problem_params["depot"]
+    assert "depot" in problem_params and isinstance(problem_params["depot"], str), \
+        "For group_canvas, you must provide num_lists and a single depot location"
+    DEPOT = problem_params["depot"]
 
 assert "timeout_s" in problem_params and int(problem_params["timeout_s"])
 TIMEOUT = timedelta(seconds=problem_params["timeout_s"])

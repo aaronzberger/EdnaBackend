@@ -3,20 +3,40 @@ from ortools.constraint_solver import pywrapcp, routing_enums_pb2
 from sklearn.cluster import AgglomerativeClustering
 
 from src.config import MAX_TOURING_TIME, TIME_AT_HOUSE, WALKING_M_PER_S, Point
+from src.distances.blocks import BlockDistances
+from src.distances.houses import HouseDistances
 from src.distances.mix import MixDistances
+from src.distances.nodes import NodeDistances
 from src.optimize.optimizer import Optimizer, ProblemInfo
 
 
-class TurfSplit(Optimizer):
-    def __init__(
+class SingleCluster(Optimizer):
+    def __post_init__(self):
+        self.node_distances = NodeDistances(
+            block_ids=self.block_ids, skip_update=True
+        )
+
+        # Load block distance matrix
+        self.block_distances = BlockDistances(
+            block_ids=self.block_ids, node_distances=self.node_distances, skip_update=True
+        )
+
+        # Load house distance matrix
+        self.house_distances = HouseDistances(
+            block_ids=self.block_ids, node_distances=self.node_distances)
+
+        # Load mix distance matrix
+        self.mix_distances = MixDistances(
+            house_distances=self.house_distances, node_distances=self.node_distances)
+
+    def build_problem(
         self,
         houses: list[Point],
         potential_depots: list[Point],
         num_routes: int,
-        mix_distances: MixDistances,
     ):
         """
-        Create a turf split problem.
+        Build a turf split problem.
 
         Parameters
         ----------
@@ -26,11 +46,7 @@ class TurfSplit(Optimizer):
             The depots to start from.
         num_routes : int
             The number of routes to create.
-        mix_distances : MixDistances
-            The distance matrix to use.
         """
-        super().__init__(mix_distances=mix_distances)
-
         full_distance_matrix = self.mix_distances.get_distance_matrix(
             potential_depots + houses
         )
@@ -93,67 +109,15 @@ class TurfSplit(Optimizer):
         return centers
 
     def __call__(self, debug=False, time_limit_s=60):
-        # Build the problem
-        manager = pywrapcp.RoutingIndexManager(
-            self.problem_info["num_points"],
-            self.problem_info["num_vehicles"],
-            self.problem_info["starts"],
-            self.problem_info["ends"],
-        )
-        routing = pywrapcp.RoutingModel(manager)
+        
 
-        transit_callback_index = routing.RegisterTransitMatrix(self.distance_matrix)
-        routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
 
-        # Add Time constraint
-        time_dimension_name = "Time"
-        routing.AddDimension(
-            transit_callback_index,
-            TIME_AT_HOUSE.seconds,  # time at each node
-            MAX_TOURING_TIME.seconds,  # walker maximum travel time
-            True,  # start cumul to zero
-            time_dimension_name,
-        )
-        distance_dimension = routing.GetDimensionOrDie(time_dimension_name)
-        distance_dimension.SetGlobalSpanCostCoefficient(100)
+class TurfSplit(Optimizer):
+    def build_problem(self):
+        # TODO: Cluster block_ids and such into clusters, assign number of routes per cluster,
+        # and create individual problems
+        pass
 
-        # Allow dropping houses
-        penalty = 10000
-        for node in range(
-            self.problem_info["num_depots"], self.problem_info["num_points"]
-        ):
-            routing.AddDisjunction([manager.NodeToIndex(node)], penalty)
-
-        search_parameters = pywrapcp.DefaultRoutingSearchParameters()
-        search_parameters.first_solution_strategy = (
-            routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
-        )
-        search_parameters.log_search = debug
-        search_parameters.time_limit.seconds = time_limit_s
-
-        solution = routing.SolveWithParameters(search_parameters)
-
-        # Process the solution
-        if not solution:
-            raise RuntimeError("solution from optimizer was empty.")
-
-        routes = []
-        for vehicle_id in range(self.problem_info["num_vehicles"]):
-            index = routing.Start(vehicle_id)
-            route = []
-            while not routing.IsEnd(index):
-                node_index = manager.IndexToNode(index)
-                route.append(node_index)
-                index = solution.Value(routing.NextVar(index))
-            routes.append(route)
-            print(route)
-
-        # Convert to universal format
-        house_routes: list[list[Point]] = []
-        for route in routes:
-            house_route = []
-            for node in route:
-                house_route.append(self.points[node])
-            house_routes.append(house_route)
-
-        return house_routes
+    def __call__(self, debug=False, time_limit_s=60):
+        # TODO: Actually execute the jobs: perhaps in parallel?
+        pass

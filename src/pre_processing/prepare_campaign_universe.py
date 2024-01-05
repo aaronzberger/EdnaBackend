@@ -1,52 +1,31 @@
 """
 Pre-process the data necessary for a campaign: populate the distance matrices with all the necessary data.
+
+TODO: In all distance matrices, add storage matrix to only search for blocks, nodes, houses that actually might be within
+the maximum storage distance. Will speed up to linear time.
+TODO Add general write buffer class to block and node distances to speed up writing to the database (as is in house distances hard-coded)
+For this, also write to buffer after certain size, instead of writing at the end.
 """
 
 # TODO: Implement some checks on the universal data to make sure it's valid for this campaign??
 
-"""Run the optimizer and post-process the solution to generate walk lists."""
-# TODO: Fix arbitrary large distances throughout package
-
 from __future__ import annotations
 
 import argparse
-import os
-import pickle
 import sys
-from typing import Optional
 
-from sklearn.cluster import DBSCAN, AgglomerativeClustering
 from termcolor import colored
 
 from src.config import (
-    BLOCK_DB_IDX,
     CAMPAIGN_SUBSET_DB_IDX,
-    NODE_COORDS_DB_IDX,
-    NUM_LISTS,
     PLACE_DB_IDX,
-    PROBLEM_TYPE,
-    SUPER_CLUSTERING,
     VOTER_DB_IDX,
-    DEPOTS,
-    NodeType,
     PlaceSemantics,
-    Point,
-    Problem_Types,
-    blocks_file_t,
-    clustering_pickle_file,
-    optimizer_points_pickle_file,
-    pt_id,
 )
 from src.distances.blocks import BlockDistances
 from src.distances.houses import HouseDistances
-from src.distances.mix import MixDistances
 from src.distances.nodes import NodeDistances
-from src.optimize.group_canvas import GroupCanvas
-from src.optimize.optimizer import Optimizer
-from src.optimize.turf_split import TurfSplit
-# from src.post_processing.post_process import process_solution
 from src.utils.db import Database
-from src.utils.viz import display_clustered_blocks
 
 parser = argparse.ArgumentParser(
     prog="prepare_campaign_universe.py",
@@ -102,15 +81,10 @@ print(f"Found {len(block_ids)} blocks")
 
 # Populate the node distance matrix
 node_distances = NodeDistances(
-    block_ids=block_ids, skip_update=False
+    block_ids=block_ids, skip_update=True
 )
 
 # Populate the block distance matrix
 block_distances = BlockDistances(
-    block_ids=block_ids, node_distances=node_distances, skip_update=False
-)
-
-# Populate the house distance matrix
-house_distances = HouseDistances(
-    block_ids=block_ids, node_distances=node_distances, skip_update=False
+    block_ids=block_ids, node_distances=node_distances, skip_update=True
 )

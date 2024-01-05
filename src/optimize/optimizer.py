@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
+from src.config import Point
 
 from src.distances.mix import MixDistances
 from typing import TypedDict
 
 
 class ProblemInfo(TypedDict):
+    points: list[Point]
     num_vehicles: int
     num_depots: int
     num_points: int
@@ -22,8 +24,12 @@ class Optimizer(ABC):
         mix_distances (MixDistances): a computer for distances between the points
         problem_info (ProblemInfo): metadata for the problem
     """
+    def __init__(self, block_ids: set[str], place_ids: set[str], voter_ids: set[str]):
+        self.block_ids = block_ids
+        self.place_ids = place_ids
+        self.voter_ids = voter_ids
 
-    def __init__(self, mix_distances: MixDistances):
+    def build_problem(self, mix_distances: MixDistances):
         self.mix_distances = mix_distances
 
     @abstractmethod
