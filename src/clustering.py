@@ -113,6 +113,7 @@ class Clustering:
                             type=NodeType.node,
                         )
                     )
+                    inserted_point_ids.add(pt_id(block["nodes"][i]))
 
         return points
 

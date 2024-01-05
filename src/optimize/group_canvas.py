@@ -12,7 +12,7 @@ from src.utils.gps import great_circle_distance
 
 
 class GroupCanvas(Optimizer):
-    def __init__(self, block_ids: set[str], place_ids: set[str], voter_ids: set[str], depot: Point):
+    def __init__(self, block_ids: set[str], place_ids: set[str], voter_ids: set[str], depot: Point, num_routes: int):
         """
         Create a group canvas problem.
 
@@ -24,6 +24,10 @@ class GroupCanvas(Optimizer):
             The places to visit.
         voter_ids : set[str]
             The voters to visit.
+        depot : Point
+            The depot to start from.
+        num_routes : int
+            The number of routes to create.
         """
         super().__init__(block_ids=block_ids, place_ids=place_ids, voter_ids=voter_ids)
 
@@ -68,7 +72,7 @@ class GroupCanvas(Optimizer):
             house_distances=self.house_distances, node_distances=self.node_distances)
         # endregion
 
-        self.build_problem(houses=self.local_places, depot=self.depot, mix_distances=self.mix_distances)
+        self.build_problem(houses=self.local_places, depot=self.depot, num_routes=num_routes, mix_distances=self.mix_distances)
 
     def build_problem(
         self, houses: list[Point], depot: Point, num_routes: int, mix_distances: MixDistances,
@@ -99,8 +103,3 @@ class GroupCanvas(Optimizer):
             starts=[i for i in range(num_routes)],
             ends=[i for i in range(num_routes)],
         )
-
-    def __call__(self, debug=False, time_limit_s=60):
-        return BaseSolver(
-            problem_info=self.problem_info, mix_distances=self.mix_distances
-        )()
