@@ -23,8 +23,8 @@ Problem_Types = Enum("Problem", ["turf_split", "group_canvas"])
 
 PROBLEM_TYPE = Problem_Types.group_canvas if "depot" in problem_params else Problem_Types.turf_split
 
-assert "num_lists" in problem_params and int(problem_params["num_lists"])
-NUM_LISTS = problem_params["num_lists"]
+assert "num_routes" in problem_params and int(problem_params["num_routes"])
+NUM_ROUTES = problem_params["num_routes"]
 
 if PROBLEM_TYPE == Problem_Types.turf_split:
     assert "depot" not in problem_params, \
@@ -162,6 +162,7 @@ def house_value(voter_values: list[float]) -> float:
     # return round(total)
 
 
+# NOTE: May be deprecated soon as distance matrices are now stored per-problem to save memory
 class Singleton(type):
     _instance = None
 
@@ -183,7 +184,7 @@ UUID_NAMESPACE = uuid.UUID("ccf207c6-3b15-11ee-be56-0242ac120002")
 ARBITRARY_LARGE_DISTANCE = 10000
 MAX_TOURING_TIME = timedelta(minutes=180)
 TIME_AT_HOUSE = timedelta(minutes=1.5)
-MAX_TOURING_DISTANCE = 10000
+MAX_TOURING_DISTANCE = 6000
 WALKING_M_PER_S = 1.2
 MINS_PER_HOUSE = 1.5
 CLUSTERING_CONNECTED_THRESHOLD = 100  # Meters where blocks are connected

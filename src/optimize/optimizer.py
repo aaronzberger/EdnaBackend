@@ -1,19 +1,8 @@
 from abc import ABC, abstractmethod
-from src.config import Point
 
 from src.distances.mix import MixDistances
-from typing import TypedDict
 
 from src.optimize.base_solver import BaseSolver
-
-
-class ProblemInfo(TypedDict):
-    points: list[Point]
-    num_vehicles: int
-    num_depots: int
-    num_points: int
-    starts: list[int]
-    ends: list[int]
 
 
 class Optimizer(ABC):

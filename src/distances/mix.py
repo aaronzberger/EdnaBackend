@@ -95,8 +95,10 @@ class MixDistancesSnapshot:
             else:
                 return min(through_start, through_end)
         else:
+            if pt_id(p1) == "depot" or pt_id(p2) == "depot":
+                return self._house_distances.get_distance(p1, p2)
             raise ValueError(
-                "Getting routed distance between points live is not recommended"
+                f"Getting routed distance between points live is not recommended. Points: {p1}, {p2}"
             )
 
 

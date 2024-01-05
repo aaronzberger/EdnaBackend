@@ -16,6 +16,7 @@ from src.config import (
     PROBLEM_TYPE,
     VOTER_DB_IDX,
     DEPOT,
+    NUM_ROUTES,
     NodeType,
     PlaceSemantics,
     Point,
@@ -115,7 +116,7 @@ match PROBLEM_TYPE:
         )
 
         optimizer = GroupCanvas(
-            block_ids=block_ids, place_ids=place_ids, voter_ids=voter_ids)
+            block_ids=block_ids, place_ids=place_ids, voter_ids=voter_ids, depot=depot, num_routes=NUM_ROUTES)
 
     case _:
         print(colored("Invalid problem type", color="red"))

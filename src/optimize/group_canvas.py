@@ -1,8 +1,8 @@
 import sys
 from src.config import BLOCK_DB_IDX, NodeType, Point
 from src.distances.mix import MixDistances
-from src.optimize.optimizer import Optimizer, ProblemInfo
-from src.optimize.base_solver import BaseSolver
+from src.optimize.optimizer import Optimizer
+from src.optimize.base_solver import ProblemInfo
 from src.distances.blocks import BlockDistances
 from src.distances.houses import HouseDistances
 from src.distances.nodes import NodeDistances
@@ -57,6 +57,8 @@ class GroupCanvas(Optimizer):
                     Point(lat=block["places"][i]["lat"], lon=block["places"][i]["lon"], id=i, type=NodeType.house) for i in self.matching_place_ids)
         # endregion
 
+        print(f'Of {len(block_ids)} blocks, {len(self.local_block_ids)} are within {radius} meters of the depot')
+
         # region Load distance matrices
         self.node_distances = NodeDistances(
             block_ids=self.local_block_ids, skip_update=True)
@@ -66,7 +68,7 @@ class GroupCanvas(Optimizer):
         )
 
         self.house_distances = HouseDistances(
-            block_ids=self.local_block_ids, node_distances=self.node_distances)
+            block_ids=self.local_block_ids, node_distances=self.node_distances, depots=[self.depot])
 
         self.mix_distances = MixDistances(
             house_distances=self.house_distances, node_distances=self.node_distances)

@@ -22,9 +22,10 @@ from src.config import (
 from src.distances.nodes import NodeDistances
 from src.utils.route import get_distance
 from src.utils.db import Database
-from src.utils.other import WriteBuffer
 
 
+# NOTE/TODO: In the future, this could be made more efficient by directly accessing bits:
+# e.g. 16 bits for distance, 16 bits for cost, 32 bits for the total value
 def store(distance: int, cost: int) -> int:
     """
     Convert a distance and cost into storage form (compressing into one variable)
@@ -72,7 +73,7 @@ class HouseDistancesSnapshot:
         return None
 
 
-class HouseDistances(metaclass=Singleton):
+class HouseDistances():
     def _insert_point(self, pt: Point, b: Block):
         b_houses = b["places"]
 
@@ -95,7 +96,7 @@ class HouseDistances(metaclass=Singleton):
             distance = min(through_start, through_end)
 
             if distance < MAX_STORAGE_DISTANCE:
-                self._db_write_buffer.write(generate_place_id_pair(pt_id(pt), address), str(store(round(distance), 0)))
+                self.distance_matrix[generate_place_id_pair(pt_id(pt), address)] = store(round(distance), 0)
 
     def _crossing_penalty(self, block: Block) -> int:
         try:
@@ -112,7 +113,7 @@ class HouseDistances(metaclass=Singleton):
         # Check if the segments are the same
         for (id_1, info_1), (id_2, info_2) in itertools.product(b["places"].items(), b["places"].items()):
             if id_1 == id_2:
-                self._db_write_buffer.write(generate_place_id_pair(id_1, id_2), str(store(0, 0)))
+                self.distance_matrix[generate_place_id_pair(id_1, id_2)] = store(0, 0)
             else:
                 distance_to_road = (
                     info_1["distance_to_road"] + info_2["distance_to_road"]
@@ -141,14 +142,14 @@ class HouseDistances(metaclass=Singleton):
 
                 if not USE_COST_METRIC:
                     if distance < MAX_STORAGE_DISTANCE:
-                        self._db_write_buffer.write(generate_place_id_pair(id_1, id_2), str(store(round(distance), 0)))
+                        self.distance_matrix[generate_place_id_pair(id_1, id_2)] = store(round(distance), 0)
                 else:
                     cost = 0
                     if info_1["side"] != info_2["side"]:
                         cost += self._crossing_penalty(b)
 
                     if distance < MAX_STORAGE_DISTANCE:
-                        self._db_write_buffer.write(generate_place_id_pair(id_1, id_2), str(store(round(distance), round(cost))))
+                        self.distance_matrix[generate_place_id_pair(id_1, id_2)] = store(round(distance), round(cost))
 
     def _insert_pair(self, b1: Block, b1_id: str, b2: Block, b2_id: str):
         b1_houses = b1["places"]
@@ -163,6 +164,7 @@ class HouseDistances(metaclass=Singleton):
             return
 
         # Calculate the distances between the segment endpoints
+        # TODO: Could this be made more efficient by caching get_distance calls?
         end_distances = [
             self._node_distances_snapshot.get_distance(i, j)
             for i, j in [
@@ -216,10 +218,10 @@ class HouseDistances(metaclass=Singleton):
                 cost += DIFFERENT_BLOCK_COST
 
                 if distance < MAX_STORAGE_DISTANCE:
-                    self._db_write_buffer.write(generate_place_id_pair(id_1, id_2), str(store(round(distance), round(cost))))
+                    self.distance_matrix[generate_place_id_pair(id_1, id_2)] = store(round(distance), round(cost))
             else:
                 if distance < MAX_STORAGE_DISTANCE:
-                    self._db_write_buffer.write(generate_place_id_pair(id_1, id_2), str(store(round(distance), 0)))
+                    self.distance_matrix[generate_place_id_pair(id_1, id_2)] = store(round(distance), 0)
 
     def _update(self, blocks: dict[str, Block], depots: Optional[list[Point]] = None):
         """
@@ -240,6 +242,9 @@ class HouseDistances(metaclass=Singleton):
             for b1_id, b1 in blocks.items():
                 if depots is not None:
                     for depot in depots:
+                        # Insert the point and itself
+                        self.distance_matrix[generate_place_id_pair(pt_id(depot), pt_id(depot))] = store(0, 0)
+
                         self._insert_point(depot, b1)
                 for b2_id, b2 in blocks.items():
                     self._insert_pair(b1, b1_id, b2, b2_id)
@@ -247,9 +252,7 @@ class HouseDistances(metaclass=Singleton):
 
     def __init__(self, block_ids: list[str], node_distances: NodeDistances, depots: Optional[list[Point]] = None):
         self._db = Database()
-        self._db_write_buffer = WriteBuffer(
-            write_fn=lambda x: self._db.set_multiple_str(x, HOUSE_DISTANCE_MATRIX_DB_IDX)
-        )
+        self.distance_matrix: dict[str, str] = {}
 
         # To speed up runtime retrieval, take a snapshot of the node distances object
         self._node_distances_snapshot = node_distances.snapshot()
@@ -266,8 +269,6 @@ class HouseDistances(metaclass=Singleton):
             blocks[block_id] = block
 
         self._update(blocks, depots)
-
-        self._db_write_buffer.flush()
 
     def get_distance(
         self, p1: AnyPoint, p2: AnyPoint
@@ -289,11 +290,11 @@ class HouseDistances(metaclass=Singleton):
             pt_id(p1), pt_id(p2)
         ), generate_place_id_pair(pt_id(p2), pt_id(p1))
 
-        pair_1_r = self._db.get_str(pair_1, HOUSE_DISTANCE_MATRIX_DB_IDX)
+        pair_1_r = self.distance_matrix.get(pair_1)
         if pair_1_r is not None:
             return unstore(int(pair_1_r))
 
-        pair_2_r = self._db.get_str(pair_2, HOUSE_DISTANCE_MATRIX_DB_IDX)
+        pair_2_r = self.distance_matrix.get(pair_2)
         if pair_2_r is not None:
             return unstore(int(pair_2_r))
 

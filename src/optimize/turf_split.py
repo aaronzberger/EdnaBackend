@@ -7,11 +7,12 @@ from src.distances.blocks import BlockDistances
 from src.distances.houses import HouseDistances
 from src.distances.mix import MixDistances
 from src.distances.nodes import NodeDistances
-from src.optimize.optimizer import Optimizer, ProblemInfo
+from src.optimize.optimizer import Optimizer
+from src.optimize.base_solver import ProblemInfo
 from src.utils.db import Database
 
 
-class SingleCluster(Optimizer): 
+class SingleCluster(Optimizer):
     def __init__(self, block_ids: set[str], place_ids: set[str], voter_ids: set[str], num_routes: int):
         """
         Create an individual turf split problem.

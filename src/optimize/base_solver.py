@@ -2,11 +2,20 @@
 The basic solver that all problem types call to get routes.
 """
 
+from typing import TypedDict
 from ortools.constraint_solver import pywrapcp, routing_enums_pb2
 
 from src.config import MAX_TOURING_TIME, TIME_AT_HOUSE, WALKING_M_PER_S, Point
 from src.distances.mix import MixDistances
-from src.optimize.optimizer import ProblemInfo
+
+
+class ProblemInfo(TypedDict):
+    points: list[Point]
+    num_vehicles: int
+    num_depots: int
+    num_points: int
+    starts: list[int]
+    ends: list[int]
 
 
 class BaseSolver():
