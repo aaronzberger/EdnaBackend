@@ -26,7 +26,7 @@ from src.config import (
 )
 from src.optimize.group_canvas import GroupCanvas
 from src.optimize.turf_split import TurfSplit
-# from src.post_processing.post_process import process_solution
+from src.post_processing.post_process import process_solution
 from src.utils.db import Database
 
 parser = argparse.ArgumentParser(
@@ -38,18 +38,6 @@ parser.add_argument(
     "--campaign_id",
     required=True,
     help="The campain id for which to select the universe",
-)
-parser.add_argument(
-    "-n",
-    "--no-optimize",
-    action="store_true",
-    help="Skip the optimization step, post-process only",
-)
-parser.add_argument(
-    "-r",
-    "--restart",
-    action="store_true",
-    help="Force-perform the optimization on all clusters",
 )
 args = parser.parse_args()
 
@@ -123,29 +111,12 @@ match PROBLEM_TYPE:
         print(colored("Invalid problem type", color="red"))
         sys.exit(1)
 
-
 "-----------------------------------------------------------------------------------------"
 "                                      Optimize                                           "
-" Run the optimizer on the subset of the universe, providing a starting location for the "
-" group canvas problem and nothing for the turf split problem                             "
+" Run the optimizer on the subset of the universe                                         "
 "-----------------------------------------------------------------------------------------"
 
-if not args.no_optimize:
-    routes: list[list[Point]] = optimizer(debug=True, time_limit_s=TIMEOUT)
-
-    # process_solution(
-    #     routes=routes,
-    #     optimizer_points=optimizer.points,
-    #     place_ids=place_ids,
-    #     mix_distances=mix_distances,
-    # )
-
-    if routes is None:
-        print(colored("Failed to generate lists", color="red"))
-        sys.exit()
-
-    pickle.dump(optimizer.points, open(optimizer_points_pickle_file, "wb"))
-    print(colored("Generated lists and pickled optimizer points", color="green"))
+routes: list[list[Point]] = optimizer(debug=True, time_limit_s=TIMEOUT)
 
 "-----------------------------------------------------------------------------------------"
 "                                      Post-Process                                       "
@@ -154,13 +125,11 @@ if not args.no_optimize:
 " Also, generate the walk list files and visualizations                                   "
 "-----------------------------------------------------------------------------------------"
 
-# Load the optimizer points from pickle
-optimizer_points = pickle.load(open(optimizer_points_pickle_file, "rb"))
+if routes is None:
+    print(colored("Failed to generate lists", color="red"))
+    sys.exit()
 
-# Process the solution
-# process_solution(
-#     routes=routes,
-#     optimizer_points=optimizer_points,
-#     place_ids=place_ids,
-#     mix_distances=mix_distances,
-# )
+process_solution(
+    routes=routes,
+    mix_distances=optimizer.mix_distances,
+)

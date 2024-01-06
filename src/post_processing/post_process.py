@@ -33,23 +33,13 @@ from src.utils.db import Database
 
 
 class PostProcess:
-    def __init__(self, optimizer_points: list[Point], place_ids: set[str], mix_distances: MixDistances):
-        # self._all_blocks: blocks_file_t = json.load(open(blocks_file))
-        # self.house_id_to_block_id: dict[str, str] = json.load(
-        #     open(house_id_to_block_id_file)
-        # )
-        # self.house_to_voters = json.load(open(house_to_voters_file))
-
-        self.universe_place_ids = place_ids
-
+    def __init__(self, mix_distances: MixDistances):
         self.db = Database()
 
-        # self.requested_blocks = requested_blocks
-        self.tour_points = optimizer_points
         RouteMaker()
 
         # Map block IDs to the UUIDs on this route on that block
-        self.blocks_on_route: dict[str, list[str]] = {}
+        self.block_to_place_ids: dict[str, list[str]] = {}
         self.inserted_houses: set[str] = set()
 
         self.mix_distances = mix_distances
@@ -212,23 +202,42 @@ class PostProcess:
         return sub_block_1, sub_block_2
 
     def _process_sub_block(
-        self, houses: list[Point], block_id: str, entrance: Point, exit: Point
+        self, houses: list[Point], block_id: str, entrance: Point, exit: Point, verbose=False
     ) -> SubBlock | tuple[SubBlock, SubBlock]:
-        uuids = [i["id"] for i in houses]
+        """
+        Process a single sub-block.
+
+        This function takes a list of houses on a single block and returns a SubBlock object
+        which contains the navigation points, houses, and other information needed to use the route.
+
+        Parameters
+        ----------
+            houses (list[Point]): The houses to process
+            block_id (str): The block ID of the block to process
+            entrance (Point): The entrance to the block
+            exit (Point): The exit to the block
+            verbose (bool, optional): Whether to print out debug information. Defaults to False.
+
+        Returns
+        -------
+            SubBlock | tuple[SubBlock, SubBlock]: The processed sub-block, or two sub-blocks if the block was split
+        """
+        place_ids = [i["id"] for i in houses]
         block_houses = {
             uuid: info
             for uuid, info in self.db.get_dict(block_id, BLOCK_DB_IDX)["places"].items()
-            if uuid in uuids
+            if uuid in place_ids
         }
 
-        # if len(uuids) != len(self.blocks_on_route[block_id]):
-        #     print(
-        #         colored(
-        #             f"Notice: There are {len(uuids)} houses on this block, but {len(self.blocks_on_route[block_id])} houses on this block in the route" + \
-        #             f"\nThe unplaced houses are {set(self.blocks_on_route[block_id]) - set(uuids)}",
-        #             "blue",
-        #         )
-        #     )
+        if verbose:
+            if len(place_ids) != len(self.block_to_place_ids[block_id]):
+                print(
+                    colored(
+                        f"Notice: There are {len(place_ids)} houses on this block, but {len(self.block_to_place_ids[block_id])} houses on this block in the route" +
+                        f"\nThe unplaced houses are {set(self.block_to_place_ids[block_id]) - set(place_ids)}",
+                        "blue",
+                    )
+                )
 
         block = self.db.get_dict(block_id, BLOCK_DB_IDX)
 
@@ -236,7 +245,8 @@ class PostProcess:
 
         # region: Calculate the navigation points
         if pt_id(entrance) != pt_id(exit):
-            # Order the navigation points (reverse the order if necessary)
+            # The canvasser enters at one point and exits at another, so simply
+            # order the navigation points to align with the rest of the route
             navigation_points = (
                 block["nodes"]
                 if pt_id(entrance) == pt_id(block["nodes"][0])
@@ -244,8 +254,9 @@ class PostProcess:
             )
 
         elif pt_id(entrance) == pt_id(exit) == pt_id(block["nodes"][0]):
-            # User certainly walks at the front of the block, so simply find the
-            # last point they need to walk at the back of the block
+            # The canvasser enters at the same point they exit (the start). Thus, this is an
+            # "out-and-back" block, so let's find the furthest point the canvasser will walk to
+            # (the end_extremum)
             extremum_house_uuid, extremum_house = max(
                 block_houses.items(), key=lambda a: a[1]["distance_to_start"]
             )
@@ -261,6 +272,7 @@ class PostProcess:
             )
             extremum = (extremum[0], end_extremum)
 
+            # The navigation points will go out, then back
             navigation_points = (
                 block["nodes"][: extremum_house["subsegment"][0] + 1]
                 + [end_extremum]
@@ -268,6 +280,8 @@ class PostProcess:
             )
 
         elif pt_id(entrance) == pt_id(exit) == pt_id(block["nodes"][-1]):
+            # The canvasser enters at the same point they exit (the end). So, do the same
+            # but in reverse, calculating the furthest point they go towards the start (the start_extremum)
             extremum_house_uuid, extremum_house = max(
                 block_houses.items(), key=lambda a: a[1]["distance_to_end"]
             )
@@ -283,6 +297,7 @@ class PostProcess:
             )
             extremum = (start_extremum, extremum[1])
 
+            # The navigation points will go out, then back
             navigation_points = (
                 list(reversed(block["nodes"][extremum_house["subsegment"][1]:]))
                 + [start_extremum]
@@ -297,8 +312,12 @@ class PostProcess:
             )
         # endregion
 
-        unused_uuids = (
-            set(self.blocks_on_route[block_id]) - set(uuids) - self.inserted_houses
+        # Find the houses which are on this route but not on this block.
+        # TODO/NOTE: If the optimizer is good enough (further, the distance matrix is good enough),
+        # then this shouldn't be needed. For now, it will result in less confusing routes since the
+        # distance matrix doesn't do street crossings amazingly across blocks and intersections.
+        unused_places = (
+            set(self.block_to_place_ids[block_id]) - set(place_ids) - self.inserted_houses
         )
 
         # region: Order the houses
@@ -342,7 +361,7 @@ class PostProcess:
                             new_houses.append(remaining_house)
 
                     # Also, add any houses on future blocks which can be moved up to this block
-                    for potential_house_id in unused_uuids:
+                    for potential_house_id in unused_places:
                         info: PlaceGeography = self.db.get_dict(block_id, BLOCK_DB_IDX)[
                             "places"
                         ][potential_house_id]
@@ -360,10 +379,11 @@ class PostProcess:
                                 )
                             )
 
-                            uuids.append(potential_house_id)
+                            place_ids.append(potential_house_id)
                             block_houses[potential_house_id] = info
 
-                            # print(f"Moving up house with id {potential_house_id} to this block (different entrance/exit)")
+                            if verbose:
+                                print(f"Moving up house with id {potential_house_id} to this block (different entrance/exit)")
 
                     new_house_order += sorted(
                         new_houses,
@@ -377,7 +397,7 @@ class PostProcess:
             houses_left = [h for h in houses[start:] if h["id"] not in added_houses]
 
             # Also, add any houses on future blocks which can be moved up to this block
-            for potential_house_id in unused_uuids:
+            for potential_house_id in unused_places:
                 info: PlaceGeography = self.db.get_dict(block_id, BLOCK_DB_IDX)[
                     "places"
                 ][potential_house_id]
@@ -395,10 +415,11 @@ class PostProcess:
                         )
                     )
 
-                    uuids.append(potential_house_id)
+                    place_ids.append(potential_house_id)
                     block_houses[potential_house_id] = info
 
-                    # print(f"Moving up house with id {potential_house_id} to this block (different entrance/exit)")
+                    if verbose:
+                        print(f"Moving up house with id {potential_house_id} to this block (different entrance/exit)")
 
             new_house_order += sorted(
                 houses_left, key=lambda h: block_houses[h["id"]][metric]
@@ -448,11 +469,11 @@ class PostProcess:
             # For the out houses, we're always going forward, so the subsegments are as they are
             for i, house in enumerate(out_side):
                 out_nav_nodes = navigation_points[: len(navigation_points) // 2 + 1]
-                # print('OUT NAV', out_nav_nodes, flush=True)
                 sub_start = block["nodes"][block_houses[house["id"]]["subsegment"][0]]
                 sub_end = block["nodes"][block_houses[house["id"]]["subsegment"][1]]
 
-                # print(f'Out nav nodes are {out_nav_nodes} for house {house["id"]}, subsegment {sub_start}, {sub_end}')
+                if verbose:
+                    print(f'Out nav nodes are {out_nav_nodes} for house {house["id"]}, subsegment {sub_start}, {sub_end}')
 
                 sub_start_idx = sub_end_idx = len(out_nav_nodes)
                 for node in out_nav_nodes:
@@ -475,11 +496,11 @@ class PostProcess:
             # For the back houses, they are on the second half of the subsegments
             for i, house in enumerate(back_side):
                 back_nav_nodes = navigation_points[len(navigation_points) // 2:]
-                # print('BACK NAV', back_nav_nodes, flush=True)
                 sub_start = block["nodes"][block_houses[house["id"]]["subsegment"][0]]
                 sub_end = block["nodes"][block_houses[house["id"]]["subsegment"][1]]
 
-                # print(f'Back nav nodes are {back_nav_nodes} for house {house["id"]}, subsegment {sub_start}, {sub_end}')
+                if verbose:
+                    print(f'Back nav nodes are {back_nav_nodes} for house {house["id"]}, subsegment {sub_start}, {sub_end}')
 
                 sub_start_idx = sub_end_idx = len(back_nav_nodes)
                 for node in back_nav_nodes:
@@ -500,7 +521,6 @@ class PostProcess:
                 houses[i + len(out_side)]["subsegment_start"] = (
                     min(sub_start_idx, sub_end_idx) + len(navigation_points) // 2 - 1
                 )
-
         # endregion
 
         sub_block = SubBlock(
@@ -517,7 +537,7 @@ class PostProcess:
             new_dual = self._split_sub_block(sub_block, entrance, exit)
             return new_dual
 
-        for uuid in uuids:
+        for uuid in place_ids:
             self.inserted_houses.add(uuid)
 
         return sub_block
@@ -612,43 +632,57 @@ class PostProcess:
 
         return new_walk_list
 
-    def post_process(self, tour: Tour) -> list[SubBlock]:
+    def post_process(self, route: list[Point]) -> list[SubBlock]:
+        """
+        Post-process a single route.
+
+        This process maps a raw route outputted by the optimizer (a list of geographic points)
+        to a canvassing route (a list of sub-blocks), which is needed for using the route.
+
+        Parameters
+        ----------
+            route (list[Point]): The route to post-process
+
+        Returns
+        -------
+            list[SubBlock]: The post-processed route
+        """
         # Iterate through the solution and add subsegments
         walk_list: list[SubBlock] = []
 
-        # From the index of each stop, get the points for those stops
-        tour_stops: list[Point] = [
-            self.tour_points[h["location"]["index"]] for h in tour["stops"]
-        ]
-        depot, houses = tour_stops[0], tour_stops[1:-1]
+        # region Full route pre-processing
+        depot, places = route[0], route[1:-1]
         self.depot = depot
 
-        for house in houses:
+        # Fill in the mapping from block ids to place ids
+        for place in places:
             if (
-                self.db.get_dict(house["id"], PLACE_DB_IDX)["block_id"]
-                not in self.blocks_on_route
+                self.db.get_dict(place["id"], PLACE_DB_IDX)["block_id"]
+                not in self.block_to_place_ids
             ):
-                self.blocks_on_route[
-                    self.db.get_dict(house["id"], PLACE_DB_IDX)["block_id"]
-                ] = [house["id"]]
+                self.block_to_place_ids[
+                    self.db.get_dict(place["id"], PLACE_DB_IDX)["block_id"]
+                ] = [place["id"]]
             else:
-                self.blocks_on_route[
-                    self.db.get_dict(house["id"], PLACE_DB_IDX)["block_id"]
-                ].append(house["id"])
+                self.block_to_place_ids[
+                    self.db.get_dict(place["id"], PLACE_DB_IDX)["block_id"]
+                ].append(place["id"])
+        # endregion
 
+        # region SubBlock processing
         current_sub_block_houses: list[Point] = []
 
         # Take the side closest to the first house (likely where a canvasser would park)
         running_intersection = depot
-        running_block_id = self.db.get_dict(houses[0]["id"], PLACE_DB_IDX)["block_id"]
+        running_block_id = self.db.get_dict(places[0]["id"], PLACE_DB_IDX)["block_id"]
 
-        # Process the list
-        for house, next_house in itertools.pairwise(houses):
+        for place, next_house in itertools.pairwise(places):
             next_block_id = self.db.get_dict(next_house["id"], PLACE_DB_IDX)["block_id"]
 
-            if house["id"] not in self.inserted_houses:
-                current_sub_block_houses.append(house)
+            if place["id"] not in self.inserted_houses:
+                current_sub_block_houses.append(place)
 
+            # Process the end of a SubBlock (and add it)
             if next_block_id != running_block_id:
                 if len(current_sub_block_houses) == 0:
                     running_block_id = next_block_id
@@ -658,19 +692,24 @@ class PostProcess:
                 entrance_pt = self._calculate_entrance(
                     running_intersection, current_sub_block_houses[0]
                 )
+
                 # Calculate the exit from the block which is ending
-                exit_pt = self._calculate_exit(house, next_house)
-                sub_block = self._process_sub_block(
+                exit_pt = self._calculate_exit(place, next_house)
+                sub_block_or_blocks = self._process_sub_block(
                     current_sub_block_houses,
                     running_block_id,
                     entrance=entrance_pt,
                     exit=exit_pt,
                 )
 
-                if isinstance(sub_block, SubBlock):
-                    walk_list.append(sub_block)
+                if isinstance(sub_block_or_blocks, SubBlock):
+                    walk_list.append(sub_block_or_blocks)
+                elif isinstance(sub_block_or_blocks, tuple):
+                    walk_list.extend(sub_block_or_blocks)
                 else:
-                    walk_list.extend(sub_block)
+                    raise ValueError(
+                        f"Unexpected return type from _process_sub_block: {type(sub_block_or_blocks)}"
+                    )
 
                 current_sub_block_houses = []
 
@@ -679,8 +718,8 @@ class PostProcess:
                 running_block_id = next_block_id
 
         # Since we used pairwise, the last house is never evaluated
-        if houses[-1]["id"] not in self.inserted_houses:
-            current_sub_block_houses.append(houses[-1])
+        if places[-1]["id"] not in self.inserted_houses:
+            current_sub_block_houses.append(places[-1])
 
         if len(current_sub_block_houses) != 0:
             # Determine the final intersection the canvasser will end up at to process the final subsegment
@@ -689,24 +728,31 @@ class PostProcess:
                 running_intersection, current_sub_block_houses[0]
             )
 
-            sub_block = self._process_sub_block(
+            sub_block_or_blocks = self._process_sub_block(
                 current_sub_block_houses,
                 running_block_id,
                 entrance=entrance_point,
                 exit=exit_point,
             )
 
-            if isinstance(sub_block, SubBlock):
-                walk_list.append(sub_block)
+            if isinstance(sub_block_or_blocks, SubBlock):
+                walk_list.append(sub_block_or_blocks)
+            elif isinstance(sub_block_or_blocks, tuple):
+                walk_list.extend(sub_block_or_blocks)
             else:
-                walk_list.extend(sub_block)
+                raise ValueError(
+                    f"Unexpected return type from _process_sub_block: {type(sub_block_or_blocks)}"
+                )
+        # endregion
 
+        # region Full route post-processing
         # Fill in any holes
         walk_list = self.fill_holes(walk_list)
 
         # If the final sub-block is empty, remove it
         if len(walk_list[-1].houses) == 0:
             walk_list.pop()
+        # endregion
 
         return walk_list
 
@@ -789,8 +835,8 @@ class PostProcess:
 
 def process_solution(
     routes: list[list[Point]],
-    optimizer_points: list[Point],
-    place_ids: set[str],
+    # optimizer_points: list[Point],
+    # place_ids: set[str],
     mix_distances: MixDistances,
     viz_path: str = VIZ_PATH,
     id: str = CAMPAIGN_ID,
@@ -804,7 +850,7 @@ def process_solution(
     else:
         details = {}
 
-    post_processor = PostProcess(optimizer_points=optimizer_points, place_ids=place_ids, mix_distances=mix_distances)
+    post_processor = PostProcess(mix_distances=mix_distances)
     routes: list[list[SubBlock]] = []
     for i, route in enumerate(routes):
         # Process the route
@@ -831,14 +877,14 @@ def process_solution(
 
     json.dump(details, open(details_file, "w"))
 
-    all_list_places = set()
-    for walk_list in routes:
-        for sub_block in walk_list:
-            for house in sub_block.houses:
-                all_list_places.add(house["id"])
+    # all_list_places = set()
+    # for walk_list in routes:
+    #     for sub_block in walk_list:
+    #         for house in sub_block.houses:
+    #             all_list_places.add(house["id"])
 
-    for id in all_list_places:
-        assert id in place_ids, f"Place {id} not in universe"
+    # for id in all_list_places:
+    #     assert id in place_ids, f"Place {id} not in universe"
 
     list_visualizations = display_individual_walk_lists(routes)
     for i, walk_list in enumerate(list_visualizations):
@@ -856,41 +902,3 @@ def process_solution(
             id=list_id,
             form=form,
         )
-
-
-# if __name__ == "__main__":
-#     # Load the requested blocks
-#     requested_blocks = json.load(open(requested_blocks_file, "r"))
-
-#     # Generate node distance matrix
-#     NodeDistances(requested_blocks)
-
-#     # Generate block distance matrix
-#     BlockDistances(requested_blocks)
-
-#     # Initialize calculator for mixed distances
-#     MixDistances()
-
-#     if len(sys.argv) == 2:
-#         problem_dir = os.path.join(
-#             BASE_DIR, "regions", CAMPAIGN_NAME, "areas", sys.argv[1], "problem"
-#         )
-#         viz_dir = os.path.join(
-#             BASE_DIR, "regions", CAMPAIGN_NAME, "areas", sys.argv[1], "viz"
-#         )
-#         solution = Optimizer.process_solution(
-#             os.path.join(problem_dir, "solution.json")
-#         )
-
-#         optimizer_points = pickle.load(
-#             open(os.path.join(problem_dir, "points.pkl"), "rb")
-#         )
-
-#         process_solution(
-#             solution=solution,
-#             optimizer_points=optimizer_points,
-#             requested_blocks=requested_blocks,
-#             viz_path=viz_dir,
-#             problem_path=problem_dir,
-#             id=sys.argv[1],
-#         )

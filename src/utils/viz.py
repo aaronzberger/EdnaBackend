@@ -377,6 +377,9 @@ def display_house_orders(
                 #         ),
                 #     ),
                 # ).add_to(m)
+
+    m.fit_bounds(m.get_bounds())
+
     return m
 
 

@@ -2,7 +2,9 @@
 The basic solver that all problem types call to get routes.
 """
 
+import json
 from typing import TypedDict
+import numpy as np
 from ortools.constraint_solver import pywrapcp, routing_enums_pb2
 
 from src.config import MAX_TOURING_TIME, TIME_AT_HOUSE, WALKING_M_PER_S, Point
@@ -34,7 +36,7 @@ class BaseSolver():
         self.problem_info = problem_info
         self.mix_distances = mix_distances
 
-    def __call__(self, debug=False, time_limit_s=60) -> list[list[Point]]:
+    def __call__(self, debug=True, time_limit_s=10) -> list[list[Point]]:
         # Construct the distance matrix
         distance_matrix = self.mix_distances.get_distance_matrix(self.problem_info["points"])
 
@@ -49,8 +51,28 @@ class BaseSolver():
 
         # Convert distance matrix to input format
         distance_matrix = (
-            (distance_matrix / WALKING_M_PER_S).round().astype(int).tolist()
+            (distance_matrix / WALKING_M_PER_S)
         )
+
+        depot_point = {"lat": self.problem_info["points"][0]["lat"], "lon": self.problem_info["points"][0]["lon"]}
+        house_points = [{"lat": point["lat"], "lon": point["lon"]} for point in self.problem_info["points"][1:]]
+
+        out_obj = {
+            "depots": [depot_point],
+            "houses": house_points,
+            "distance_matrix": distance_matrix.round().astype(int).tolist(),
+        }
+
+        json.dump(out_obj, open("test_reg.json", "w"))
+
+        # Add the stopping time to the distance matrix (add to the arriving node)
+        house_indices = range(self.problem_info["num_vehicles"], self.problem_info["num_points"])
+        distance_matrix[house_indices, :] += TIME_AT_HOUSE.seconds
+        distance_matrix[:, house_indices] += TIME_AT_HOUSE.seconds
+        np.fill_diagonal(distance_matrix, 0)
+
+        # Convert to int
+        distance_matrix = distance_matrix.round().astype(int).tolist()
 
         # Build the problem
         manager = pywrapcp.RoutingIndexManager(
@@ -68,18 +90,20 @@ class BaseSolver():
         time_dimension_name = "Time"
         routing.AddDimension(
             transit_callback_index,
-            TIME_AT_HOUSE.seconds,  # time at each node
+            0,  # time at each node
             MAX_TOURING_TIME.seconds,  # walker maximum travel time
             True,  # start cumul to zero
             time_dimension_name,
         )
-        distance_dimension = routing.GetDimensionOrDie(time_dimension_name)
-        distance_dimension.SetGlobalSpanCostCoefficient(100)
+
+        # Limit the time of the maximum route (not needed?)
+        # distance_dimension = routing.GetDimensionOrDie(time_dimension_name)
+        # distance_dimension.SetGlobalSpanCostCoefficient(100)
 
         # Allow dropping houses
-        penalty = 10000
+        penalty = 10000000
         for node in range(
-            self.problem_info["num_depots"], self.problem_info["num_points"]
+            self.problem_info["num_vehicles"], self.problem_info["num_points"]
         ):
             routing.AddDisjunction([manager.NodeToIndex(node)], penalty)
 
