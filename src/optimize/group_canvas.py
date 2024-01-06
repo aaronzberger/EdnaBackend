@@ -9,6 +9,7 @@ from src.distances.nodes import NodeDistances
 from src.config import MAX_TOURING_DISTANCE
 from src.utils.db import Database
 from src.utils.gps import great_circle_distance
+from src.utils.viz import display_custom_area
 
 
 class GroupCanvas(Optimizer):
@@ -46,7 +47,7 @@ class GroupCanvas(Optimizer):
                 print(f"Block {block_id} not found in database")
                 sys.exit(1)
 
-            if great_circle_distance(block["nodes"][0], self.depot) < radius or great_circle_distance(block["nodes"][1], self.depot) < radius:
+            if great_circle_distance(block["nodes"][0], self.depot) < radius or great_circle_distance(block["nodes"][-1], self.depot) < radius:
                 self.local_block_ids.add(block_id)
 
                 # Find which places on this block are in the universe
@@ -55,6 +56,8 @@ class GroupCanvas(Optimizer):
                 # Add the places to the list of places to visit
                 self.local_places.extend(
                     Point(lat=block["places"][i]["lat"], lon=block["places"][i]["lon"], id=i, type=NodeType.house) for i in self.matching_place_ids)
+
+        display_custom_area(depot=self.depot, places=self.local_places)
         # endregion
 
         print(f'Of {len(block_ids)} blocks, {len(self.local_block_ids)} are within {radius} meters of the depot')
@@ -62,10 +65,6 @@ class GroupCanvas(Optimizer):
         # region Load distance matrices
         self.node_distances = NodeDistances(
             block_ids=self.local_block_ids, skip_update=True)
-
-        self.block_distances = BlockDistances(
-            block_ids=self.local_block_ids, node_distances=self.node_distances, skip_update=True
-        )
 
         self.house_distances = HouseDistances(
             block_ids=self.local_block_ids, node_distances=self.node_distances, depots=[self.depot])
@@ -101,7 +100,7 @@ class GroupCanvas(Optimizer):
             points=self.points,
             num_vehicles=num_routes,
             num_depots=num_routes,
-            num_points=num_routes + len(houses),
+            num_points=len(self.points),
             starts=[i for i in range(num_routes)],
             ends=[i for i in range(num_routes)],
         )

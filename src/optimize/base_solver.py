@@ -7,6 +7,7 @@ from ortools.constraint_solver import pywrapcp, routing_enums_pb2
 
 from src.config import MAX_TOURING_TIME, TIME_AT_HOUSE, WALKING_M_PER_S, Point
 from src.distances.mix import MixDistances
+from src.utils.viz import display_distance_matrix
 
 
 class ProblemInfo(TypedDict):
@@ -36,6 +37,9 @@ class BaseSolver():
     def __call__(self, debug=False, time_limit_s=60) -> list[list[Point]]:
         # Construct the distance matrix
         distance_matrix = self.mix_distances.get_distance_matrix(self.problem_info["points"])
+
+        if debug:
+            display_distance_matrix(points=self.problem_info["points"], distances=distance_matrix)
 
         print(
             "Distance matrix has shape {}".format(

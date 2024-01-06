@@ -17,6 +17,7 @@ from src.config import (
     VOTER_DB_IDX,
     DEPOT,
     NUM_ROUTES,
+    TIMEOUT,
     NodeType,
     PlaceSemantics,
     Point,
@@ -130,7 +131,7 @@ match PROBLEM_TYPE:
 "-----------------------------------------------------------------------------------------"
 
 if not args.no_optimize:
-    routes: list[list[Point]] = optimizer(debug=True, time_limit_s=60)
+    routes: list[list[Point]] = optimizer(debug=True, time_limit_s=TIMEOUT)
 
     # process_solution(
     #     routes=routes,

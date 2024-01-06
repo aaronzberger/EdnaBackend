@@ -201,7 +201,7 @@ class MixDistances(metaclass=Singleton):
 
         snapshot = self.snapshot()
 
-        for i, p1 in enumerate(tqdm(points)):
+        for i, p1 in enumerate(tqdm(points, desc="Building distance matrix", colour="green")):
             for j, p2 in enumerate(points):
                 d_or_dc = snapshot.get_distance(p1, p2)
 

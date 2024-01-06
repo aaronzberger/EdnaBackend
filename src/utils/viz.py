@@ -73,6 +73,33 @@ def display_targeting_voters(voters):
     return m
 
 
+def display_custom_area(depot: Point, places: list[Point]):
+    m = folium.Map()
+
+    folium.Circle(
+        [depot["lat"], depot["lon"]],
+        weight=10,
+        color="#0F6BF5",
+        opacity=1.0,
+        radius=1,
+        tooltip="Depot",
+    ).add_to(m)
+
+    for place in places:
+        folium.Circle(
+            [place["lat"], place["lon"]],
+            weight=10,
+            color="#000000",
+            opacity=1.0,
+            radius=1,
+            tooltip=place["id"],
+        ).add_to(m)
+
+    m.fit_bounds(m.get_bounds())
+
+    m.save(os.path.join(BASE_DIR, "viz", "custom_area.html"))
+
+
 def display_blocks() -> set[tuple[float, float]]:
     # Seed the hash consistently for better visualization
     os.environ["PYTHONHASHSEED"] = "0"
@@ -260,13 +287,13 @@ def display_distance_matrix_from_file(
     return m
 
 
-def display_distance_matrix(points: list[Point], distances: NDArray) -> folium.Map:
+def display_distance_matrix(points: list[Point], distances: NDArray):
     m = folium.Map()
 
     for i, p1 in enumerate(tqdm(points)):
         for j, p2 in enumerate(points):
             # Skip most of the lines
-            if randint(0, 299) != 0:
+            if randint(0, 9999) != 0:
                 continue
             if i == j:
                 continue
@@ -280,7 +307,8 @@ def display_distance_matrix(points: list[Point], distances: NDArray) -> folium.M
             ).add_to(m)
 
     m.fit_bounds(m.get_bounds())
-    return m
+
+    m.save(os.path.join(BASE_DIR, "viz", "distance_matrix.html"))
 
 
 def display_house_orders(

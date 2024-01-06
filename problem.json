@@ -1,8 +1,8 @@
 {
     "campaign_id": "dev_1",
     "problem_type": "group_canvas",
-    "num_routes": 3,
+    "num_routes": 1,
     "depot": "107503392",
-    "timeout_s": 100,
+    "timeout_s": 20,
     "super_clustering": false
 }

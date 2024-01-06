@@ -308,5 +308,5 @@ class HouseDistances():
         -------
             HouseDistancesSnapshot: a snapshot of the current house distances table
         """
-        snapshot = self._db.get_all_str(HOUSE_DISTANCE_MATRIX_DB_IDX)
+        snapshot = self.distance_matrix.copy()
         return HouseDistancesSnapshot(snapshot)
