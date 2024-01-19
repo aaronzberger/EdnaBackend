@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from src.config import Point
 
 from src.distances.mix import MixDistances
 
@@ -16,16 +17,15 @@ class Optimizer(ABC):
         problem_info (ProblemInfo): metadata for the problem
     """
     @abstractmethod
-    def __init__(self, block_ids: set[str], place_ids: set[str], voter_ids: set[str]):
+    def __init__(self, block_ids: set[str], place_ids: set[str]):
         self.block_ids = block_ids
         self.place_ids = place_ids
-        self.voter_ids = voter_ids
 
     @abstractmethod
     def build_problem(self, mix_distances: MixDistances):
         self.mix_distances = mix_distances
 
-    def __call__(self, debug=False, time_limit_s=60):
+    def __call__(self, debug=False, time_limit_s=60) -> list[list[Point]]:
         """
         Solve the problem which has been constructed.
         """

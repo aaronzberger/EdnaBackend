@@ -1,8 +1,6 @@
 {
     "campaign_id": "dev_1",
-    "problem_type": "group_canvas",
+    "problem_type": "turf_split",
     "num_routes": 1,
-    "depot": "107503392",
-    "timeout_s": 20,
-    "super_clustering": false
+    "timeout_s": 60
 }

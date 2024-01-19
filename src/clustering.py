@@ -4,240 +4,208 @@ Cluster a large area into smaller areas suitable for turf split optimization.
 
 from __future__ import annotations
 
-import argparse
-import os
-import pickle
 import sys
-from typing import Optional
+import numpy as np
 
-from sklearn.cluster import DBSCAN, AgglomerativeClustering
+from sklearn.cluster import BisectingKMeans, Birch, DBSCAN, AgglomerativeClustering, OPTICS, KMeans
 from termcolor import colored
 
 from src.config import (
-    BLOCK_DB_IDX,
-    CAMPAIGN_SUBSET_DB_IDX,
-    NODE_COORDS_DB_IDX,
-    NUM_LISTS,
+    SUPER_CLUSTER_NUM_HOUSES,
     PLACE_DB_IDX,
-    PROBLEM_TYPE,
-    SUPER_CLUSTERING,
-    VOTER_DB_IDX,
-    DEPOT,
-    NodeType,
-    PlaceSemantics,
     Point,
-    Problem_Types,
-    blocks_file_t,
-    clustering_pickle_file,
-    optimizer_points_pickle_file,
-    pt_id,
+    BLOCK_DB_IDX
 )
-from src.distances.blocks import BlockDistances
-from src.distances.houses import HouseDistances
-from src.distances.mix import MixDistances
-from src.distances.nodes import NodeDistances
-from src.optimize.group_canvas import GroupCanvas
-from src.optimize.optimizer import Optimizer
-from src.optimize.turf_split import TurfSplit
-# from src.post_processing.post_process import process_solution
 from src.utils.db import Database
-from src.utils.viz import display_clustered_blocks
+from src.utils.gps import pt_to_utm
+from src.utils.viz import display_clustered_points
+from src.distances.blocks import BlockDistances
+from src.distances.nodes import NodeDistances
 
 
 class Clustering:
-    def __init__(self, block_ids: set[str], place_ids: set[str], voter_ids: set[str]):
+    def __init__(self, block_ids: set[str], place_ids: set[str]):
         self.db = Database()
         self.block_ids = block_ids
         self.place_ids = place_ids
-        self.voter_ids = voter_ids
 
-    def cluster_to_places(self, cluster: blocks_file_t) -> list[Point]:
+    def calculate_tightness(self, block_ids: set[str], place_ids: set[str]) -> float:
         """
-        Convert a list of blocks to a list of geographic points of its houses.
+        Calculate the tightness of a cluster.
 
-        Parameters
-        ----------
-        blocks_file_t
+        Args:
+            block_ids (set[str]): The block ids in the cluster.
+            place_ids (set[str]): The place ids in the cluster.
 
-        Returns
-        -------
-        list[Point]
+        Returns:
+            float: The tightness of the cluster.
         """
-        points: list[Point] = []
+        return 0
 
-        for block in cluster:
-            block = self.db.get_dict(block, BLOCK_DB_IDX)
-            # Duplicate addresses from apartments may occur. For now, only insert once
+    def cluster_blockwise(self) -> list[dict[str, set[str] | float]]:
+        node_distances = NodeDistances(
+            block_ids=self.block_ids, skip_update=True
+        )
 
-            for place_id, place_data in block["places"].items():
+        block_distances = BlockDistances(
+            block_ids=self.block_ids, node_distances=node_distances, skip_update=True
+        )
+
+        distance_matrix = block_distances.get_distance_matrix(block_ids=self.block_ids)
+
+        num_clusters = len(self.place_ids) // SUPER_CLUSTER_NUM_HOUSES
+
+        clustered = KMeans(n_clusters=num_clusters, random_state=0, tol=1e-9).fit(distance_matrix)
+
+        # clustered = BisectingKMeans(
+        #     n_clusters=num_clusters, random_state=0).fit(distance_matrix)
+
+        # clustered = AgglomerativeClustering(
+        #     n_clusters=num_clusters, affinity="precomputed", linkage="average").fit(distance_matrix)
+
+        # clustered = DBSCAN(
+        #     metric="precomputed", eps=400, min_samples=10).fit(distance_matrix)
+
+        block_id_clusters: list[set[str]] = [set() for _ in range(num_clusters)]
+
+        for i, block_id in enumerate(self.block_ids):
+            block_id_clusters[clustered.labels_[i]].add(block_id)
+
+        place_id_clusters: list[set[str]] = [set() for _ in range(num_clusters)]
+        place_clusters: list[int] = []
+        places: list[Point] = []
+
+        for i, block_id in enumerate(self.block_ids):
+            block_data = self.db.get_dict(block_id, BLOCK_DB_IDX)
+            if block_data is None:
+                print(colored("Block {} not found in database".format(block_id), color="red"))
+                sys.exit(1)
+
+            for place_id in block_data["places"]:
                 if place_id not in self.place_ids:
-                    # This abode is on the global block, but isn't in this universe.
-                    # It likely doesn't have any voters in this campaign's universe.
                     continue
+                place = Point(lat=block_data["places"][place_id]["lat"], lon=block_data["places"][place_id]["lon"])
+                places.append(place)
+                place_clusters.append(clustered.labels_[i])
 
-                points.append(
-                    Point(
-                        lat=place_data["lat"],
-                        lon=place_data["lon"],
-                        id=place_id,
-                        type=NodeType.house,
-                    )
-                )
+            place_id_clusters[clustered.labels_[i]].update(set(block_data["places"].keys()).intersection(self.place_ids))
 
-        return points
+        display_clustered_points(places, place_clusters)
 
-    def cluster_to_intersections(self, cluster: blocks_file_t) -> list[Point]:
-        """
-        Convert a list of blocks to a list of geographic points of its intersections.
+        tightnesses = [self.calculate_tightness(block_id_clusters[i], place_id_clusters[i]) for i in range(num_clusters)]
 
-        Parameters
-        ----------
-        blocks_file_t
+        clusters = []
+        for i in range(num_clusters):
+            clusters.append({
+                "block_ids": block_id_clusters[i],
+                "place_ids": place_id_clusters[i],
+                "tightness": tightnesses[i]
+            })
 
-        Returns
-        -------
-        list[Point]
-        """
-        points: list[Point] = []
-        inserted_point_ids: set[str] = set()
+        return clusters
 
-        for block in cluster:
-            block = self.db.get_dict(block, BLOCK_DB_IDX)
-            for i in [0, -1]:
-                if pt_id(block["nodes"][i]) not in inserted_point_ids:
-                    points.append(
-                        Point(
-                            lat=block["nodes"][i]["lat"],
-                            lon=block["nodes"][i]["lon"],
-                            id=pt_id(block["nodes"][i]),
-                            type=NodeType.node,
-                        )
-                    )
-                    inserted_point_ids.add(pt_id(block["nodes"][i]))
-
-        return points
-
-    def __call__(self) -> dict[str, list[set[str]]]:
+    def __call__(self) -> list[dict[str, set[str] | float]]:
         """
         Cluster a large area into smaller areas suitable for turf split optimization.
 
         Args:
             block_ids (set[str]): The block ids to cluster.
             place_ids (set[str]): The place ids to cluster.
-            voter_ids (set[str]): The voter ids to cluster.
 
         Returns:
-            dict[str, list[set[str]]]: The clusters.
+            list[dict[str, set[str] | float]]: The clusters of blocks and places, and attributes.
+                "block_ids" -> set of block ids in the cluster
+                "place_ids" -> set of place ids in the cluster
+                "tightness" -> the tightness of the cluster
         """
-        raise NotImplementedError
+        return self.cluster_blockwise()
+        # Get point locations in UTM
+        points: list[tuple[float, float]] = []
 
+        # Convert the place ids to a list for consistent ordering and indexing
+        place_ids_list = list(self.place_ids)
+        place_points: list[Point] = []
 
-"-------------------------------------------------------------------------------------------------------"
-"                                       Super-Clustering                                                "
-" Cluster the blocks to partition the space into more optimizable areas                                 "
-" This simply divides the blocks, places, and voters into clusters which are then independently solved  "
-"-------------------------------------------------------------------------------------------------------"
-# region Cluster
-if not SUPER_CLUSTERING:
-    # Assume one large cluster
-    block_id_clusters = [block_ids]
-    place_id_clusters = [place_ids]
-    voter_id_clusters = [voter_ids]
-else:
-    distance_matrix = block_distances.get_distance_matrix(block_ids=block_ids)
+        running_utm_zone_and_letter: tuple[int, str] = None
 
-    if os.path.exists(clustering_pickle_file):
-        clustered = pickle.load(open(clustering_pickle_file, "rb"))
-        clustered_points = clustered["clustered_points"]
-        clustered_blocks = clustered["clustered_blocks"]
-        centers = clustered["centers"]
-    else:
-        match PROBLEM_TYPE:
-            case Problem_Types.turf_split:
-                clustered = DBSCAN(metric="precomputed", eps=400, min_samples=10).fit(
-                    distance_matrix
-                )
-            case Problem_Types.completed_group_canvas | Problem_Types.group_canvas:
-                clustered = AgglomerativeClustering(
-                    n_clusters=None,
-                    linkage="complete",
-                    distance_threshold=1000,
-                    metric="precomputed",
-                ).fit(distance_matrix)
-            case _:
-                print(
-                    colored(
-                        "Invalid problem type for clustering. Exiting...", color="red"
-                    )
-                )
+        for place_id in place_ids_list:
+            place = self.db.get_dict(place_id, PLACE_DB_IDX)
+            if place is None:
+                print(colored("Place {} not found in database".format(place_id), color="red"))
                 sys.exit(1)
 
-        labels: list[int] = clustered.labels_
+            # Get the latitude and longitude from the block data
+            block_data = self.db.get_dict(place["block_id"], BLOCK_DB_IDX)
+            if block_data is None:
+                print(colored("Block {} not found in database".format(place["block_id"]), color="red"))
+                sys.exit(1)
 
-        # Expand labels into a list of block groups
-        clustered_blocks: list[blocks_file_t] = []
+            place_point: Point = Point(lat=block_data["places"][place_id]["lat"], lon=block_data["places"][place_id]["lon"])
+            place_points.append(place_point)
 
-        for k in range(max(labels)):
-            k_dict = {}
-            for label, block_id in zip(labels, block_ids):
-                if label == k:
-                    k_dict[block_id] = db.get_dict(block_id, BLOCK_DB_IDX)
-            clustered_blocks.append(k_dict)
+            x, y, zone, let = pt_to_utm(place_point)
 
-        clustered_points: list[list[Point]] = [
-            cluster_to_places(c) for c in clustered_blocks
-        ]
+            if running_utm_zone_and_letter is None:
+                running_utm_zone_and_letter = (zone, let)
+            elif running_utm_zone_and_letter != (zone, let):
+                raise NotImplementedError("Cannot cluster across UTM zones")
 
-        print("Total of {} points".format(sum([len(c) for c in clustered_points])))
+            points.append([x, y])
 
-        # Print the clusters with too few houses
-        for i, cluster in enumerate(clustered_points):
-            if len(cluster) < 10:
-                print(
-                    colored(
-                        "Cluster {}s has only {} houses".format(i, len(cluster)),
-                        color="red",
-                    )
-                )
+        # Normalize the points
+        # points = np.array(points)
+        # points -= points.mean(axis=0)
+        # points /= points.std(axis=0)
 
-        centers: list[Point] = []
-        print("Getting centers for {} clusters".format(len(clustered_blocks)))
-        node_distance_snapshot = node_distances.snapshot()
-        for cluster in clustered_blocks:
-            insertections: list[Point] = cluster_to_intersections(cluster)
+        print(f'Max x = {max(x for x, _ in points)}')
+        print(f'Max y = {max(y for _, y in points)}')
+        print(f'Min x = {min(x for x, _ in points)}')
+        print(f'Min y = {min(y for _, y in points)}')
 
-            # Choose the intersection which minimizes the sum of distances to all other intersections
-            min_sum = float("inf")
-            min_intersection = None
-            for intersection in insertections:
-                sum = 0
-                for other_intersection in insertections:
-                    distance = node_distance_snapshot.get_distance(
-                        intersection, other_intersection
-                    )
-                    if distance is None:
-                        distance = 1600
-                    sum += distance
-                if sum < min_sum:
-                    min_sum = sum
-                    min_intersection = intersection
+        print(f'Clustering {len(points)} points')
 
-            if min_intersection is None:
-                print(colored("Intersection not found", color="red"))
-                sys.exit()
+        # Run spectral clustering with euclidian distance
+        num_clusters = len(place_ids_list) // SUPER_CLUSTER_NUM_HOUSES
+        # clustering = Birch(
+        #     threshold=1000, n_clusters=num_clusters).fit(points)
+        clustering = BisectingKMeans(
+            n_clusters=num_clusters, random_state=0).fit(points)
 
-            centers.append(min_intersection)
-        del node_distance_snapshot
+        display_clustered_points(place_points, clustering.labels_)
 
-        display_clustered_blocks(list(block_ids), labels, centers)
+        for i in range(max(clustering.labels_) + 1):
+            print(f'Cluster {i} has {sum(clustering.labels_ == i)} points')
 
-        pickle.dump(
-            {
-                "clustered_points": clustered_points,
-                "clustered_blocks": clustered_blocks,
-                "centers": centers,
-            },
-            open(clustering_pickle_file, "wb"),
-        )
-        # assert len(block_id_clusters) == len(place_id_clusters) == len(voter_id_clusters)
-# endregion
+        place_id_clusters: list[set[str]] = [set() for _ in range(num_clusters)]
+        for i, place_id in enumerate(place_ids_list):
+            place_id_clusters[clustering.labels_[i]].add(place_id)
+
+        print("SIZES", [len(i) for i in place_id_clusters])
+
+        block_id_clusters: list[set[str]] = [set() for _ in range(num_clusters)]
+
+        # For each block, assign it to the cluster which has the most houses on the block
+        for block in self.block_ids:
+            block_data = self.db.get_dict(block, BLOCK_DB_IDX)
+            if block_data is None:
+                print(colored("Block {} not found in database".format(block), color="red"))
+                sys.exit(1)
+
+            num_houses_per_cluster = [set(block_data["places"].keys()).intersection(
+                place_id_clusters[i]) for i in range(num_clusters)]
+
+            max_cluster = np.argmax(num_houses_per_cluster)
+
+            block_id_clusters[max_cluster].add(block)
+
+        tightnesses = [self.calculate_tightness(block_id_clusters[i], place_id_clusters[i]) for i in range(num_clusters)]
+
+        clusters = []
+        for i in range(num_clusters):
+            clusters.append({
+                "block_ids": block_id_clusters[i],
+                "place_ids": place_id_clusters[i],
+                "tightness": tightnesses[i]
+            })
+
+        return clusters

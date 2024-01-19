@@ -87,7 +87,7 @@ print(f"Found {len(block_ids)} blocks")
 match PROBLEM_TYPE:
     case Problem_Types.turf_split:
         optimizer = TurfSplit(
-            block_ids=block_ids, place_ids=place_ids, voter_ids=voter_ids)
+            block_ids=block_ids, place_ids=place_ids, num_routes=NUM_ROUTES)
 
     case Problem_Types.group_canvas:
         try:
@@ -105,7 +105,7 @@ match PROBLEM_TYPE:
         )
 
         optimizer = GroupCanvas(
-            block_ids=block_ids, place_ids=place_ids, voter_ids=voter_ids, depot=depot, num_routes=NUM_ROUTES)
+            block_ids=block_ids, place_ids=place_ids, depot=depot, num_routes=NUM_ROUTES)
 
     case _:
         print(colored("Invalid problem type", color="red"))

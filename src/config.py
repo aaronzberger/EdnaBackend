@@ -29,6 +29,7 @@ NUM_ROUTES = problem_params["num_routes"]
 if PROBLEM_TYPE == Problem_Types.turf_split:
     assert "depot" not in problem_params, \
         "For turf_split, do not provide any depots. They are decided by optimality at runtime"
+    DEPOT = None
 elif PROBLEM_TYPE == Problem_Types.group_canvas:
     assert "depot" in problem_params and isinstance(problem_params["depot"], str), \
         "For group_canvas, you must provide num_lists and a single depot location"
@@ -36,9 +37,6 @@ elif PROBLEM_TYPE == Problem_Types.group_canvas:
 
 assert "timeout_s" in problem_params and int(problem_params["timeout_s"])
 TIMEOUT = timedelta(seconds=problem_params["timeout_s"])
-
-assert "super_clustering" in problem_params
-SUPER_CLUSTERING = problem_params["super_clustering"]
 
 "----------------------------------------------------------------------------------"
 "                                     File Paths                                   "
@@ -192,6 +190,7 @@ CLUSTERING_CONNECTED_THRESHOLD = 100  # Meters where blocks are connected
 DISTANCE_TO_ROAD_MULTIPLIER = 0.5
 ALD_BUFFER = 150  # Meters after a block ends where a house is still on the block
 DIFFERENT_BLOCK_COST = 25
+SUPER_CLUSTER_NUM_HOUSES = 500
 
 MAX_STORAGE_DISTANCE = 1600
 

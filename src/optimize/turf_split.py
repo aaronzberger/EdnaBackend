@@ -1,3 +1,4 @@
+import math
 import sys
 import numpy as np
 from sklearn.cluster import AgglomerativeClustering
@@ -10,10 +11,12 @@ from src.distances.nodes import NodeDistances
 from src.optimize.optimizer import Optimizer
 from src.optimize.base_solver import ProblemInfo
 from src.utils.db import Database
+from src.clustering import Clustering
+from src.utils.viz import display_clustered_blocks
 
 
 class SingleCluster(Optimizer):
-    def __init__(self, block_ids: set[str], place_ids: set[str], voter_ids: set[str], num_routes: int):
+    def __init__(self, block_ids: set[str], place_ids: set[str], num_routes: int):
         """
         Create an individual turf split problem.
 
@@ -23,12 +26,10 @@ class SingleCluster(Optimizer):
             The blocks to visit.
         place_ids : set[str]
             The places to visit.
-        voter_ids : set[str]
-            The voters to visit.
         num_routes : int
             The number of routes to create.
         """
-        super().__init__(block_ids=block_ids, place_ids=place_ids, voter_ids=voter_ids)
+        super().__init__(block_ids=block_ids, place_ids=place_ids)
 
         self.db = Database()
 
@@ -173,11 +174,68 @@ class SingleCluster(Optimizer):
 
 
 class TurfSplit(Optimizer):
-    def build_problem(self):
-        # TODO: Cluster block_ids and such into clusters, assign number of routes per cluster,
-        # and create individual problems
-        pass
+    def __init__(self, block_ids: set[str], place_ids: set[str], num_routes: int):
+        """
+        Create a turf split problem.
 
-    def __call__(self, debug=False, time_limit_s=60):
-        # TODO: Actually execute the jobs: perhaps in parallel?
-        pass
+        Parameters
+        ----------
+        block_ids : set[str]
+            The blocks to visit.
+        place_ids : set[str]
+            The places to visit.
+        num_routes : int
+            The number of routes to create.
+        """
+        super().__init__(block_ids=block_ids, place_ids=place_ids)
+
+        self.num_routes = num_routes
+
+        self.build_problem(block_ids=self.block_ids, place_ids=self.place_ids, num_routes=self.num_routes)
+
+    def build_problem(self, block_ids: set[str], place_ids: set[str], num_routes: int):
+        # Cluster into groups of manageable size
+        self.clusters = Clustering(block_ids=block_ids, place_ids=place_ids)()
+
+        # Display the clusters
+        labels = []
+        for i, cluster in enumerate(self.clusters):
+            print(f"Cluster {i} has {len(cluster['block_ids'])} blocks and {len(cluster['place_ids'])} places")
+            labels.extend([i] * len(cluster["block_ids"]))
+
+        display_clustered_blocks(block_ids=block_ids, labels=labels)
+        # display_clustered_blocks(clusters=[cluster["block_ids"] for cluster in self.clusters], labels=list(range(len(self.clusters))))
+        sys.exit(0)
+
+        # Assign number of routes to each cluster
+        self.num_routes = []
+        if num_routes == len(self.clusters):
+            self.num_routes = [1] * len(self.clusters)
+        elif num_routes < len(self.clusters):
+            # Choose the tighest clusters to generate on (since they'll likely have the best routes)
+            top_clusters = sorted(self.clusters, key=lambda x: x["tightness"])[:num_routes]
+            self.num_routes = [1 if cluster in top_clusters else 0 for cluster in self.clusters]
+        else:
+            # Allocate routes to the tightest clusters
+            top_clusters = sorted(self.clusters, key=lambda x: x["tightness"])
+
+            num_to_top_clusters = math.ceil(num_routes / len(self.clusters))
+            num_to_other_clusters = math.floor(num_routes / len(self.clusters))
+            num_top_clusters = num_routes % len(self.clusters)
+
+            self.num_routes = [num_to_top_clusters if cluster in top_clusters[:num_top_clusters] else
+                               num_to_other_clusters for cluster in self.clusters]
+
+        self.problems = []
+
+        for cluster, num_routes in zip(self.clusters, self.num_routes):
+            self.problems.append(SingleCluster(
+                block_ids=cluster["block_ids"], place_ids=cluster["place_ids"], num_routes=num_routes))
+
+    def __call__(self, debug=False, time_limit_s=60) -> list[list[Point]]:
+        routes: list[list[Point]] = []
+
+        for problem in self.problems:
+            routes.extend(problem(debug=debug, time_limit_s=time_limit_s))
+
+        return routes

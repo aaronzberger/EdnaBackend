@@ -3,7 +3,6 @@ from src.config import BLOCK_DB_IDX, NodeType, Point
 from src.distances.mix import MixDistances
 from src.optimize.optimizer import Optimizer
 from src.optimize.base_solver import ProblemInfo
-from src.distances.blocks import BlockDistances
 from src.distances.houses import HouseDistances
 from src.distances.nodes import NodeDistances
 from src.config import MAX_TOURING_DISTANCE
@@ -13,7 +12,7 @@ from src.utils.viz import display_custom_area
 
 
 class GroupCanvas(Optimizer):
-    def __init__(self, block_ids: set[str], place_ids: set[str], voter_ids: set[str], depot: Point, num_routes: int):
+    def __init__(self, block_ids: set[str], place_ids: set[str], depot: Point, num_routes: int):
         """
         Create a group canvas problem.
 
@@ -23,17 +22,16 @@ class GroupCanvas(Optimizer):
             The blocks to visit.
         place_ids : set[str]
             The places to visit.
-        voter_ids : set[str]
-            The voters to visit.
         depot : Point
             The depot to start from.
         num_routes : int
             The number of routes to create.
         """
-        super().__init__(block_ids=block_ids, place_ids=place_ids, voter_ids=voter_ids)
+        super().__init__(block_ids=block_ids, place_ids=place_ids)
 
         self.db = Database()
 
+        self.num_routes = num_routes
         self.depot = depot
         radius = MAX_TOURING_DISTANCE / 2
 
@@ -73,10 +71,10 @@ class GroupCanvas(Optimizer):
             house_distances=self.house_distances, node_distances=self.node_distances)
         # endregion
 
-        self.build_problem(houses=self.local_places, depot=self.depot, num_routes=num_routes, mix_distances=self.mix_distances)
+        self.build_problem(houses=self.local_places)
 
     def build_problem(
-        self, houses: list[Point], depot: Point, num_routes: int, mix_distances: MixDistances,
+        self, houses: list[Point]
     ):
         """
         Create a group canvas problem.
@@ -92,15 +90,15 @@ class GroupCanvas(Optimizer):
         mix_distances : MixDistances
             The distance matrix to use.
         """
-        super().build_problem(mix_distances=mix_distances)
+        super().build_problem(mix_distances=self.mix_distances)
 
-        self.points = [depot] * num_routes + houses
+        self.points = [self.depot] * self.num_routes + houses
 
         self.problem_info = ProblemInfo(
             points=self.points,
-            num_vehicles=num_routes,
-            num_depots=num_routes,
+            num_vehicles=self.num_routes,
+            num_depots=self.num_routes,
             num_points=len(self.points),
-            starts=[i for i in range(num_routes)],
-            ends=[i for i in range(num_routes)],
+            starts=[i for i in range(self.num_routes)],
+            ends=[i for i in range(self.num_routes)],
         )

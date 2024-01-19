@@ -2,7 +2,6 @@
 The basic solver that all problem types call to get routes.
 """
 
-import json
 from typing import TypedDict
 import numpy as np
 from ortools.constraint_solver import pywrapcp, routing_enums_pb2
@@ -53,17 +52,6 @@ class BaseSolver():
         distance_matrix = (
             (distance_matrix / WALKING_M_PER_S)
         )
-
-        depot_point = {"lat": self.problem_info["points"][0]["lat"], "lon": self.problem_info["points"][0]["lon"]}
-        house_points = [{"lat": point["lat"], "lon": point["lon"]} for point in self.problem_info["points"][1:]]
-
-        out_obj = {
-            "depots": [depot_point],
-            "houses": house_points,
-            "distance_matrix": distance_matrix.round().astype(int).tolist(),
-        }
-
-        json.dump(out_obj, open("test_reg.json", "w"))
 
         # Add the stopping time to the distance matrix (add to the arriving node)
         house_indices = range(self.problem_info["num_vehicles"], self.problem_info["num_points"])

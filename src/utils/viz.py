@@ -213,8 +213,29 @@ def display_blocks_and_unassociated(
     return m
 
 
+def display_clustered_points(
+    points: list[Point], labels: list[int]
+):
+    m = folium.Map()
+
+    cmap = ColorMap(0, max(labels))
+
+    for point, label in zip(points, labels):
+        folium.Circle(
+            [point["lat"], point["lon"]],
+            weight=10,
+            color=cmap.get(label),
+            opacity=1.0,
+            radius=1,
+        ).add_to(m)
+
+    m.fit_bounds(m.get_bounds())
+
+    m.save(os.path.join(BASE_DIR, "viz", "clusters_points.html"))
+
+
 def display_clustered_blocks(
-    block_ids: list[str], labels: list[int], centers: Optional[list[Point]]
+    block_ids: list[str], labels: list[int], centers: Optional[list[Point]] = None
 ):
     # Retrieve the blocks from the database
     db = Database()
