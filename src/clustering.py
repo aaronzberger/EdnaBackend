@@ -7,7 +7,7 @@ from __future__ import annotations
 import sys
 import numpy as np
 
-from sklearn.cluster import BisectingKMeans, Birch, DBSCAN, AgglomerativeClustering, OPTICS, KMeans
+from sklearn.cluster import BisectingKMeans, KMeans
 from termcolor import colored
 
 from src.config import (
@@ -40,9 +40,31 @@ class Clustering:
         Returns:
             float: The tightness of the cluster.
         """
-        return 0
+        # The tightness is just the inverse of the median distance between blocks
+
+        node_distances = NodeDistances(
+            block_ids=block_ids, skip_update=True
+        )
+
+        block_distances = BlockDistances(
+            block_ids=block_ids, node_distances=node_distances, skip_update=True
+        )
+
+        distance_matrix = block_distances.get_distance_matrix(block_ids=block_ids)
+
+        return len(place_ids) / (np.median(distance_matrix) / 1000)
 
     def cluster_blockwise(self) -> list[dict[str, set[str] | float]]:
+        """
+        Cluster a large area into smaller areas suitable for turf split optimization.
+
+        Returns
+        -------
+            list[dict[str, set[str] | float]]: The clusters of blocks and places, and attributes.
+                "block_ids" -> set of block ids in the cluster
+                "place_ids" -> set of place ids in the cluster
+                "tightness" -> the tightness of the cluster
+        """
         node_distances = NodeDistances(
             block_ids=self.block_ids, skip_update=True
         )
@@ -56,15 +78,6 @@ class Clustering:
         num_clusters = len(self.place_ids) // SUPER_CLUSTER_NUM_HOUSES
 
         clustered = KMeans(n_clusters=num_clusters, random_state=0, tol=1e-9).fit(distance_matrix)
-
-        # clustered = BisectingKMeans(
-        #     n_clusters=num_clusters, random_state=0).fit(distance_matrix)
-
-        # clustered = AgglomerativeClustering(
-        #     n_clusters=num_clusters, affinity="precomputed", linkage="average").fit(distance_matrix)
-
-        # clustered = DBSCAN(
-        #     metric="precomputed", eps=400, min_samples=10).fit(distance_matrix)
 
         block_id_clusters: list[set[str]] = [set() for _ in range(num_clusters)]
 
@@ -104,21 +117,17 @@ class Clustering:
 
         return clusters
 
-    def __call__(self) -> list[dict[str, set[str] | float]]:
+    def cluster_pointwise(self) -> list[dict[str, set[str] | float]]:
         """
         Cluster a large area into smaller areas suitable for turf split optimization.
 
-        Args:
-            block_ids (set[str]): The block ids to cluster.
-            place_ids (set[str]): The place ids to cluster.
-
-        Returns:
+        Returns
+        -------
             list[dict[str, set[str] | float]]: The clusters of blocks and places, and attributes.
                 "block_ids" -> set of block ids in the cluster
                 "place_ids" -> set of place ids in the cluster
                 "tightness" -> the tightness of the cluster
         """
-        return self.cluster_blockwise()
         # Get point locations in UTM
         points: list[tuple[float, float]] = []
 
@@ -209,3 +218,16 @@ class Clustering:
             })
 
         return clusters
+
+    def __call__(self) -> list[dict[str, set[str] | float]]:
+        """
+        Cluster a large area into smaller areas suitable for turf split optimization.
+
+        Returns
+        -------
+            list[dict[str, set[str] | float]]: The clusters of blocks and places, and attributes.
+                "block_ids" -> set of block ids in the cluster
+                "place_ids" -> set of place ids in the cluster
+                "tightness" -> the tightness of the cluster
+        """
+        return self.cluster_blockwise()

@@ -1,9 +1,10 @@
 import math
 import sys
 import numpy as np
-from sklearn.cluster import AgglomerativeClustering
+from sklearn.cluster import AgglomerativeClustering, KMeans
+from tqdm import tqdm
 
-from src.config import BLOCK_DB_IDX, WALKING_M_PER_S, NodeType, Point, pt_id
+from src.config import BLOCK_DB_IDX, WALKING_M_PER_S, NodeType, Point, pt_id, MAX_STORAGE_DISTANCE
 from src.distances.blocks import BlockDistances
 from src.distances.houses import HouseDistances
 from src.distances.mix import MixDistances
@@ -85,6 +86,8 @@ class SingleCluster(Optimizer):
 
         self.depots = self.find_depots(num_depots=num_routes, places=self.places, potential_depots=self.potential_depots)
 
+        print(f'Found {len(self.depots)} depots: {self.depots}')
+
         self.build_problem(houses=self.places, depots=self.depots)
 
     def build_problem(
@@ -112,6 +115,7 @@ class SingleCluster(Optimizer):
         self.points = depots + houses
 
         self.problem_info = ProblemInfo(
+            points=self.points,
             num_vehicles=self.num_routes,
             num_depots=self.num_routes,
             num_points=self.num_routes + len(houses),
@@ -143,32 +147,29 @@ class SingleCluster(Optimizer):
         """
         distance_matrix = self.mix_distances.get_distance_matrix(self.places)
 
-        clustered = AgglomerativeClustering(
-            n_clusters=num_depots,
-            linkage="complete",
-            metric="precomputed",
-        ).fit(distance_matrix)
+        clustered = KMeans(n_clusters=num_depots, random_state=0).fit(distance_matrix)
 
         centers = []
-        for cluster in np.unique(clustered.labels_):
+        for cluster in range(num_depots):
             # Re-create the list of houses in this cluster
-            cluster_houses = []
-            for label, house in zip(clustered.labels_, places):
-                if label == cluster:
-                    cluster_houses.append(house)
+            cluster_houses = [house for label, house in zip(clustered.labels_, places) if label == cluster]
 
             # Find the depot closest to these houses
             depot_sums = []
             for depot in potential_depots:
-                depot_sums.append(
-                    [
-                        self.mix_distances.get_distance(depot, house)
-                        for house in cluster_houses
-                    ]
-                )
+                depot_sum = 0
+                for house in cluster_houses:
+                    distance = self.mix_distances.get_distance(depot, house)
+                    if isinstance(distance, float):
+                        depot_sum += distance
+                    else:
+                        depot_sum += MAX_STORAGE_DISTANCE
+                depot_sums.append(depot_sum)
+
+            print("Finished calculating distances")
 
             # Choose the depot which minimizes distance to all these houses
-            centers.append(potential_depots[np.argmin(np.sum(depot_sums, axis=1))])
+            centers.append(potential_depots[np.argmin(depot_sums)])
 
         return centers
 
@@ -200,12 +201,13 @@ class TurfSplit(Optimizer):
         # Display the clusters
         labels = []
         for i, cluster in enumerate(self.clusters):
-            print(f"Cluster {i} has {len(cluster['block_ids'])} blocks and {len(cluster['place_ids'])} places")
             labels.extend([i] * len(cluster["block_ids"]))
 
-        display_clustered_blocks(block_ids=block_ids, labels=labels)
-        # display_clustered_blocks(clusters=[cluster["block_ids"] for cluster in self.clusters], labels=list(range(len(self.clusters))))
-        sys.exit(0)
+        ordered_block_ids = []
+        for cluster in self.clusters:
+            ordered_block_ids.extend(cluster["block_ids"])
+
+        display_clustered_blocks(block_ids=ordered_block_ids, labels=labels)
 
         # Assign number of routes to each cluster
         self.num_routes = []
@@ -213,7 +215,7 @@ class TurfSplit(Optimizer):
             self.num_routes = [1] * len(self.clusters)
         elif num_routes < len(self.clusters):
             # Choose the tighest clusters to generate on (since they'll likely have the best routes)
-            top_clusters = sorted(self.clusters, key=lambda x: x["tightness"])[:num_routes]
+            top_clusters = sorted(self.clusters, key=lambda x: x["tightness"], reverse=True)[:num_routes]
             self.num_routes = [1 if cluster in top_clusters else 0 for cluster in self.clusters]
         else:
             # Allocate routes to the tightest clusters
@@ -226,16 +228,23 @@ class TurfSplit(Optimizer):
             self.num_routes = [num_to_top_clusters if cluster in top_clusters[:num_top_clusters] else
                                num_to_other_clusters for cluster in self.clusters]
 
+        for i, cluster in enumerate(self.clusters):
+            print(f"Cluster {i} has {len(cluster['block_ids'])} blocks and {len(cluster['place_ids'])} places and tightness {cluster['tightness']} and {self.num_routes[i]} routes")
+
         self.problems = []
 
-        for cluster, num_routes in zip(self.clusters, self.num_routes):
-            self.problems.append(SingleCluster(
-                block_ids=cluster["block_ids"], place_ids=cluster["place_ids"], num_routes=num_routes))
+        for cluster, cluster_routes in zip(self.clusters, self.num_routes):
+            if cluster_routes > 0:
+                self.problems.append(SingleCluster(
+                    block_ids=cluster["block_ids"], place_ids=cluster["place_ids"], num_routes=cluster_routes))
 
-    def __call__(self, debug=False, time_limit_s=60) -> list[list[Point]]:
-        routes: list[list[Point]] = []
+        # For access in post-processing
+        self.mix_distances = [problem.mix_distances for problem in self.problems]
+
+    def __call__(self, debug=False, time_limit_s=60) -> list[list[list[Point]]]:
+        routes: list[list[list[Point]]] = []
 
         for problem in self.problems:
-            routes.extend(problem(debug=debug, time_limit_s=time_limit_s))
+            routes.append(problem(debug=debug, time_limit_s=time_limit_s))
 
         return routes

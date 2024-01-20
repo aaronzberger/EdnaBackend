@@ -26,7 +26,7 @@ from src.config import (
 )
 from src.optimize.group_canvas import GroupCanvas
 from src.optimize.turf_split import TurfSplit
-from src.post_processing.post_process import process_solution
+from src.post_processing.post_process import process_solution, process_partitioned_solution
 from src.utils.db import Database
 
 parser = argparse.ArgumentParser(
@@ -116,7 +116,7 @@ match PROBLEM_TYPE:
 " Run the optimizer on the subset of the universe                                         "
 "-----------------------------------------------------------------------------------------"
 
-routes: list[list[Point]] = optimizer(debug=True, time_limit_s=TIMEOUT)
+routes: list[list[list[Point]]] | list[list[Point]] = optimizer(debug=True, time_limit_s=TIMEOUT)
 
 "-----------------------------------------------------------------------------------------"
 "                                      Post-Process                                       "
@@ -129,7 +129,13 @@ if routes is None:
     print(colored("Failed to generate lists", color="red"))
     sys.exit()
 
-process_solution(
-    routes=routes,
-    mix_distances=optimizer.mix_distances,
-)
+if PROBLEM_TYPE == Problem_Types.turf_split:
+    process_partitioned_solution(
+        route_parts=routes,
+        mix_distances=optimizer.mix_distances,
+    )
+else:
+    process_solution(
+        routes=routes,
+        mix_distances=optimizer.mix_distances,
+    )

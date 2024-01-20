@@ -833,6 +833,68 @@ class PostProcess:
         json.dump(list_out, open(output_file, "w"))
 
 
+def process_partitioned_solution(
+    route_parts: list[list[list[Point]]],
+    mix_distances: list[MixDistances],
+    viz_path: str = VIZ_PATH,
+    id: str = CAMPAIGN_ID,
+):
+    # Display the house orders together
+    combined_routes: list[list[Point]] = [route for sublist in route_parts for route in sublist]
+    display_house_orders(combined_routes).save(os.path.join(viz_path, "direct_output.html"))
+
+    if os.path.exists(details_file):
+        details = json.load(open(details_file))
+    else:
+        details = {}
+
+    route_parts: list[list[SubBlock]] = []
+    for i, part in enumerate(route_parts):
+        for j, route in enumerate(part):
+            # Process the route
+            post_processor = PostProcess(mix_distances[i])
+            route_parts.append(post_processor.post_process(route))
+
+            list_id = f"{CAMPAIGN_ID}-{id}-{i}-{j}"
+            if list_id in details:
+                print(colored(f"Warning: List {list_id} already exists in details"))
+
+            num_houses = sum([len(sub_block.houses) for sub_block in route_parts[-1]])
+            distance = 0
+            for sub_block in route_parts[-1]:
+                distance += sub_block.length
+            start_point = {
+                "lat": route_parts[-1][0].start["lat"],
+                "lon": route_parts[-1][0].start["lon"],
+            }
+
+            details[list_id] = {
+                "distance": distance,
+                "num_houses": num_houses,
+                "start_point": start_point,
+            }
+
+    json.dump(details, open(details_file, "w"))
+
+    list_visualizations = display_individual_walk_lists(route_parts)
+    for i, walk_list in enumerate(list_visualizations):
+        walk_list.save(os.path.join(viz_path, f"{CAMPAIGN_ID}-{id}-{i}.html"))
+    
+    form = json.load(
+        open(os.path.join("regions", CAMPAIGN_ID, "input", "form.json"), "r")
+    )
+
+    for i in range(len(route_parts)):
+        for j in range(len(route_parts[i])):
+            list_id = f"{CAMPAIGN_ID}-{id}-{i}-{j}"
+            post_processor.generate_file(
+                route_parts[i][j],
+                os.path.join(viz_path, f"{list_id}.json"),
+                id=list_id,
+                form=form,
+            )
+
+
 def process_solution(
     routes: list[list[Point]],
     # optimizer_points: list[Point],

@@ -241,7 +241,6 @@ def display_clustered_blocks(
     db = Database()
     blocks = db.get_multiple_dict(block_ids, BLOCK_DB_IDX)
     m = folium.Map()
-    # m = generate_starter_map(blocks)
     cmap = ColorMap(0, max(labels))
 
     for block, label in zip(blocks.values(), labels):
@@ -250,6 +249,7 @@ def display_clustered_blocks(
             weight=8,
             color=cmap.get(label),
             opacity=0.6,
+            tooltip=label,
         ).add_to(m)
 
     if centers:
