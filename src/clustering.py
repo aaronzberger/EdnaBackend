@@ -40,8 +40,6 @@ class Clustering:
         Returns:
             float: The tightness of the cluster.
         """
-        # The tightness is just the inverse of the median distance between blocks
-
         node_distances = NodeDistances(
             block_ids=block_ids, skip_update=True
         )

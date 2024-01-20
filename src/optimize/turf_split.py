@@ -1,4 +1,5 @@
 import math
+import random
 import sys
 import numpy as np
 from sklearn.cluster import AgglomerativeClustering, KMeans
@@ -9,14 +10,14 @@ from src.distances.blocks import BlockDistances
 from src.distances.houses import HouseDistances
 from src.distances.mix import MixDistances
 from src.distances.nodes import NodeDistances
-from src.optimize.optimizer import Optimizer
-from src.optimize.base_solver import ProblemInfo
+# from src.optimize.optimizer import Optimizer
+from src.optimize.base_solver import BaseSolver, ProblemInfo
 from src.utils.db import Database
 from src.clustering import Clustering
 from src.utils.viz import display_clustered_blocks
 
 
-class SingleCluster(Optimizer):
+class SingleCluster():
     def __init__(self, block_ids: set[str], place_ids: set[str], num_routes: int):
         """
         Create an individual turf split problem.
@@ -30,7 +31,11 @@ class SingleCluster(Optimizer):
         num_routes : int
             The number of routes to create.
         """
-        super().__init__(block_ids=block_ids, place_ids=place_ids)
+        self.block_ids = block_ids
+        self.place_ids = place_ids
+        # super().__init__(block_ids=block_ids, place_ids=place_ids)
+
+        print(f'Setting up a cluster with {len(self.block_ids)} blocks and {len(self.place_ids)} places')
 
         self.db = Database()
 
@@ -84,6 +89,8 @@ class SingleCluster(Optimizer):
                     inserted_node_ids.add(pt_id(block["nodes"][i]))
         # endregion
 
+        print(f'Found {len(self.places)} places and {len(self.potential_depots)} potential depots')
+
         self.depots = self.find_depots(num_depots=num_routes, places=self.places, potential_depots=self.potential_depots)
 
         print(f'Found {len(self.depots)} depots: {self.depots}')
@@ -105,12 +112,12 @@ class SingleCluster(Optimizer):
         depots : list[Point]
             The depots to start from.
         """
-        # TODO/NOTE This is much less efficient than taking a subset (and duplicating some entries)
-        # of the matrix from find_depots, but it's much easier to implement.
-        self.distance_matrix = self.mix_distances.get_distance_matrix(depots + houses)
-        self.distance_matrix = (
-            (self.distance_matrix / WALKING_M_PER_S).round().astype(int).tolist()
-        )
+        # # TODO/NOTE This is much less efficient than taking a subset (and duplicating some entries)
+        # # of the matrix from find_depots, but it's much easier to implement.
+        # self.distance_matrix = self.mix_distances.get_distance_matrix(depots + houses)
+        # self.distance_matrix = (
+        #     (self.distance_matrix / WALKING_M_PER_S).round().astype(int).tolist()
+        # )
 
         self.points = depots + houses
 
@@ -158,7 +165,7 @@ class SingleCluster(Optimizer):
             depot_sums = []
             for depot in potential_depots:
                 depot_sum = 0
-                for house in cluster_houses:
+                for house in random.sample(cluster_houses, min(len(cluster_houses), 100)):
                     distance = self.mix_distances.get_distance(depot, house)
                     if isinstance(distance, float):
                         depot_sum += distance
@@ -173,8 +180,16 @@ class SingleCluster(Optimizer):
 
         return centers
 
+    def __call__(self, debug=False, time_limit_s=60) -> list[list[Point]]:
+        """
+        Solve the problem which has been constructed.
+        """
+        return BaseSolver(
+            problem_info=self.problem_info, mix_distances=self.mix_distances
+        )(debug=debug, time_limit_s=time_limit_s)
 
-class TurfSplit(Optimizer):
+
+class TurfSplit():
     def __init__(self, block_ids: set[str], place_ids: set[str], num_routes: int):
         """
         Create a turf split problem.
@@ -188,7 +203,9 @@ class TurfSplit(Optimizer):
         num_routes : int
             The number of routes to create.
         """
-        super().__init__(block_ids=block_ids, place_ids=place_ids)
+        self.block_ids = block_ids
+        self.place_ids = place_ids
+        # super().__init__(block_ids=block_ids, place_ids=place_ids)
 
         self.num_routes = num_routes
 

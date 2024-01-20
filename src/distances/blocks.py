@@ -32,7 +32,7 @@ class BlockDistancesSnapshot:
         return None
 
 
-class BlockDistances(metaclass=Singleton):
+class BlockDistances():
     def _insert_pair(self, b1: Block, b1_id: str, b2: Block, b2_id: str):
         pair_1, pair_2 = generate_block_id_pair(b1_id, b2_id), generate_block_id_pair(
             b2_id, b1_id

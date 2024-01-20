@@ -1,3 +1,4 @@
+from copy import deepcopy
 import itertools
 from statistics import mean
 from typing import Optional
@@ -308,5 +309,6 @@ class HouseDistances():
         -------
             HouseDistancesSnapshot: a snapshot of the current house distances table
         """
-        snapshot = self.distance_matrix.copy()
+        print(f'Taking snapshot of house distances table with {len(self.distance_matrix)} entries')
+        snapshot = deepcopy(self.distance_matrix)
         return HouseDistancesSnapshot(snapshot)

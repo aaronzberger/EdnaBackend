@@ -102,7 +102,7 @@ class MixDistancesSnapshot:
             )
 
 
-class MixDistances(metaclass=Singleton):
+class MixDistances():
     def __init__(self, house_distances: HouseDistances, node_distances: NodeDistances):
         self._db = Database()
         self._house_distances = house_distances
@@ -201,6 +201,8 @@ class MixDistances(metaclass=Singleton):
 
         snapshot = self.snapshot()
 
+        portion_none = 0
+
         for i, p1 in enumerate(tqdm(points, desc="Building distance matrix", colour="green")):
             for j, p2 in enumerate(points):
                 d_or_dc = snapshot.get_distance(p1, p2)
@@ -208,9 +210,14 @@ class MixDistances(metaclass=Singleton):
                 # Account for distance and cost stored on houses
                 d = d_or_dc if type(d_or_dc) is not tuple else d_or_dc[0]
 
+                if d is None:
+                    portion_none += 1
+
                 # Account for none values
                 d = d if d is not None else MAX_STORAGE_DISTANCE
 
                 matrix[i][j] = d
+
+        print(f"Portion of distances that are None: {portion_none / (len(points) ** 2)}")
 
         return matrix

@@ -35,7 +35,7 @@ class NodeDistancesSnapshot:
         return None
 
 
-class NodeDistances(metaclass=Singleton):
+class NodeDistances():
     """
     Helper class to store and retrieve distances between nodes.
 

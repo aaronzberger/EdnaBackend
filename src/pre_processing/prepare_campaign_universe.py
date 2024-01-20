@@ -81,10 +81,10 @@ print(f"Found {len(block_ids)} blocks")
 
 # Populate the node distance matrix
 node_distances = NodeDistances(
-    block_ids=block_ids, skip_update=True
+    block_ids=block_ids
 )
 
 # Populate the block distance matrix
 block_distances = BlockDistances(
-    block_ids=block_ids, node_distances=node_distances, skip_update=True
+    block_ids=block_ids, node_distances=node_distances
 )

@@ -116,7 +116,7 @@ match PROBLEM_TYPE:
 " Run the optimizer on the subset of the universe                                         "
 "-----------------------------------------------------------------------------------------"
 
-routes: list[list[list[Point]]] | list[list[Point]] = optimizer(debug=True, time_limit_s=TIMEOUT)
+routes: list[list[list[Point]]] | list[list[Point]] = optimizer(debug=True, time_limit_s=TIMEOUT.seconds)
 
 "-----------------------------------------------------------------------------------------"
 "                                      Post-Process                                       "
