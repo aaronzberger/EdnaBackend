@@ -1,6 +1,6 @@
-'''
+"""
 Save a json that maps node IDs to their GPS coordinates
-'''
+"""
 
 import json
 
@@ -15,14 +15,19 @@ loaded = json.load(open(overpass_file))
 
 db = Database()
 
-for item in tqdm(loaded['elements'], desc='Writing node coordinates', colour=STYLE_COLOR, unit='nodes'):
-    if item['type'] == 'node':
+for item in tqdm(
+    loaded["elements"],
+    desc="Writing node coordinates",
+    colour=STYLE_COLOR,
+    unit="nodes",
+):
+    if item["type"] == "node":
         # NOTE: This is the only ID casting from int to str. Downstream, all IDs are strings
-        item_id = str(item['id'])
+        item_id = str(item["id"])
 
         point = WriteablePoint(
-            lat=item['lat'],
-            lon=item['lon'],
+            lat=item["lat"],
+            lon=item["lon"],
         )
 
         db.set_dict(item_id, dict(point), NODE_COORDS_DB_IDX)

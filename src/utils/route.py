@@ -5,23 +5,18 @@ import os
 from collections import defaultdict
 from decimal import Decimal
 from typing import Any
-import subprocess
 
 import polyline
 import requests
 from termcolor import colored
 
 from src.config import (
-    DISTANCE_TO_ROAD_MULTIPLIER,
-    AnyPoint,
-    Block,
-    PlaceGeography,
-    Point,
+    InternalPoint,
     adjacency_list_file,
     coords_node_file,
     NODE_COORDS_DB_IDX,
     BLOCK_DB_IDX,
-    node_list_t
+    Point,
 )
 from src.utils.gps import great_circle_distance
 from src.utils.db import Database
@@ -29,32 +24,7 @@ from src.utils.db import Database
 SERVER = "http://172.19.0.2:5000"
 
 
-# def get_osrm_ip() -> str:
-#     # Run docker inspect redis-container and get the JSON output
-#     try:
-#         output = subprocess.check_output(["docker", "inspect", "osrm_container"])
-#         output = json.loads(output)[0]
-
-#         if output["State"]["Running"] is False:
-#             raise RuntimeError("OSRM container is not running")
-
-#         ip = output["NetworkSettings"]["Networks"]["falcon_backend"]["IPAddress"]
-
-#         ports = output["NetworkSettings"]["Ports"]
-#         if "5000/tcp" not in ports:
-#             raise RuntimeError("Expected OSRM container to be running on port 5000")
-
-#         return "http://" + ip + ":5000"
-#     except subprocess.CalledProcessError:
-#         raise RuntimeError("Could not find OSRM container")
-#     except KeyError:
-#         raise RuntimeError("Could not find IP address of OSRM container")
-
-
-# SERVER = get_osrm_ip()
-
-
-def get_distance(start: AnyPoint, end: AnyPoint) -> float:
+def get_distance(start: Point, end: Point) -> float:
     """
     Get the distance on foot (in meters) between two points.
 
@@ -78,7 +48,7 @@ def get_distance(start: AnyPoint, end: AnyPoint) -> float:
     raise RuntimeError("Could not contact OSRM server")
 
 
-def get_route(start: AnyPoint, end: AnyPoint) -> dict[str, Any]:
+def get_route(start: Point, end: Point) -> dict[str, Any]:
     """
     Get the full route on foot between two points.
 
@@ -189,7 +159,7 @@ class RouteMaker:
             float: the distance of the shortest path
         """
 
-        def block_distance(nodes: node_list_t):
+        def block_distance(nodes: list[Point]):
             length = 0
             for first, second in itertools.pairwise(nodes):
                 length += great_circle_distance(first, second)
@@ -243,8 +213,12 @@ class RouteMaker:
             node = previous[node]
         path.reverse()
 
-        assert path[0] == start_node_id, f"Path start {path[0]} does not match start node {start_node_id} (end node {end_node_id}, path{path})"
-        assert path[-1] == end_node_id, f"Path end {path[-1]} does not match end node {end_node_id}"
+        assert (
+            path[0] == start_node_id
+        ), f"Path start {path[0]} does not match start node {start_node_id} (end node {end_node_id}, path{path})"
+        assert (
+            path[-1] == end_node_id
+        ), f"Path end {path[-1]} does not match end node {end_node_id}"
         # TODO: Can be removed later
         for first, second in itertools.pairwise(path):
             assert second in cls._adjacency_list[first]
@@ -253,7 +227,8 @@ class RouteMaker:
         distance = 0
         for first, second in itertools.pairwise(path):
             distance += great_circle_distance(
-                cls._db.get_dict(first, NODE_COORDS_DB_IDX), cls._db.get_dict(second, NODE_COORDS_DB_IDX)
+                cls._db.get_dict(first, NODE_COORDS_DB_IDX),
+                cls._db.get_dict(second, NODE_COORDS_DB_IDX),
             )
 
         # These are the nodes that make up the blocks, so convert them to blocks
@@ -265,7 +240,7 @@ class RouteMaker:
         return blocks, distance
 
     @classmethod
-    def get_route(cls, start: Point, end: Point):
+    def get_route(cls, start: InternalPoint, end: InternalPoint):
         # If the init method has not been called, call it
         if len(cls._node_table) == 0:
             cls.__init__()
@@ -302,114 +277,12 @@ class RouteMaker:
         try:
             path, distance = cls.djikstras(start_node[0], end_node[0])
         except (TypeError, AssertionError):
-            print(colored(f"Failed to run djikstras from start node {start_node[0]} to end node {end_node[0]}", "red"))
+            print(
+                colored(
+                    f"Failed to run djikstras from start node {start_node[0]} to end node {end_node[0]}",
+                    "red",
+                )
+            )
             return None
 
         return path, distance
-
-    @classmethod
-    def get_route_cost(
-        cls, start: PlaceGeography, block1: Block, end: PlaceGeography, block2: Block
-    ):
-        """
-        Get the cost of a route between two houses. Each street crossing cost is added
-        exactly according to how one would walk optimally from the start to end house (thus,
-        there may be 0 cost even if the houses are on different blocks).
-
-        Parameters
-        ----------
-            start (HouseInfo): the start point
-            block1 (Block): the first block
-            end (HouseInfo): the end point
-            block2 (Block): the second block
-        """
-        # First, run Djikstra's algorithm to find the shortest path between the start and end nodes
-        start_1 = min(
-            cls._node_table[
-                cls.id(
-                    Decimal(block1["nodes"][0]["lat"]).quantize(Decimal("0.0001")),
-                    Decimal(block1["nodes"][0]["lon"]).quantize(Decimal("0.0001")),
-                )
-            ],
-            key=lambda x: great_circle_distance(block1["nodes"][0], x[1]),
-        )[0]
-
-        end_1 = min(
-            cls._node_table[
-                cls.id(
-                    Decimal(block1["nodes"][-1]["lat"]).quantize(Decimal("0.0001")),
-                    Decimal(block1["nodes"][-1]["lon"]).quantize(Decimal("0.0001")),
-                )
-            ],
-            key=lambda x: great_circle_distance(block1["nodes"][-1], x[1]),
-        )[0]
-
-        start_2 = min(
-            cls._node_table[
-                cls.id(
-                    Decimal(block2["nodes"][0]["lat"]).quantize(Decimal("0.0001")),
-                    Decimal(block2["nodes"][0]["lon"]).quantize(Decimal("0.0001")),
-                )
-            ],
-            key=lambda x: great_circle_distance(block2["nodes"][0], x[1]),
-        )[0]
-
-        end_2 = min(
-            cls._node_table[
-                cls.id(
-                    Decimal(block2["nodes"][-1]["lat"]).quantize(Decimal("0.0001")),
-                    Decimal(block2["nodes"][-1]["lon"]).quantize(Decimal("0.0001")),
-                )
-            ],
-            key=lambda x: great_circle_distance(block2["nodes"][-1], x[1]),
-        )[0]
-
-        # Tuples of route, distance for each possible starting and ending location
-        end_routes = [
-            cls.djikstras(i, j)
-            for i, j in [
-                (start_1, start_2),
-                (start_1, end_2),
-                (end_1, start_2),
-                (end_1, end_2),
-            ]
-        ]
-
-        # TODO: Ensure Djikstra's returned correctly
-
-        distances_to_road = (
-            start["distance_to_road"] + end["distance_to_road"]
-        ) * DISTANCE_TO_ROAD_MULTIPLIER
-
-        # The format of the list is: [start_start, start_end, end_start, end_end]
-        distances: list[float] = [
-            end_routes[0][1]
-            + start["distance_to_start"]
-            + end["distance_to_start"]
-            + distances_to_road,
-            end_routes[1][1]
-            + start["distance_to_start"]
-            + end["distance_to_end"]
-            + distances_to_road,
-            end_routes[2][1]
-            + start["distance_to_end"]
-            + end["distance_to_start"]
-            + distances_to_road,
-            end_routes[3][1]
-            + start["distance_to_end"]
-            + end["distance_to_end"]
-            + distances_to_road,
-        ]
-
-        route = end_routes[distances.index(min(distances))]
-
-        # For now, use a greedy strategy. That is, only cross when necessary to get onto the next block
-        cost = 0
-
-        # Algorithm to determine if a crossing is necessary:
-        #   There is a middle point, and n adjacent points, and a single point (where we are, which can be artbitrarily decided as a point on the corresponding side of the block)
-        #   At each intersection, calculate the angle between the middle point and the adjacent points
-        #   Calculate the angle between the middle point and the single point
-        #   If the angle is in the range between the angle to the previous node and the angle to the next node, then we don't need to cross
-        #   If we don't cross, the current point can be kept
-        #   If we do cross, the new point is a point 1 degree away from the angle to the next node, in the opposite direction of the angle to the previous node

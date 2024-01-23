@@ -4,12 +4,22 @@ import itertools
 from dataclasses import dataclass
 from functools import cache
 from math import acos, asin, cos, radians, sin
+from typing import Any, TypedDict
 
 import utm
 from geographiclib.geodesic import Geodesic
 from haversine import Unit, haversine
 
-from src.config import MINS_PER_HOUSE, WALKING_M_PER_S, Block, NodeType, Point, generate_pt_id, node_list_t
+from src.config import (
+    MINS_PER_HOUSE,
+    WALKING_M_PER_S,
+    NodeType,
+    InternalPoint,
+    WriteablePoint,
+    generate_pt_id,
+    Point,
+    SubAbode
+)
 
 converter: Geodesic = Geodesic.WGS84  # type: ignore
 
@@ -19,7 +29,7 @@ def inverse_line_cached(lat1, lon1, lat2, lon2):
     return converter.InverseLine(lat1, lon1, lat2, lon2)
 
 
-def distance_along_path(path: node_list_t) -> float:
+def distance_along_path(path: list[Point]) -> float:
     """
     Find the distance through a list of Points.
 
@@ -34,13 +44,19 @@ def distance_along_path(path: node_list_t) -> float:
     distance = 0
     for first, second in itertools.pairwise(path):
         distance += great_circle_distance(
-            Point(lat=first["lat"], lon=first["lon"], type=NodeType.other, id="first"),
-            Point(lat=second["lat"], lon=second["lon"], type=NodeType.other, id="second"),
+            InternalPoint(
+                lat=first["lat"], lon=first["lon"], type=NodeType.other, id="first"
+            ),
+            InternalPoint(
+                lat=second["lat"], lon=second["lon"], type=NodeType.other, id="second"
+            ),
         )
     return distance
 
 
-def along_track_distance(p1: Point, p2: Point, p3: Point) -> tuple[float, float]:
+def along_track_distance(
+    p1: InternalPoint, p2: InternalPoint, p3: InternalPoint
+) -> tuple[float, float]:
     """
     Calculate the along-track distances from a point to a line in GPS coordinates.
 
@@ -104,7 +120,9 @@ def along_track_distance(p1: Point, p2: Point, p3: Point) -> tuple[float, float]
     return ald_p2, ald_p3
 
 
-def cross_track_distance(p1: Point, p2: Point, p3: Point, debug: bool = False) -> float:
+def cross_track_distance(
+    p1: InternalPoint, p2: InternalPoint, p3: InternalPoint, debug: bool = False
+) -> float:
     """
     Calculate the cross-track distance from a point to a line in GPS coordinates.
 
@@ -190,7 +208,7 @@ def cross_track_distance(p1: Point, p2: Point, p3: Point, debug: bool = False) -
         return cross_track_distance
 
 
-def great_circle_distance(p1: Point, p2: Point) -> float:
+def great_circle_distance(p1: InternalPoint, p2: InternalPoint) -> float:
     """
     Calculate the distance "as the crow flies" between two points in GPS coordinates.
 
@@ -206,7 +224,7 @@ def great_circle_distance(p1: Point, p2: Point) -> float:
     return haversine((p1["lat"], p1["lon"]), (p2["lat"], p2["lon"]), unit=Unit.METERS)
 
 
-def middle(p1: Point, p2: Point) -> Point:
+def middle(p1: InternalPoint, p2: InternalPoint) -> InternalPoint:
     """
     Calculate the midpoint between two points in GPS coordinates.
 
@@ -223,12 +241,12 @@ def middle(p1: Point, p2: Point) -> Point:
         lat1=p1["lat"], lon1=p1["lon"], lat2=p2["lat"], lon2=p2["lon"]
     )
     middle = path_between.Position(path_between.s13 / 2.0)
-    return Point(
+    return InternalPoint(
         lat=middle["lat2"], lon=middle["lon2"], type=NodeType.other, id="middle"
     )
 
 
-def pt_to_utm(pt: Point) -> tuple[float, float, int, str]:
+def pt_to_utm(pt: InternalPoint) -> tuple[float, float, int, str]:
     """
     Convert a point in GPS coordinates to UTM x-y grid coordinates.
 
@@ -246,7 +264,7 @@ def pt_to_utm(pt: Point) -> tuple[float, float, int, str]:
     return utm.from_latlon(pt["lat"], pt["lon"])  # type: ignore
 
 
-def utm_to_pt(x: float, y: float, zone: int, letter: str) -> Point:
+def utm_to_pt(x: float, y: float, zone: int, letter: str) -> InternalPoint:
     """
     Convert UTM x-y grid coordinates to a point in GPS coordinates.
 
@@ -260,10 +278,10 @@ def utm_to_pt(x: float, y: float, zone: int, letter: str) -> Point:
         Point: the geographic point with its GPS coordinates
     """
     lat, lon = utm.to_latlon(x, y, zone, letter)
-    return Point(lat=lat, lon=lon, type=NodeType.other, id="utm")
+    return InternalPoint(lat=lat, lon=lon, type=NodeType.other, id="utm")
 
 
-def angle_between_pts(p1: Point, p2: Point) -> float:
+def angle_between_pts(p1: InternalPoint, p2: InternalPoint) -> float:
     """
     Calculate the angle between two points.
 
@@ -284,7 +302,9 @@ def angle_between_pts(p1: Point, p2: Point) -> float:
     )
 
 
-def project_to_line(p1: Point, p2: Point, p3: Point) -> Point:
+def project_to_line(
+    p1: InternalPoint, p2: InternalPoint, p3: InternalPoint
+) -> InternalPoint:
     """
     Project a point to the line spanned by two points.
 
@@ -306,22 +326,31 @@ def project_to_line(p1: Point, p2: Point, p3: Point) -> Point:
     # Account for the case where the house is off the end of the block
     if ald_p1 > path_between.s13:
         projected = path_between.Position(path_between.s13)
-        return Point(
-            lat=projected["lat2"], lon=projected["lon2"], type=NodeType.other, id=generate_pt_id(projected["lat2"], projected["lon2"])
+        return InternalPoint(
+            lat=projected["lat2"],
+            lon=projected["lon2"],
+            type=NodeType.other,
+            id=generate_pt_id(projected["lat2"], projected["lon2"]),
         )
     elif ald_p2 > path_between.s13:
         projected = path_between.Position(0)
-        return Point(
-            lat=projected["lat2"], lon=projected["lon2"], type=NodeType.other, id=generate_pt_id(projected["lat2"], projected["lon2"])
+        return InternalPoint(
+            lat=projected["lat2"],
+            lon=projected["lon2"],
+            type=NodeType.other,
+            id=generate_pt_id(projected["lat2"], projected["lon2"]),
         )
 
     projected = path_between.Position(ald_p1)
-    return Point(
-        lat=projected["lat2"], lon=projected["lon2"], type=NodeType.other, id=generate_pt_id(projected["lat2"], projected["lon2"])
+    return InternalPoint(
+        lat=projected["lat2"],
+        lon=projected["lon2"],
+        type=NodeType.other,
+        id=generate_pt_id(projected["lat2"], projected["lon2"]),
     )
 
 
-def bearing(p1: Point, p2: Point) -> float:
+def bearing(p1: InternalPoint, p2: InternalPoint) -> float:
     """
     Get the bearing from point p1 to point p2.
 
@@ -340,31 +369,62 @@ def bearing(p1: Point, p2: Point) -> float:
     return path_between.azi1
 
 
+# @dataclass
+# class SubBlock:
+#     """Like a block, but ordered and optimized for post-processing and output format."""
+#     block: Block
+#     block_id: str
+
+#     # Note that start and end could be the same point.
+#     start: InternalPoint
+#     end: InternalPoint
+
+#     # Furthest points in each direction the houses span
+#     extremum: tuple[InternalPoint, InternalPoint]
+
+#     houses: list[InternalPoint]
+#     navigation_points: list[InternalPoint]
+
+#     def __post_init__(self):
+#         self.length: float = 0.0
+#         self.length += great_circle_distance(self.start, self.navigation_points[0])
+#         for first, second in itertools.pairwise(self.navigation_points):
+#             self.length += great_circle_distance(first, second)
+#         self.length += great_circle_distance(self.end, self.navigation_points[-1])
+
+#         # TODO: Time to walk depends on walk_method and should likely be iterated through
+#         self.time_to_walk = len(self.houses) * MINS_PER_HOUSE + (
+#             self.length / WALKING_M_PER_S * (1 / 60)
+#         )
+
+
 @dataclass
 class SubBlock:
-    """Like a block, but ordered and optimized for post-processing and output format."""
+    """
+    A part of a block.
 
-    block: Block
+    Notes
+    -----
+    There may be fewer abodes than in the full block, and only a subset of the nodes.
+    However, nodes may repeat (to represent going "out and back" on the block).
+    """
+
     block_id: str
-
-    # Note that start and end could be the same point.
-    start: Point
-    end: Point
-
-    # Furthest points in each direction the houses span
-    extremum: tuple[Point, Point]
-
-    houses: list[Point]
-    navigation_points: list[Point]
+    nodes: list[WriteablePoint]
+    abodes: list[SubAbode]
 
     def __post_init__(self):
         self.length: float = 0.0
-        self.length += great_circle_distance(self.start, self.navigation_points[0])
-        for first, second in itertools.pairwise(self.navigation_points):
+        for first, second in itertools.pairwise(self.nodes):
             self.length += great_circle_distance(first, second)
-        self.length += great_circle_distance(self.end, self.navigation_points[-1])
 
         # TODO: Time to walk depends on walk_method and should likely be iterated through
-        self.time_to_walk = len(self.houses) * MINS_PER_HOUSE + (
+        self.time_to_walk = len(self.abodes) * MINS_PER_HOUSE + (
             self.length / WALKING_M_PER_S * (1 / 60)
         )
+
+
+class Route(TypedDict):
+    id: str
+    blocks: list[SubBlock]
+    form: Any

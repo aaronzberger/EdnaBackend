@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import pickle
 import sys
 
 from termcolor import colored
@@ -12,21 +11,24 @@ from termcolor import colored
 from src.config import (
     CAMPAIGN_SUBSET_DB_IDX,
     NODE_COORDS_DB_IDX,
-    PLACE_DB_IDX,
+    ABODE_DB_IDX,
     PROBLEM_TYPE,
     VOTER_DB_IDX,
     DEPOT,
     NUM_ROUTES,
     TIMEOUT,
     NodeType,
-    PlaceSemantics,
-    Point,
+    Abode,
+    InternalPoint,
     Problem_Types,
-    optimizer_points_pickle_file,
+    Voter,
 )
 from src.optimize.group_canvas import GroupCanvas
 from src.optimize.turf_split import TurfSplit
-from src.post_processing.post_process import process_solution, process_partitioned_solution
+from src.post_processing.post_process import (
+    process_solution,
+    process_partitioned_solution,
+)
 from src.utils.db import Database
 
 parser = argparse.ArgumentParser(
@@ -43,39 +45,39 @@ args = parser.parse_args()
 
 db = Database()
 
-# Walk up the database from voters to places to blocks
-# To retrieve all nodes, take the first and last node from all blocks with places which have voters in this campaign
+# Walk up the database from voters to abodes to blocks
+# To retrieve all nodes, take the first and last node from all blocks with abodes which have voters in this campaign
 voter_ids = db.get_set(args.campaign_id, CAMPAIGN_SUBSET_DB_IDX)
 
 print(f"Found {len(voter_ids)} voters")
 
-place_ids: set[str] = set()
+abode_ids: set[str] = set()
 for voter in voter_ids:
-    place = db.get_dict(voter, VOTER_DB_IDX)
-    if place is None:
+    voter: Voter = db.get_dict(voter, VOTER_DB_IDX)
+    if voter is None:
         print(colored("Voter {} not found in database".format(voter), color="red"))
         sys.exit(1)
 
-    # Ensure the corresponding place has this voter
-    this_place: PlaceSemantics = db.get_dict(place["place"], PLACE_DB_IDX)
+    # Ensure the corresponding abode has this voter
+    abode: Abode = db.get_dict(voter["abode_id"], ABODE_DB_IDX)
 
-    if "voters" not in this_place:
+    if "voter_ids" not in abode:
         print(
-            colored("Place {} does not have voters".format(place["place"]), color="red")
+            colored("Abode with id {} does not have voters".format(voter["abode_id"]), color="red")
         )
         sys.exit(1)
 
-    place_ids.add(place["place"])
+    abode_ids.add(voter["abode_id"])
 
-print(f"Found {len(place_ids)} places")
+print(f"Found {len(abode_ids)} abode")
 
 block_ids: set[str] = set()
-for place in place_ids:
-    place_data = db.get_dict(place, PLACE_DB_IDX)
-    if place_data is None:
-        print(colored("Place {} not found in database".format(place), color="red"))
+for voter in abode_ids:
+    abode_data = db.get_dict(voter, ABODE_DB_IDX)
+    if abode_data is None:
+        print(colored("Abode {} not found in database".format(voter), color="red"))
         sys.exit(1)
-    block_ids.add(place_data["block_id"])
+    block_ids.add(abode_data["block_id"])
 
 print(f"Found {len(block_ids)} blocks")
 
@@ -87,7 +89,8 @@ print(f"Found {len(block_ids)} blocks")
 match PROBLEM_TYPE:
     case Problem_Types.turf_split:
         optimizer = TurfSplit(
-            block_ids=block_ids, place_ids=place_ids, num_routes=NUM_ROUTES)
+            block_ids=block_ids, abode_ids=abode_ids, num_routes=NUM_ROUTES
+        )
 
     case Problem_Types.group_canvas:
         try:
@@ -97,7 +100,7 @@ match PROBLEM_TYPE:
                 "Depot point provided must be the id of point in the database's nodes"
             )
 
-        depot = Point(
+        depot = InternalPoint(
             lat=result["lat"],
             lon=result["lon"],
             type=NodeType.other,
@@ -105,7 +108,8 @@ match PROBLEM_TYPE:
         )
 
         optimizer = GroupCanvas(
-            block_ids=block_ids, place_ids=place_ids, depot=depot, num_routes=NUM_ROUTES)
+            block_ids=block_ids, abode_ids=abode_ids, depot=depot, num_routes=NUM_ROUTES
+        )
 
     case _:
         print(colored("Invalid problem type", color="red"))
@@ -116,7 +120,9 @@ match PROBLEM_TYPE:
 " Run the optimizer on the subset of the universe                                         "
 "-----------------------------------------------------------------------------------------"
 
-routes: list[list[list[Point]]] | list[list[Point]] = optimizer(debug=True, time_limit_s=TIMEOUT.seconds)
+routes: list[list[list[InternalPoint]]] | list[list[InternalPoint]] = optimizer(
+    debug=True, time_limit_s=TIMEOUT.seconds
+)
 
 "-----------------------------------------------------------------------------------------"
 "                                      Post-Process                                       "
@@ -128,6 +134,9 @@ routes: list[list[list[Point]]] | list[list[Point]] = optimizer(debug=True, time
 if routes is None:
     print(colored("Failed to generate lists", color="red"))
     sys.exit()
+
+print(f"Generated {len(routes)} routes")
+print(routes)
 
 if PROBLEM_TYPE == Problem_Types.turf_split:
     process_partitioned_solution(

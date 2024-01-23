@@ -98,10 +98,9 @@ VIZ_PATH = os.path.join(BASE_DIR, "viz")
 "----------------------------------------------------------------------------------"
 # Indices for the Redis database
 VOTER_DB_IDX = 1
-PLACE_DB_IDX = 2
+ABODE_DB_IDX = 2
 BLOCK_DB_IDX = 3
 NODE_DISTANCE_MATRIX_DB_IDX = 4
-HOUSE_DISTANCE_MATRIX_DB_IDX = 5
 BLOCK_DISTANCE_MATRIX_DB_IDX = 6
 NODE_COORDS_DB_IDX = 7
 HOUSE_IMAGES_DB_IDX = 8
@@ -268,12 +267,12 @@ def generate_block_id_pair(id1: str, id2: str) -> str:
     return id1 + "_" + id2
 
 
-def generate_place_id_pair(id1: str, id2: str) -> str:
+def generate_abode_id_pair(id1: str, id2: str) -> str:
     # The middle character must never appear in an ID
     return id1 + "_" + id2
 
 
-class Point(TypedDict):
+class InternalPoint(TypedDict):
     lat: float
     lon: float
     type: NodeType
@@ -285,14 +284,14 @@ class WriteablePoint(TypedDict):
     lon: float
 
 
-AnyPoint = Point | WriteablePoint
+Point = InternalPoint | WriteablePoint
 
 
-def to_serializable_pt(p: Point) -> WriteablePoint:
+def to_serializable_pt(p: InternalPoint) -> WriteablePoint:
     return WriteablePoint(lat=p["lat"], lon=p["lon"])
 
 
-def pt_id(p: AnyPoint) -> str:
+def pt_id(p: Point) -> str:
     """
     Get the ID of a point.
 
@@ -311,36 +310,68 @@ def pt_id(p: AnyPoint) -> str:
     )
 
 
-house_t = dict[str, Point]
-node_list_t = list[Point | WriteablePoint]
+house_t = dict[str, InternalPoint]
 
 
-class PlaceGeography(TypedDict):
-    """Geographic information about a house."""
-    lat: float
-    lon: float
+class AbodeGeography(TypedDict):
+    """
+    An abode's geographic information, relative to the block it is on.
+
+    Notes
+    -----
+    Block directionality in storage matters, since start and end rely on consistent direction.
+    """
+    id: str
+    point: WriteablePoint
     distance_to_start: int
     distance_to_end: int
     side: bool
     distance_to_road: int
-    subsegment: tuple[int, int]
+    subsegment_start: int
+    subsegment_end: int
 
 
-class PlaceSemantics(TypedDict):
-    """Semantic information about a house."""
+class Abode(TypedDict):
+    """An abode's semantic information"""
+    id: str
     display_address: str
     # For houses with multiple units, a mapping of unit numbers to a list of voter IDs
-    voters: NotRequired[list[str] | dict[str, list[str]]]
+    voter_ids: NotRequired[list[str] | dict[str, list[str]]]
     block_id: str
     city: str
     state: str
     zip: str
 
 
-# TODO: rename houses to places and re-run
+class SubAbode(TypedDict):
+    """A part of an abode, which simply may contain a subset of the voters."""
+    abode_id: str
+    point: WriteablePoint
+    distance_to_start: int
+    distance_to_end: int
+    side: bool
+    distance_to_road: int
+    subsegment_start: int
+    subsegment_end: int
+    display_address: str
+    voter_ids: NotRequired[list[str] | dict[str, list[str]]]
+    block_id: str
+    city: str
+    state: str
+    zip: str
+
+
 class Block(TypedDict):
-    places: dict[str, PlaceGeography]
-    nodes: node_list_t
+    """
+    A segment of a street, containing abodes.
+
+    Notes
+    -----
+    Block directionality matters (the nodes list cannot be reversed), since abodes store directional information.
+    """
+    id: str
+    abodes: dict[str, AbodeGeography]
+    nodes: list[Point]
     type: str
 
 
@@ -382,28 +413,17 @@ voter_file_mapping = {
 }
 
 
-class Person(TypedDict):
+class Voter(TypedDict):
+    id: str
     name: str
     age: int
     party: Literal["D", "R", "I"]
-    voter_id: str
-    place: str
-    place_unit: NotRequired[str]
+    abode_id: str
+    abode_unit: NotRequired[str]
+
+    # Mapping from election date to whether the voter voted
     voting_history: dict[str, bool]
     turnout: float
-    value: float
-
-
-# NOTE/TODO: About to be deprecated
-class HousePeople(TypedDict):
-    display_address: str
-    city: str
-    state: str
-    zip: str
-    latitude: float
-    longitude: float
-    voter_info: list[Person]
-    value: float
 
 
 # NOTE/TODO: About to be deprecated
@@ -415,8 +435,5 @@ class HouseOutput(TypedDict):
     uuid: str
     latitude: float
     longitude: float
-    voter_info: list[Person]
+    voter_info: list[Voter]
     subsegment_start: int
-
-
-voters_file_t = dict[str, HousePeople]

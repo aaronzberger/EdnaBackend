@@ -10,9 +10,9 @@ Blocks (BLOCK_DB_IDX):
     Key: Block ID (from pre-processing, the concatenation of end node IDs and an identifier)
     Value: Block object (houses, nodes, type)
 
-Places (PLACE_DB_IDX):
-    Key: Place ID (uuid)
-    Value: PlaceSemantics object
+Abodes (ABODE_DB_IDX):
+    Key: Abode ID (uuid)
+    Value: Abode object
 
 Voters (VOTER_DB_IDX):
     Key: Voter ID
@@ -21,10 +21,6 @@ Voters (VOTER_DB_IDX):
 Node Distances (NODE_DISTANCE_MATRIX_DB_IDX):
     Key: str representing both nodes, created from config.generate_pt_id_pair
     Value: str castable to float representing distance between nodes
-
-Place Distances (PLACE_DISTANCE_MATRIX_DB_IDX):
-    Key: str representing both places, created from config.generate_place_id_pair
-    Value: 0-8 digit number: first four digits representing distance, last four digits representing some cost
 
 """
 

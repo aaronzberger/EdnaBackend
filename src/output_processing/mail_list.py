@@ -14,14 +14,14 @@ from src.utils.address import Address
 from src.config import (
     BASE_DIR,
     NodeType,
-    Person,
-    Point,
+    Voter,
+    InternalPoint,
     # blocks_file,
     # blocks_file_t,
     turnout_predictions_file,
     mail_data_file,
     BLOCK_DB_IDX,
-    PLACE_DB_IDX,
+    ABODE_DB_IDX,
     VOTER_DB_IDX
 )
 from src.process_universe import Associater
@@ -31,10 +31,10 @@ from src.utils.db import Database
 
 class AddressAndHouse(NamedTuple):
     address: Address
-    people: list[Person]
+    people: list[Voter]
     address_line_1: str
     address_line_2: str
-    coords: Point
+    coords: InternalPoint
 
 
 stats = {
@@ -197,14 +197,13 @@ def handle_universe_file(
             for voter in voters:
                 if voter.address == address:
                     voter.people.append(
-                        Person(
+                        Voter(
+                            id=universe_row["ID Number"],
                             name=name.casefold().title(),
                             age=0,
                             party=party,
-                            voter_id=universe_row["ID Number"],
-                            place="",
+                            abode_id="",
                             voting_history={},
-                            value=turnout,
                             turnout=turnout,
                         )
                     )
@@ -217,20 +216,19 @@ def handle_universe_file(
             AddressAndHouse(
                 address=address,
                 people=[
-                    Person(
+                    Voter(
+                        id=universe_row["ID Number"],
                         name=name.casefold().title(),
                         age=0,
                         party=party,
-                        place="",
-                        voter_id=universe_row["ID Number"],
+                        abode_id="",
                         voting_history={},
-                        value=turnout,
                         turnout=turnout,
                     )
                 ],
                 address_line_1=address_line_1,
                 address_line_2=address_line_2,
-                coords=Point(lat=-1, lon=-1, type=NodeType.other, id=""),
+                coords=InternalPoint(lat=-1, lon=-1, type=NodeType.other, id=""),
             )
         )
         return True
@@ -271,7 +269,7 @@ def handle_universe_file(
         result = associater.associate(voter.address)
         if result is not None:
             block_id, uuid, _ = result
-            house = db.get_dict(block_id, BLOCK_DB_IDX)["places"][uuid]
+            house = db.get_dict(block_id, BLOCK_DB_IDX)["abodes"][uuid]
             voter.coords["lat"] = house["lat"]
             voter.coords["lon"] = house["lon"]
 

@@ -2,14 +2,20 @@ import math
 import random
 import sys
 import numpy as np
-from sklearn.cluster import AgglomerativeClustering, KMeans
-from tqdm import tqdm
+from sklearn.cluster import KMeans
 
-from src.config import BLOCK_DB_IDX, WALKING_M_PER_S, NodeType, Point, pt_id, MAX_STORAGE_DISTANCE
+from src.config import (
+    BLOCK_DB_IDX,
+    NodeType,
+    InternalPoint,
+    pt_id,
+    MAX_STORAGE_DISTANCE,
+)
 from src.distances.blocks import BlockDistances
 from src.distances.houses import HouseDistances
 from src.distances.mix import MixDistances
 from src.distances.nodes import NodeDistances
+
 # from src.optimize.optimizer import Optimizer
 from src.optimize.base_solver import BaseSolver, ProblemInfo
 from src.utils.db import Database
@@ -17,8 +23,8 @@ from src.clustering import Clustering
 from src.utils.viz import display_clustered_blocks
 
 
-class SingleCluster():
-    def __init__(self, block_ids: set[str], place_ids: set[str], num_routes: int):
+class SingleCluster:
+    def __init__(self, block_ids: set[str], abode_ids: set[str], num_routes: int):
         """
         Create an individual turf split problem.
 
@@ -26,40 +32,44 @@ class SingleCluster():
         ----------
         block_ids : set[str]
             The blocks to visit.
-        place_ids : set[str]
-            The places to visit.
+        abode_ids : set[str]
+            The abodes to visit.
         num_routes : int
             The number of routes to create.
         """
         self.block_ids = block_ids
-        self.place_ids = place_ids
-        # super().__init__(block_ids=block_ids, place_ids=place_ids)
+        self.abode_ids = abode_ids
+        # super().__init__(block_ids=block_ids, abode_ids=abode_ids)
 
-        print(f'Setting up a cluster with {len(self.block_ids)} blocks and {len(self.place_ids)} places')
+        print(
+            f"Setting up a cluster with {len(self.block_ids)} blocks and {len(self.abode_ids)} abodes"
+        )
 
         self.db = Database()
 
         self.num_routes = num_routes
 
         # region Load distance matrices
-        self.node_distances = NodeDistances(
-            block_ids=self.block_ids, skip_update=True
-        )
+        self.node_distances = NodeDistances(block_ids=self.block_ids, skip_update=True)
 
         self.block_distances = BlockDistances(
-            block_ids=self.block_ids, node_distances=self.node_distances, skip_update=True
+            block_ids=self.block_ids,
+            node_distances=self.node_distances,
+            skip_update=True,
         )
 
         self.house_distances = HouseDistances(
-            block_ids=self.block_ids, node_distances=self.node_distances)
+            block_ids=self.block_ids, node_distances=self.node_distances
+        )
 
         self.mix_distances = MixDistances(
-            house_distances=self.house_distances, node_distances=self.node_distances)
+            house_distances=self.house_distances, node_distances=self.node_distances
+        )
         # endregion
 
-        # region Retrieve the place and node points
-        self.places: list[Point] = []
-        self.potential_depots: list[Point] = []
+        # region Retrieve the abode and node points
+        self.abode_points: list[InternalPoint] = []
+        self.potential_depots: list[InternalPoint] = []
         inserted_node_ids: set[str] = set()
 
         for block_id in self.block_ids:
@@ -68,18 +78,27 @@ class SingleCluster():
                 print(f"Block {block_id} not found in database")
                 sys.exit(1)
 
-            # Find which places on this block are in the universe
-            self.matching_place_ids = set(block["places"].keys()).intersection(self.place_ids)
+            # Find which abodes on this block are in the universe
+            self.matching_abode_ids = set(block["abodes"].keys()).intersection(
+                self.abode_ids
+            )
 
-            # Add the places to the list of places to visit
-            self.places.extend(
-                Point(lat=block["places"][i]["lat"], lon=block["places"][i]["lon"], id=i, type=NodeType.house) for i in self.matching_place_ids)
+            # Add the abodes to the list of abodes to visit
+            self.abode_points.extend(
+                InternalPoint(
+                    lat=block["abodes"][i]["point"]["lat"],
+                    lon=block["abodes"][i]["point"]["lon"],
+                    id=i,
+                    type=NodeType.house,
+                )
+                for i in self.matching_abode_ids
+            )
 
             # Add the nodes to the list of potential depots
             for i in [0, -1]:
                 if pt_id(block["nodes"][i]) not in inserted_node_ids:
                     self.potential_depots.append(
-                        Point(
+                        InternalPoint(
                             lat=block["nodes"][i]["lat"],
                             lon=block["nodes"][i]["lon"],
                             id=pt_id(block["nodes"][i]),
@@ -89,18 +108,24 @@ class SingleCluster():
                     inserted_node_ids.add(pt_id(block["nodes"][i]))
         # endregion
 
-        print(f'Found {len(self.places)} places and {len(self.potential_depots)} potential depots')
+        print(
+            f"Found {len(self.abode_points)} abodes and {len(self.potential_depots)} potential depots"
+        )
 
-        self.depots = self.find_depots(num_depots=num_routes, places=self.places, potential_depots=self.potential_depots)
+        self.depots = self.find_depots(
+            num_depots=num_routes,
+            abodes=self.abode_points,
+            potential_depots=self.potential_depots,
+        )
 
-        print(f'Found {len(self.depots)} depots: {self.depots}')
+        print(f"Found {len(self.depots)} depots: {self.depots}")
 
-        self.build_problem(houses=self.places, depots=self.depots)
+        self.build_problem(houses=self.abode_points, depots=self.depots)
 
     def build_problem(
         self,
-        houses: list[Point],
-        depots: list[Point],
+        houses: list[InternalPoint],
+        depots: list[InternalPoint],
     ):
         """
         Build a turf split problem.
@@ -130,9 +155,14 @@ class SingleCluster():
             ends=[i for i in range(self.num_routes)],
         )
 
-    def find_depots(self, num_depots: int, places: list[Point], potential_depots: list[Point]) -> list[Point]:
+    def find_depots(
+        self,
+        num_depots: int,
+        abodes: list[InternalPoint],
+        potential_depots: list[InternalPoint],
+    ) -> list[InternalPoint]:
         """
-        Find the optimal depots for the given places.
+        Find the optimal depots for the given abodes.
 
         NOTE: In the future, this should be replaced by the actual turf split optimization problem,
         whereby depots are chosen to maximize total number of houses hit in the cluster. For now,
@@ -142,8 +172,8 @@ class SingleCluster():
         ----------
         num_depots : int
             The number of depots to find.
-        places : list[Point]
-            The places to find depots for.
+        abodes : list[Point]
+            The abodes to find depots for.
         potential_depots : list[Point]
             The potential depots to choose from.
 
@@ -152,20 +182,26 @@ class SingleCluster():
         list[Point]
             The depots.
         """
-        distance_matrix = self.mix_distances.get_distance_matrix(self.places)
+        distance_matrix = self.mix_distances.get_distance_matrix(self.abode_points)
 
         clustered = KMeans(n_clusters=num_depots, random_state=0).fit(distance_matrix)
 
         centers = []
         for cluster in range(num_depots):
             # Re-create the list of houses in this cluster
-            cluster_houses = [house for label, house in zip(clustered.labels_, places) if label == cluster]
+            cluster_houses = [
+                house
+                for label, house in zip(clustered.labels_, abodes)
+                if label == cluster
+            ]
 
             # Find the depot closest to these houses
             depot_sums = []
             for depot in potential_depots:
                 depot_sum = 0
-                for house in random.sample(cluster_houses, min(len(cluster_houses), 100)):
+                for house in random.sample(
+                    cluster_houses, min(len(cluster_houses), 100)
+                ):
                     distance = self.mix_distances.get_distance(depot, house)
                     if isinstance(distance, float):
                         depot_sum += distance
@@ -180,7 +216,7 @@ class SingleCluster():
 
         return centers
 
-    def __call__(self, debug=False, time_limit_s=60) -> list[list[Point]]:
+    def __call__(self, debug=False, time_limit_s=60) -> list[list[InternalPoint]]:
         """
         Solve the problem which has been constructed.
         """
@@ -189,8 +225,8 @@ class SingleCluster():
         )(debug=debug, time_limit_s=time_limit_s)
 
 
-class TurfSplit():
-    def __init__(self, block_ids: set[str], place_ids: set[str], num_routes: int):
+class TurfSplit:
+    def __init__(self, block_ids: set[str], abode_ids: set[str], num_routes: int):
         """
         Create a turf split problem.
 
@@ -198,22 +234,26 @@ class TurfSplit():
         ----------
         block_ids : set[str]
             The blocks to visit.
-        place_ids : set[str]
-            The places to visit.
+        abode_ids : set[str]
+            The abodes to visit.
         num_routes : int
             The number of routes to create.
         """
         self.block_ids = block_ids
-        self.place_ids = place_ids
-        # super().__init__(block_ids=block_ids, place_ids=place_ids)
+        self.abode_ids = abode_ids
+        # super().__init__(block_ids=block_ids, abode_ids=abode_ids)
 
         self.num_routes = num_routes
 
-        self.build_problem(block_ids=self.block_ids, place_ids=self.place_ids, num_routes=self.num_routes)
+        self.build_problem(
+            block_ids=self.block_ids,
+            abode_ids=self.abode_ids,
+            num_routes=self.num_routes,
+        )
 
-    def build_problem(self, block_ids: set[str], place_ids: set[str], num_routes: int):
+    def build_problem(self, block_ids: set[str], abode_ids: set[str], num_routes: int):
         # Cluster into groups of manageable size
-        self.clusters = Clustering(block_ids=block_ids, place_ids=place_ids)()
+        self.clusters = Clustering(block_ids=block_ids, abode_ids=abode_ids)()
 
         # Display the clusters
         labels = []
@@ -232,8 +272,12 @@ class TurfSplit():
             self.num_routes = [1] * len(self.clusters)
         elif num_routes < len(self.clusters):
             # Choose the tighest clusters to generate on (since they'll likely have the best routes)
-            top_clusters = sorted(self.clusters, key=lambda x: x["tightness"], reverse=True)[:num_routes]
-            self.num_routes = [1 if cluster in top_clusters else 0 for cluster in self.clusters]
+            top_clusters = sorted(
+                self.clusters, key=lambda x: x["tightness"], reverse=True
+            )[:num_routes]
+            self.num_routes = [
+                1 if cluster in top_clusters else 0 for cluster in self.clusters
+            ]
         else:
             # Allocate routes to the tightest clusters
             top_clusters = sorted(self.clusters, key=lambda x: x["tightness"])
@@ -242,24 +286,36 @@ class TurfSplit():
             num_to_other_clusters = math.floor(num_routes / len(self.clusters))
             num_top_clusters = num_routes % len(self.clusters)
 
-            self.num_routes = [num_to_top_clusters if cluster in top_clusters[:num_top_clusters] else
-                               num_to_other_clusters for cluster in self.clusters]
+            self.num_routes = [
+                num_to_top_clusters
+                if cluster in top_clusters[:num_top_clusters]
+                else num_to_other_clusters
+                for cluster in self.clusters
+            ]
 
         for i, cluster in enumerate(self.clusters):
-            print(f"Cluster {i} has {len(cluster['block_ids'])} blocks and {len(cluster['place_ids'])} places and tightness {cluster['tightness']} and {self.num_routes[i]} routes")
+            print(
+                f"Cluster {i} has {len(cluster['block_ids'])} blocks, {len(cluster['abode_ids'])} abodes, " +
+                f"tightness {cluster['tightness']:.0f}, and thus {self.num_routes[i]} routes"
+            )
 
         self.problems = []
 
         for cluster, cluster_routes in zip(self.clusters, self.num_routes):
             if cluster_routes > 0:
-                self.problems.append(SingleCluster(
-                    block_ids=cluster["block_ids"], place_ids=cluster["place_ids"], num_routes=cluster_routes))
+                self.problems.append(
+                    SingleCluster(
+                        block_ids=cluster["block_ids"],
+                        abode_ids=cluster["abode_ids"],
+                        num_routes=cluster_routes,
+                    )
+                )
 
         # For access in post-processing
         self.mix_distances = [problem.mix_distances for problem in self.problems]
 
-    def __call__(self, debug=False, time_limit_s=60) -> list[list[list[Point]]]:
-        routes: list[list[list[Point]]] = []
+    def __call__(self, debug=False, time_limit_s=60) -> list[list[list[InternalPoint]]]:
+        routes: list[list[list[InternalPoint]]] = []
 
         for problem in self.problems:
             routes.append(problem(debug=debug, time_limit_s=time_limit_s))

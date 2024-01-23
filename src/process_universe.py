@@ -20,10 +20,10 @@ from src.associate import Associater
 from src.config import (
     CAMPAIGN_ID,
     CAMPAIGN_SUBSET_DB_IDX,
-    PLACE_DB_IDX,
+    ABODE_DB_IDX,
     VOTER_DB_IDX,
-    Person,
-    PlaceSemantics,
+    Voter,
+    Abode,
     manual_match_input_file,
     turnout_predictions_file,
     voter_file_mapping,
@@ -48,14 +48,14 @@ def handle_universe_file(universe_file: str, turnouts: dict[str, float]):
     # Clear this campaign's subset of the database
     db.delete(CAMPAIGN_ID, CAMPAIGN_SUBSET_DB_IDX)
 
-    def add_voter(universe_row: dict, place: str, custom_unit_num: Optional[str]):
+    def add_voter(universe_row: dict, abode_id: str, custom_unit_num: Optional[str]):
         """
         Add a voter to the requested voters dictionary.
 
         Parameters
         ----------
             universe_row (dict): the row from the universe file
-            place (str): the place this voter is located
+            abode_id (str): theid of the abode this voter is located
             custom_unit_num (Optional[str]): the custom unit number for this voter
 
         Returns
@@ -64,7 +64,7 @@ def handle_universe_file(universe_file: str, turnouts: dict[str, float]):
         """
         voter_id = universe_row["ID Number"]
         if db.is_in_set(CAMPAIGN_ID, voter_id, CAMPAIGN_SUBSET_DB_IDX):
-            # This also means the voter has been accounted for in the place and block databases
+            # This also means the voter has been accounted for in the abode and block databases
             return False
 
         party = (
@@ -91,36 +91,36 @@ def handle_universe_file(universe_file: str, turnouts: dict[str, float]):
             # If we do not want to visit this voter at all, do not add them
             return False
 
-        semantic_house_info: PlaceSemantics = db.get_dict(place, PLACE_DB_IDX)
+        abode: Abode = db.get_dict(abode_id, ABODE_DB_IDX)
 
         if custom_unit_num is not None:
-            if "voters" not in semantic_house_info:
+            if "voter_ids" not in abode:
                 # This is the first voter in this unit
-                semantic_house_info["voters"] = {custom_unit_num: [voter_id]}
-            elif type(semantic_house_info["voters"]) is list:
+                abode["voter_ids"] = {custom_unit_num: [voter_id]}
+            elif type(abode["voter_ids"]) is list:
                 # Other voters do not have units, so place them in the default unit
-                semantic_house_info["voters"] = {
-                    "": semantic_house_info["voters"],
+                abode["voter_ids"] = {
+                    "": abode["voter_ids"],
                     custom_unit_num: [voter_id],
                 }
-            elif type(semantic_house_info["voters"]) is dict:
+            elif type(abode["voter_ids"]) is dict:
                 # There are already voters in this and/or other units
-                if custom_unit_num in semantic_house_info["voters"]:
-                    semantic_house_info["voters"][custom_unit_num].append(voter_id)
+                if custom_unit_num in abode["voter_ids"]:
+                    abode["voter_ids"][custom_unit_num].append(voter_id)
                 else:
-                    semantic_house_info["voters"][custom_unit_num] = [voter_id]
+                    abode["voter_ids"][custom_unit_num] = [voter_id]
         else:
-            if "voters" not in semantic_house_info:
+            if "voter_ids" not in abode:
                 # This is the first voter in this unit
-                semantic_house_info["voters"] = [voter_id]
-            elif type(semantic_house_info["voters"]) is list:
-                semantic_house_info["voters"].append(voter_id)
-            elif type(semantic_house_info["voters"]) is dict:
+                abode["voter_ids"] = [voter_id]
+            elif type(abode["voter_ids"]) is list:
+                abode["voter_ids"].append(voter_id)
+            elif type(abode["voter_ids"]) is dict:
                 # There are already voters in this and/or other units, so place this voter in the default unit
-                if "" in semantic_house_info["voters"]:
-                    semantic_house_info["voters"][""].append(voter_id)
+                if "" in abode["voter_ids"]:
+                    abode["voter_ids"][""].append(voter_id)
                 else:
-                    semantic_house_info["voters"][""] = [voter_id]
+                    abode["voter_ids"][""] = [voter_id]
 
         name = f"{universe_row['First Name']} {universe_row['Last Name']}"
         if universe_row["Suffix"] != "":
@@ -139,28 +139,27 @@ def handle_universe_file(universe_file: str, turnouts: dict[str, float]):
             voting_history[election_key.name] = voted
             voting_history[election_key.name + "_mail"] = by_mail
 
-        person = Person(
+        voter = Voter(
+            id=voter_id,
             name=name,
             age=age,
             party=party,
-            voter_id=voter_id,
-            place=place,
+            abode_id=abode_id,
             voting_history=voting_history,
-            value=value,
             turnout=turnout,
         )
 
         if custom_unit_num is not None:
-            person["place_unit"] = custom_unit_num
+            voter["abode_unit"] = custom_unit_num
 
         # Add the voter info to the database
-        db.set_dict(voter_id, dict(person), VOTER_DB_IDX)
+        db.set_dict(voter_id, dict(voter), VOTER_DB_IDX)
 
         # Add voter to this campaign
         db.add_to_set(CAMPAIGN_ID, voter_id, CAMPAIGN_SUBSET_DB_IDX)
 
-        # Add the voter to the place
-        db.set_dict(place, semantic_house_info, PLACE_DB_IDX)
+        # Add the voter to the abode
+        db.set_dict(abode_id, abode, ABODE_DB_IDX)
 
         return True
 
@@ -196,11 +195,11 @@ def handle_universe_file(universe_file: str, turnouts: dict[str, float]):
 
         result = associater.associate(formatted_address)
         if result is not None:
-            block_id, place, custom_unit_num = result
+            block_id, abode, custom_unit_num = result
 
             added: bool = add_voter(
                 entry,
-                place,
+                abode,
                 custom_unit_num if custom_unit_num != "" else None,
             )
 

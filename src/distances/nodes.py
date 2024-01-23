@@ -7,11 +7,10 @@ from src.config import (
     BLOCK_DB_IDX,
     MAX_STORAGE_DISTANCE,
     NODE_DISTANCE_MATRIX_DB_IDX,
-    AnyPoint,
     Point,
+    InternalPoint,
     generate_pt_id,
     generate_pt_id_pair,
-    Singleton
 )
 from src.utils.db import Database
 from src.utils.gps import great_circle_distance
@@ -22,7 +21,7 @@ class NodeDistancesSnapshot:
     def __init__(self, snapshot: dict[str, str]):
         self.snapshot = snapshot
 
-    def get_distance(self, p1: AnyPoint, p2: AnyPoint) -> Optional[float]:
+    def get_distance(self, p1: Point, p2: Point) -> Optional[float]:
         p1_id, p2_id = generate_pt_id(p1), generate_pt_id(p2)
         id_pair_1, id_pair_2 = generate_pt_id_pair(p1_id, p2_id), generate_pt_id_pair(
             p2_id, p1_id
@@ -35,14 +34,15 @@ class NodeDistancesSnapshot:
         return None
 
 
-class NodeDistances():
+class NodeDistances:
     """
     Helper class to store and retrieve distances between nodes.
 
     Ultimately, the in-memory database is used for retrieval and storage. This class
     updates the database with unseen nodes and retrieves distances safely.
     """
-    def _insert_pair(self, node_1: Point, node_2: Point):
+
+    def _insert_pair(self, node_1: InternalPoint, node_2: InternalPoint):
         """
         Insert a pair of nodes into the node distance matrix.
 
@@ -72,7 +72,7 @@ class NodeDistances():
                 NODE_DISTANCE_MATRIX_DB_IDX,
             )
 
-    def _update(self, nodes: list[Point]):
+    def _update(self, nodes: list[InternalPoint]):
         """
         Update the node distance table by adding any missing points
 
@@ -101,7 +101,7 @@ class NodeDistances():
             return
 
         needed_nodes_set: set[str] = set()
-        needed_nodes: list[Point] = []
+        needed_nodes: list[InternalPoint] = []
         for block_id in block_ids:
             block = self._db.get_dict(block_id, BLOCK_DB_IDX)
 
@@ -120,7 +120,7 @@ class NodeDistances():
         # Add any necessary nodes to the matrix
         self._update(list(needed_nodes))
 
-    def get_distance(self, p1: AnyPoint, p2: AnyPoint) -> Optional[float]:
+    def get_distance(self, p1: Point, p2: Point) -> Optional[float]:
         """
         Get the distance between two nodes by their coordinates.
 
@@ -155,7 +155,7 @@ class NodeDistances():
         snapshot = self._db.get_all_str(NODE_DISTANCE_MATRIX_DB_IDX)
         return NodeDistancesSnapshot(snapshot)
 
-    def get_multiple(self, pts: list[tuple[AnyPoint, AnyPoint]]) -> list[Optional[float]]:
+    def get_multiple(self, pts: list[tuple[Point, Point]]) -> list[Optional[float]]:
         """
         Get the distance between multiple pairs of nodes by their coordinates.
 
@@ -170,14 +170,16 @@ class NodeDistances():
         ids: list[tuple[str, str]] = []
         for p1, p2 in pts:
             p1_id, p2_id = generate_pt_id(p1), generate_pt_id(p2)
-            id_pair_1, id_pair_2 = generate_pt_id_pair(p1_id, p2_id), generate_pt_id_pair(
-                p2_id, p1_id
-            )
+            id_pair_1, id_pair_2 = generate_pt_id_pair(
+                p1_id, p2_id
+            ), generate_pt_id_pair(p2_id, p1_id)
             ids.append((id_pair_1, id_pair_2))
 
         # Flatten the list of tuples
         flattened: list[str] = [id for pair in ids for id in pair]
-        results = list(self._db.get_multiple_str(flattened, NODE_DISTANCE_MATRIX_DB_IDX).values())
+        results = list(
+            self._db.get_multiple_str(flattened, NODE_DISTANCE_MATRIX_DB_IDX).values()
+        )
 
         # Split the results back into pairs
         distances = []

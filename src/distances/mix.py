@@ -8,11 +8,10 @@ from src.config import (
     MAX_STORAGE_DISTANCE,
     Block,
     NodeType,
-    Point,
+    InternalPoint,
     pt_id,
     BLOCK_DB_IDX,
-    PLACE_DB_IDX,
-    Singleton
+    ABODE_DB_IDX,
 )
 
 from src.distances.houses import HouseDistances, HouseDistancesSnapshot
@@ -22,14 +21,18 @@ from src.utils.db import Database
 
 
 class MixDistancesSnapshot:
-    def __init__(self, node_distances: NodeDistancesSnapshot, house_distances: HouseDistancesSnapshot):
+    def __init__(
+        self,
+        node_distances: NodeDistancesSnapshot,
+        house_distances: HouseDistancesSnapshot,
+    ):
         self._node_distances = node_distances
         self._house_distances = house_distances
         self._db = Database()
         # TODO: Somehow take a snapshot of blocks if necessary
 
     def get_distance_through_ends(
-        self, node: Point, house: Point
+        self, node: InternalPoint, house: InternalPoint
     ) -> tuple[Optional[float], Optional[float]]:
         """
         Determine the distances from an intersection point to a house through the two ends of the house's segments.
@@ -44,26 +47,32 @@ class MixDistancesSnapshot:
             Optional[float]: the distance from the intersection to the house through the start of the segment
             Optional[float]: the distance from the intersection to the house through the end of the segment
         """
-        block_id = self._db.get_dict(house["id"], PLACE_DB_IDX)["block_id"]
+        block_id = self._db.get_dict(house["id"], ABODE_DB_IDX)["block_id"]
         block: Block = self._db.get_dict(block_id, BLOCK_DB_IDX)
-        block_start = Point(lat=block["nodes"][0]["lat"], lon=block["nodes"][0]["lon"], type=NodeType.node, id="block_start")
+        block_start = InternalPoint(
+            lat=block["nodes"][0]["lat"],
+            lon=block["nodes"][0]["lon"],
+            type=NodeType.node,
+            id="block_start",
+        )
         through_start = self._node_distances.get_distance(node, block_start)
 
         if through_start is not None:
-            through_start += block["places"][pt_id(house)][
-                "distance_to_start"
-            ]
+            through_start += block["abodes"][pt_id(house)]["distance_to_start"]
 
-        block_end = Point(lat=block["nodes"][-1]["lat"], lon=block["nodes"][-1]["lon"], type=NodeType.node, id="block_end")
+        block_end = InternalPoint(
+            lat=block["nodes"][-1]["lat"],
+            lon=block["nodes"][-1]["lon"],
+            type=NodeType.node,
+            id="block_end",
+        )
         through_end = self._node_distances.get_distance(node, block_end)
         if through_end is not None:
-            through_end += block["places"][pt_id(house)][
-                "distance_to_end"
-            ]
+            through_end += block["abodes"][pt_id(house)]["distance_to_end"]
         return through_start, through_end
 
     def get_distance(
-        self, p1: Point, p2: Point
+        self, p1: InternalPoint, p2: InternalPoint
     ) -> Optional[tuple[float, float]] | Optional[float]:
         if "type" not in p1 or "type" not in p2:
             raise ValueError(
@@ -75,7 +84,9 @@ class MixDistancesSnapshot:
         elif p1["type"] == p2["type"] == NodeType.node:
             return self._node_distances.get_distance(p1, p2)
         elif p1["type"] == NodeType.node and p2["type"] == NodeType.house:
-            through_start, through_end = self.get_distance_through_ends(node=p1, house=p2)
+            through_start, through_end = self.get_distance_through_ends(
+                node=p1, house=p2
+            )
             if through_start is None and through_end is None:
                 return None
             elif through_start is None:
@@ -85,7 +96,9 @@ class MixDistancesSnapshot:
             else:
                 return min(through_start, through_end)
         elif p1["type"] == NodeType.house and p2["type"] == NodeType.node:
-            through_start, through_end = self.get_distance_through_ends(node=p2, house=p1)
+            through_start, through_end = self.get_distance_through_ends(
+                node=p2, house=p1
+            )
             if through_start is None and through_end is None:
                 return None
             elif through_start is None:
@@ -102,14 +115,14 @@ class MixDistancesSnapshot:
             )
 
 
-class MixDistances():
+class MixDistances:
     def __init__(self, house_distances: HouseDistances, node_distances: NodeDistances):
         self._db = Database()
         self._house_distances = house_distances
         self._node_distances = node_distances
 
     def get_distance_through_ends(
-        self, node: Point, house: Point
+        self, node: InternalPoint, house: InternalPoint
     ) -> tuple[Optional[float], Optional[float]]:
         """
         Determine the distances from an intersection point to a house through the two ends of the house's segments.
@@ -124,26 +137,32 @@ class MixDistances():
             Optional[float]: the distance from the intersection to the house through the start of the segment
             Optional[float]: the distance from the intersection to the house through the end of the segment
         """
-        block_id = self._db.get_dict(house["id"], PLACE_DB_IDX)["block_id"]
+        block_id = self._db.get_dict(house["id"], ABODE_DB_IDX)["block_id"]
         block: Block = self._db.get_dict(block_id, BLOCK_DB_IDX)
-        block_start = Point(lat=block["nodes"][0]["lat"], lon=block["nodes"][0]["lon"], type=NodeType.node, id="block_start")
+        block_start = InternalPoint(
+            lat=block["nodes"][0]["lat"],
+            lon=block["nodes"][0]["lon"],
+            type=NodeType.node,
+            id="block_start",
+        )
         through_start = self._node_distances.get_distance(node, block_start)
 
         if through_start is not None:
-            through_start += block["places"][pt_id(house)][
-                "distance_to_start"
-            ]
+            through_start += block["abodes"][pt_id(house)]["distance_to_start"]
 
-        block_end = Point(lat=block["nodes"][-1]["lat"], lon=block["nodes"][-1]["lon"], type=NodeType.node, id="block_end")
+        block_end = InternalPoint(
+            lat=block["nodes"][-1]["lat"],
+            lon=block["nodes"][-1]["lon"],
+            type=NodeType.node,
+            id="block_end",
+        )
         through_end = self._node_distances.get_distance(node, block_end)
         if through_end is not None:
-            through_end += block["places"][pt_id(house)][
-                "distance_to_end"
-            ]
+            through_end += block["abodes"][pt_id(house)]["distance_to_end"]
         return through_start, through_end
 
     def get_distance(
-        self, p1: Point, p2: Point
+        self, p1: InternalPoint, p2: InternalPoint
     ) -> Optional[tuple[float, float]] | Optional[float]:
         if "type" not in p1 or "type" not in p2:
             raise ValueError(
@@ -155,7 +174,9 @@ class MixDistances():
         elif p1["type"] == p2["type"] == NodeType.node:
             return self._node_distances.get_distance(p1, p2)
         elif p1["type"] == NodeType.node and p2["type"] == NodeType.house:
-            through_start, through_end = self.get_distance_through_ends(node=p1, house=p2)
+            through_start, through_end = self.get_distance_through_ends(
+                node=p1, house=p2
+            )
             if through_start is None and through_end is None:
                 return None
             elif through_start is None:
@@ -165,7 +186,9 @@ class MixDistances():
             else:
                 return min(through_start, through_end)
         elif p1["type"] == NodeType.house and p2["type"] == NodeType.node:
-            through_start, through_end = self.get_distance_through_ends(node=p2, house=p1)
+            through_start, through_end = self.get_distance_through_ends(
+                node=p2, house=p1
+            )
             if through_start is None and through_end is None:
                 return None
             elif through_start is None:
@@ -189,7 +212,7 @@ class MixDistances():
             house_distances=self._house_distances.snapshot(),
         )
 
-    def get_distance_matrix(self, points: list[Point]):
+    def get_distance_matrix(self, points: list[InternalPoint]):
         """
         Get the distance matrix for a list of points
 
@@ -203,7 +226,9 @@ class MixDistances():
 
         portion_none = 0
 
-        for i, p1 in enumerate(tqdm(points, desc="Building distance matrix", colour="green")):
+        for i, p1 in enumerate(
+            tqdm(points, desc="Building distance matrix", colour="green")
+        ):
             for j, p2 in enumerate(points):
                 d_or_dc = snapshot.get_distance(p1, p2)
 
@@ -218,6 +243,8 @@ class MixDistances():
 
                 matrix[i][j] = d
 
-        print(f"Portion of distances that are None: {portion_none / (len(points) ** 2)}")
+        print(
+            f"Portion of distances that are None: {portion_none / (len(points) ** 2)}"
+        )
 
         return matrix

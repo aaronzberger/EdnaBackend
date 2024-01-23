@@ -16,12 +16,12 @@ class WriteBuffer:
         self._buffer: dict[str, str] = {}
         self._write_fn = write_fn
         self._buffer_size = buffer_size
-    
+
     def write(self, key: str, val: str):
         self._buffer[key] = val
         if len(self._buffer) >= self._buffer_size:
             self.flush()
-    
+
     def flush(self):
         self._write_fn(self._buffer)
         self._buffer = {}

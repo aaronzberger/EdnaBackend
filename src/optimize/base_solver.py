@@ -6,13 +6,13 @@ from typing import TypedDict
 import numpy as np
 from ortools.constraint_solver import pywrapcp, routing_enums_pb2
 
-from src.config import MAX_TOURING_TIME, TIME_AT_HOUSE, WALKING_M_PER_S, Point
+from src.config import MAX_TOURING_TIME, TIME_AT_HOUSE, WALKING_M_PER_S, InternalPoint
 from src.distances.mix import MixDistances
 from src.utils.viz import display_distance_matrix
 
 
 class ProblemInfo(TypedDict):
-    points: list[Point]
+    points: list[InternalPoint]
     num_vehicles: int
     num_depots: int
     num_points: int
@@ -20,7 +20,7 @@ class ProblemInfo(TypedDict):
     ends: list[int]
 
 
-class BaseSolver():
+class BaseSolver:
     def __init__(self, problem_info: ProblemInfo, mix_distances: MixDistances):
         """
         Create a group canvas problem.
@@ -35,12 +35,16 @@ class BaseSolver():
         self.problem_info = problem_info
         self.mix_distances = mix_distances
 
-    def __call__(self, debug=True, time_limit_s=10) -> list[list[Point]]:
+    def __call__(self, debug=True, time_limit_s=10) -> list[list[InternalPoint]]:
         # Construct the distance matrix
-        distance_matrix = self.mix_distances.get_distance_matrix(self.problem_info["points"])
+        distance_matrix = self.mix_distances.get_distance_matrix(
+            self.problem_info["points"]
+        )
 
         if debug:
-            display_distance_matrix(points=self.problem_info["points"], distances=distance_matrix)
+            display_distance_matrix(
+                points=self.problem_info["points"], distances=distance_matrix
+            )
 
         print(
             "Distance matrix has shape {}".format(
@@ -49,12 +53,12 @@ class BaseSolver():
         )
 
         # Convert distance matrix to input format
-        distance_matrix = (
-            (distance_matrix / WALKING_M_PER_S)
-        )
+        distance_matrix = distance_matrix / WALKING_M_PER_S
 
         # Add the stopping time to the distance matrix (add to the arriving node)
-        house_indices = range(self.problem_info["num_vehicles"], self.problem_info["num_points"])
+        house_indices = range(
+            self.problem_info["num_vehicles"], self.problem_info["num_points"]
+        )
         distance_matrix[house_indices, :] += TIME_AT_HOUSE.seconds
         distance_matrix[:, house_indices] += TIME_AT_HOUSE.seconds
         np.fill_diagonal(distance_matrix, 0)
@@ -120,7 +124,7 @@ class BaseSolver():
             print(route)
 
         # Convert to universal format
-        house_routes: list[list[Point]] = []
+        house_routes: list[list[InternalPoint]] = []
         for route in routes:
             house_route = []
             for node in route:

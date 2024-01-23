@@ -1,5 +1,5 @@
 import sys
-from src.config import BLOCK_DB_IDX, NodeType, Point
+from src.config import BLOCK_DB_IDX, NodeType, InternalPoint
 from src.distances.mix import MixDistances
 from src.optimize.optimizer import Optimizer
 from src.optimize.base_solver import ProblemInfo
@@ -12,7 +12,13 @@ from src.utils.viz import display_custom_area
 
 
 class GroupCanvas(Optimizer):
-    def __init__(self, block_ids: set[str], place_ids: set[str], depot: Point, num_routes: int):
+    def __init__(
+        self,
+        block_ids: set[str],
+        abode_ids: set[str],
+        depot: InternalPoint,
+        num_routes: int,
+    ):
         """
         Create a group canvas problem.
 
@@ -20,14 +26,14 @@ class GroupCanvas(Optimizer):
         ----------
         block_ids : set[str]
             The blocks to visit.
-        place_ids : set[str]
-            The places to visit.
+        abode_ids : set[str]
+            The abodes to visit.
         depot : Point
             The depot to start from.
         num_routes : int
             The number of routes to create.
         """
-        super().__init__(block_ids=block_ids, place_ids=place_ids)
+        super().__init__(block_ids=block_ids, abode_ids=abode_ids)
 
         self.db = Database()
 
@@ -36,7 +42,7 @@ class GroupCanvas(Optimizer):
         radius = MAX_TOURING_DISTANCE / 2
 
         self.local_block_ids = set()
-        self.local_places: list[Point] = []
+        self.local_abodes: list[InternalPoint] = []
 
         # region Retrieve area subsection
         for block_id in block_ids:
@@ -45,37 +51,54 @@ class GroupCanvas(Optimizer):
                 print(f"Block {block_id} not found in database")
                 sys.exit(1)
 
-            if great_circle_distance(block["nodes"][0], self.depot) < radius or great_circle_distance(block["nodes"][-1], self.depot) < radius:
+            if (
+                great_circle_distance(block["nodes"][0], self.depot) < radius
+                or great_circle_distance(block["nodes"][-1], self.depot) < radius
+            ):
                 self.local_block_ids.add(block_id)
 
-                # Find which places on this block are in the universe
-                self.matching_place_ids = set(block["places"].keys()).intersection(self.place_ids)
+                # Find which abodes on this block are in the universe
+                self.matching_abode_ids = set(block["abodes"].keys()).intersection(
+                    self.abode_ids
+                )
 
-                # Add the places to the list of places to visit
-                self.local_places.extend(
-                    Point(lat=block["places"][i]["lat"], lon=block["places"][i]["lon"], id=i, type=NodeType.house) for i in self.matching_place_ids)
+                # Add the abodes to the list of abodes to visit
+                self.local_abodes.extend(
+                    InternalPoint(
+                        lat=block["abodes"][i]["lat"],
+                        lon=block["abodes"][i]["lon"],
+                        id=i,
+                        type=NodeType.house,
+                    )
+                    for i in self.matching_abode_ids
+                )
 
-        display_custom_area(depot=self.depot, places=self.local_places)
+        display_custom_area(depot=self.depot, abodes=self.local_abodes)
         # endregion
 
-        print(f'Of {len(block_ids)} blocks, {len(self.local_block_ids)} are within {radius} meters of the depot')
+        print(
+            f"Of {len(block_ids)} blocks, {len(self.local_block_ids)} are within {radius} meters of the depot"
+        )
 
         # region Load distance matrices
         self.node_distances = NodeDistances(
-            block_ids=self.local_block_ids, skip_update=True)
+            block_ids=self.local_block_ids, skip_update=True
+        )
 
         self.house_distances = HouseDistances(
-            block_ids=self.local_block_ids, node_distances=self.node_distances, depots=[self.depot])
+            block_ids=self.local_block_ids,
+            node_distances=self.node_distances,
+            depots=[self.depot],
+        )
 
         self.mix_distances = MixDistances(
-            house_distances=self.house_distances, node_distances=self.node_distances)
+            house_distances=self.house_distances, node_distances=self.node_distances
+        )
         # endregion
 
-        self.build_problem(houses=self.local_places)
+        self.build_problem(houses=self.local_abodes)
 
-    def build_problem(
-        self, houses: list[Point]
-    ):
+    def build_problem(self, houses: list[InternalPoint]):
         """
         Create a group canvas problem.
 

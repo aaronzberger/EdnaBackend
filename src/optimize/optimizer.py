@@ -1,12 +1,12 @@
 # from abc import abstractmethod
-from src.config import Point
+from src.config import InternalPoint
 
 from src.distances.mix import MixDistances
 
 from src.optimize.base_solver import BaseSolver
 
 
-class Optimizer():
+class Optimizer:
     """
     Abstract class for an optimizer.
 
@@ -16,14 +16,15 @@ class Optimizer():
         mix_distances (MixDistances): a computer for distances between the points
         problem_info (ProblemInfo): metadata for the problem
     """
-    def __init__(self, block_ids: set[str], place_ids: set[str]):
+
+    def __init__(self, block_ids: set[str], abode_ids: set[str]):
         self.block_ids = block_ids
-        self.place_ids = place_ids
+        self.place_ids = abode_ids
 
     def build_problem(self, mix_distances: MixDistances):
         self.mix_distances = mix_distances
 
-    def __call__(self, debug=False, time_limit_s=60) -> list[list[Point]]:
+    def __call__(self, debug=False, time_limit_s=60) -> list[list[InternalPoint]]:
         """
         Solve the problem which has been constructed.
         """

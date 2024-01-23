@@ -11,14 +11,12 @@ from src.config import (
     DISTANCE_TO_ROAD_MULTIPLIER,
     MAX_STORAGE_DISTANCE,
     USE_COST_METRIC,
-    AnyPoint,
-    Block,
     Point,
+    Block,
+    InternalPoint,
     pt_id,
     BLOCK_DB_IDX,
-    HOUSE_DISTANCE_MATRIX_DB_IDX,
-    generate_place_id_pair,
-    Singleton
+    generate_abode_id_pair,
 )
 from src.distances.nodes import NodeDistances
 from src.utils.route import get_distance
@@ -61,11 +59,11 @@ class HouseDistancesSnapshot:
     def __init__(self, snapshot: dict[str, str]):
         self.snapshot = snapshot
 
-    def get_distance(self, p1: AnyPoint, p2: AnyPoint) -> Optional[tuple[float, float]]:
+    def get_distance(self, p1: Point, p2: Point) -> Optional[tuple[float, float]]:
         p1_id, p2_id = pt_id(p1), pt_id(p2)
-        id_pair_1, id_pair_2 = generate_place_id_pair(p1_id, p2_id), generate_place_id_pair(
-            p2_id, p1_id
-        )
+        id_pair_1, id_pair_2 = generate_abode_id_pair(
+            p1_id, p2_id
+        ), generate_abode_id_pair(p2_id, p1_id)
 
         if id_pair_1 in self.snapshot:
             return unstore(int(self.snapshot[id_pair_1]))
@@ -74,19 +72,23 @@ class HouseDistancesSnapshot:
         return None
 
 
-class HouseDistances():
-    def _insert_point(self, pt: Point, b: Block):
-        b_houses = b["places"]
+class HouseDistances:
+    def _insert_point(self, pt: InternalPoint, b: Block):
+        b_houses = b["abodes"]
 
         if len(b_houses) == 0:
             return
 
         # Calculate the distances between the segment endpoints
-        distance_from_start = self._node_distances_snapshot.get_distance(pt, b["nodes"][0])
+        distance_from_start = self._node_distances_snapshot.get_distance(
+            pt, b["nodes"][0]
+        )
         if distance_from_start is None:
             distance_from_start = get_distance(pt, b["nodes"][0])
 
-        distance_from_end = self._node_distances_snapshot.get_distance(pt, b["nodes"][-1])
+        distance_from_end = self._node_distances_snapshot.get_distance(
+            pt, b["nodes"][-1]
+        )
         if distance_from_end is None:
             distance_from_end = get_distance(pt, b["nodes"][-1])
 
@@ -97,7 +99,9 @@ class HouseDistances():
             distance = min(through_start, through_end)
 
             if distance < MAX_STORAGE_DISTANCE:
-                self.distance_matrix[generate_place_id_pair(pt_id(pt), address)] = store(round(distance), 0)
+                self.distance_matrix[
+                    generate_abode_id_pair(pt_id(pt), address)
+                ] = store(round(distance), 0)
 
     def _crossing_penalty(self, block: Block) -> int:
         try:
@@ -112,9 +116,11 @@ class HouseDistances():
 
     def _insert_block(self, b: Block):
         # Check if the segments are the same
-        for (id_1, info_1), (id_2, info_2) in itertools.product(b["places"].items(), b["places"].items()):
+        for (id_1, info_1), (id_2, info_2) in itertools.product(
+            b["abodes"].items(), b["abodes"].items()
+        ):
             if id_1 == id_2:
-                self.distance_matrix[generate_place_id_pair(id_1, id_2)] = store(0, 0)
+                self.distance_matrix[generate_abode_id_pair(id_1, id_2)] = store(0, 0)
             else:
                 distance_to_road = (
                     info_1["distance_to_road"] + info_2["distance_to_road"]
@@ -143,18 +149,22 @@ class HouseDistances():
 
                 if not USE_COST_METRIC:
                     if distance < MAX_STORAGE_DISTANCE:
-                        self.distance_matrix[generate_place_id_pair(id_1, id_2)] = store(round(distance), 0)
+                        self.distance_matrix[
+                            generate_abode_id_pair(id_1, id_2)
+                        ] = store(round(distance), 0)
                 else:
                     cost = 0
                     if info_1["side"] != info_2["side"]:
                         cost += self._crossing_penalty(b)
 
                     if distance < MAX_STORAGE_DISTANCE:
-                        self.distance_matrix[generate_place_id_pair(id_1, id_2)] = store(round(distance), round(cost))
+                        self.distance_matrix[
+                            generate_abode_id_pair(id_1, id_2)
+                        ] = store(round(distance), round(cost))
 
     def _insert_pair(self, b1: Block, b1_id: str, b2: Block, b2_id: str):
-        b1_houses = b1["places"]
-        b2_houses = b2["places"]
+        b1_houses = b1["abodes"]
+        b2_houses = b2["abodes"]
 
         if len(b1_houses) == 0 or len(b2_houses) == 0:
             return
@@ -219,12 +229,18 @@ class HouseDistances():
                 cost += DIFFERENT_BLOCK_COST
 
                 if distance < MAX_STORAGE_DISTANCE:
-                    self.distance_matrix[generate_place_id_pair(id_1, id_2)] = store(round(distance), round(cost))
+                    self.distance_matrix[generate_abode_id_pair(id_1, id_2)] = store(
+                        round(distance), round(cost)
+                    )
             else:
                 if distance < MAX_STORAGE_DISTANCE:
-                    self.distance_matrix[generate_place_id_pair(id_1, id_2)] = store(round(distance), 0)
+                    self.distance_matrix[generate_abode_id_pair(id_1, id_2)] = store(
+                        round(distance), 0
+                    )
 
-    def _update(self, blocks: dict[str, Block], depots: Optional[list[Point]] = None):
+    def _update(
+        self, blocks: dict[str, Block], depots: Optional[list[InternalPoint]] = None
+    ):
         """
         Update the block distance table by adding any missing blocks
 
@@ -244,14 +260,21 @@ class HouseDistances():
                 if depots is not None:
                     for depot in depots:
                         # Insert the point and itself
-                        self.distance_matrix[generate_place_id_pair(pt_id(depot), pt_id(depot))] = store(0, 0)
+                        self.distance_matrix[
+                            generate_abode_id_pair(pt_id(depot), pt_id(depot))
+                        ] = store(0, 0)
 
                         self._insert_point(depot, b1)
                 for b2_id, b2 in blocks.items():
                     self._insert_pair(b1, b1_id, b2, b2_id)
                     progress.update()
 
-    def __init__(self, block_ids: list[str], node_distances: NodeDistances, depots: Optional[list[Point]] = None):
+    def __init__(
+        self,
+        block_ids: list[str],
+        node_distances: NodeDistances,
+        depots: Optional[list[InternalPoint]] = None,
+    ):
         self._db = Database()
         self.distance_matrix: dict[str, str] = {}
 
@@ -272,7 +295,7 @@ class HouseDistances():
         self._update(blocks, depots)
 
     def get_distance(
-        self, p1: AnyPoint, p2: AnyPoint
+        self, p1: Point, p2: Point
     ) -> Optional[tuple[float, float] | float]:
         """
         Get the distance between two houses by their coordinates.
@@ -287,9 +310,9 @@ class HouseDistances():
             tuple[float, float] | float | None: distance, cost between the two points (if using the cost metric)
                 or just the distance (if not using the cost metric), or None if the distance is too far
         """
-        pair_1, pair_2 = generate_place_id_pair(
+        pair_1, pair_2 = generate_abode_id_pair(
             pt_id(p1), pt_id(p2)
-        ), generate_place_id_pair(pt_id(p2), pt_id(p1))
+        ), generate_abode_id_pair(pt_id(p2), pt_id(p1))
 
         pair_1_r = self.distance_matrix.get(pair_1)
         if pair_1_r is not None:
@@ -309,6 +332,8 @@ class HouseDistances():
         -------
             HouseDistancesSnapshot: a snapshot of the current house distances table
         """
-        print(f'Taking snapshot of house distances table with {len(self.distance_matrix)} entries')
+        print(
+            f"Taking snapshot of house distances table with {len(self.distance_matrix)} entries"
+        )
         snapshot = deepcopy(self.distance_matrix)
         return HouseDistancesSnapshot(snapshot)

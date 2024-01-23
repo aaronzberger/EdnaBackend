@@ -8,13 +8,13 @@ import sys
 from termcolor import colored
 from tqdm import tqdm
 
-from src.config import (BASE_DIR, Point, block_output_file, blocks_file,
+from src.config import (BASE_DIR, InternalPoint, block_output_file, blocks_file,
                         node_coords_file)
 from src.utils.gps import along_track_distance
 
 
 print('Loading associations')
-house_associations: dict[str, dict[str, list[str | Point]]] = json.load(open(blocks_file))
+house_associations: dict[str, dict[str, list[str | InternalPoint]]] = json.load(open(blocks_file))
 
 # This file contains the addresses of the requested Squirrel Hill houses
 print('Loading requested houses...')
@@ -31,7 +31,7 @@ all_way_nodes = json.load(open(block_output_file))
 
 # Load the hash table containing node coordinates hashed by ID
 print('Loading hash table of nodes...')
-node_coords: dict[str, Point] = json.load(open(node_coords_file, 'r'))
+node_coords: dict[str, InternalPoint] = json.load(open(node_coords_file, 'r'))
 
 walk_list = {
     'addresses': [],
@@ -128,20 +128,20 @@ for block in block_order:
             block_ends[block][0][3] = temp
 
         segment_start_coords = node_coords[block_ends[block][0][2]]
-        segment_start_pt = Point(lat=segment_start_coords['lat'], lon=segment_start_coords['lon'])
+        segment_start_pt = InternalPoint(lat=segment_start_coords['lat'], lon=segment_start_coords['lon'])
         segment_end_coords = node_coords[block_ends[block][0][3]]
-        segment_end_pt = Point(lat=segment_end_coords['lat'], lon=segment_end_coords['lon'])
+        segment_end_pt = InternalPoint(lat=segment_end_coords['lat'], lon=segment_end_coords['lon'])
 
         # ALD to beginning of segment relative to start
         h1_to_p1, _ = along_track_distance(
             p1=segment_start_pt,
-            p2=Point(*start_house_coords),
-            p3=Point(*end_house_coords))
+            p2=InternalPoint(*start_house_coords),
+            p3=InternalPoint(*end_house_coords))
 
         h2_to_p1, _ = along_track_distance(
             p1=segment_end_pt,
-            p2=Point(*start_house_coords),
-            p3=Point(*end_house_coords))
+            p2=InternalPoint(*start_house_coords),
+            p3=InternalPoint(*end_house_coords))
 
         if h1_to_p1 < h2_to_p1:
             walk_list['route'] += way_nodes

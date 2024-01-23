@@ -1,4 +1,3 @@
-import csv
 import os
 import pandas as pd
 
@@ -9,7 +8,12 @@ NAME = "mail_data_10-27-23"
 
 
 # Read the data from the file and take first row as header
-data = pd.read_csv(os.path.join(BASE_DIR, "input", f"{NAME}.txt"), sep="\t", header=0, encoding='unicode_escape')
+data = pd.read_csv(
+    os.path.join(BASE_DIR, "input", f"{NAME}.txt"),
+    sep="\t",
+    header=0,
+    encoding="unicode_escape",
+)
 
 # Print any duplicate ID Numbers
 if len(data[data.duplicated("ID Number")]["ID Number"]) > 0:

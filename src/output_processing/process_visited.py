@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-from src.config import BASE_DIR, Point, details_file, files_dir, house_to_voters_file
+from src.config import BASE_DIR, InternalPoint, details_file, files_dir, house_to_voters_file
 from src.utils.viz import display_visited_and_unvisited
 
 
@@ -64,9 +64,9 @@ uuids_unvisited: set[str] = set()
 
 tooltips = {}
 
-uuids_hit_pts: list[Point] = []
-uuids_miss_pts: list[Point] = []
-uuids_unvisited_pts: list[Point] = []
+uuids_hit_pts: list[InternalPoint] = []
+uuids_miss_pts: list[InternalPoint] = []
+uuids_unvisited_pts: list[InternalPoint] = []
 
 
 for list_name in uploaded_lists:
@@ -88,7 +88,7 @@ for list_name in uploaded_lists:
 
     address_to_uuid = {}
     for block in list_file["blocks"]:
-        for house in block["places"]:
+        for house in block["abodes"]:
             if house['uuid'] in address_to_uuid:
                 print(f'Duplicate UUID: {house["uuid"]} with address {house["display_address"]} from list {list_name}')
             else:
@@ -98,7 +98,7 @@ for list_name in uploaded_lists:
 
     # Read all houses from the file
     for block in file_data["blocks"]:
-        for house in block["places"]:
+        for house in block["abodes"]:
             uuid = address_to_uuid[house["address"]]
 
             # Remove the address from the dict
@@ -117,12 +117,12 @@ for list_name in uploaded_lists:
                         if uuid in uuids_hit.union(uuids_miss).union(uuids_unvisited):
                             print(f'(hit) Duplicate UUID: {uuid} with address {house["address"]} from list {list_name}')
                         uuids_hit.add(uuid)
-                        uuids_hit_pts.append(Point(lat=voter_info['latitude'], lon=voter_info['longitude'], id=uuid))
+                        uuids_hit_pts.append(InternalPoint(lat=voter_info['latitude'], lon=voter_info['longitude'], id=uuid))
                     elif question['answer'] == 'No':
                         if uuid in uuids_hit.union(uuids_miss).union(uuids_unvisited):
                             print(f'(miss) Duplicate UUID: {uuid} with address {house["address"]} from list {list_name}')
                         uuids_miss.add(uuid)
-                        uuids_miss_pts.append(Point(lat=voter_info['latitude'], lon=voter_info['longitude'], id=uuid))
+                        uuids_miss_pts.append(InternalPoint(lat=voter_info['latitude'], lon=voter_info['longitude'], id=uuid))
                     else:
                         raise ValueError(f'Invalid answer: {question["answer"]}')
                 else:
@@ -138,14 +138,14 @@ for list_name in uploaded_lists:
 
         uuids_unvisited.add(uuid)
         tooltips[uuid] = house_to_voters[uuid]['display_address']
-        uuids_unvisited_pts.append(Point(lat=house_to_voters[uuid]['latitude'], lon=house_to_voters[uuid]['longitude'], id=uuid))
+        uuids_unvisited_pts.append(InternalPoint(lat=house_to_voters[uuid]['latitude'], lon=house_to_voters[uuid]['longitude'], id=uuid))
 
 # Write a list of all houses that were not visited
 for uuid in uuids_unvisited.union(uuids_miss):
     # Lookup the voters in this house
     voter_info = house_to_voters[uuid]
 
-    uuids_unvisited_pts.append(Point(lat=voter_info['latitude'], lon=voter_info['longitude'], id=uuid))
+    uuids_unvisited_pts.append(InternalPoint(lat=voter_info['latitude'], lon=voter_info['longitude'], id=uuid))
 
     names = [v['name'] for v in voter_info['voter_info']]
 
@@ -177,7 +177,7 @@ for uuid in uuids_unvisited.union(uuids_miss):
 masonic_file = list_file = json.load(open(os.path.join(files_dir, 'rosselli-29-0.json')))
 
 for block in masonic_file["blocks"]:
-    for house in block["places"]:
+    for house in block["abodes"]:
         uuid = house["uuid"]
 
         voter_info = house_to_voters[uuid]
@@ -186,7 +186,7 @@ for block in masonic_file["blocks"]:
 
         names = [v['name'] for v in voter_info['voter_info']]
 
-        uuids_unvisited_pts.append(Point(lat=voter_info['latitude'], lon=voter_info['longitude'], id=uuid))
+        uuids_unvisited_pts.append(InternalPoint(lat=voter_info['latitude'], lon=voter_info['longitude'], id=uuid))
 
         # If there are more than 2 voters, find a common last name and use that
         if len(names) > 2:

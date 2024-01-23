@@ -11,7 +11,6 @@ from src.config import (
     BLOCK_DISTANCE_MATRIX_DB_IDX,
     generate_block_id_pair,
     BLOCK_DB_IDX,
-    Singleton
 )
 from src.distances.nodes import NodeDistances
 from src.utils.db import Database
@@ -32,7 +31,7 @@ class BlockDistancesSnapshot:
         return None
 
 
-class BlockDistances():
+class BlockDistances:
     def _insert_pair(self, b1: Block, b1_id: str, b2: Block, b2_id: str):
         pair_1, pair_2 = generate_block_id_pair(b1_id, b2_id), generate_block_id_pair(
             b2_id, b1_id
@@ -78,7 +77,12 @@ class BlockDistances():
                     self._insert_pair(block, b_id, other_block, other_b_id)
                     progress.update()
 
-    def __init__(self, block_ids: set[str], node_distances: NodeDistances, skip_update: bool = False):
+    def __init__(
+        self,
+        block_ids: set[str],
+        node_distances: NodeDistances,
+        skip_update: bool = False,
+    ):
         self._db = Database()
         self._node_distances = node_distances
 
@@ -128,11 +132,17 @@ class BlockDistances():
 
     def get_distance_matrix(self, block_ids: set[str]):
         # Take a snapshot of the block distances
-        snapshot = BlockDistancesSnapshot(self._db.get_all_dict(BLOCK_DISTANCE_MATRIX_DB_IDX))
+        snapshot = BlockDistancesSnapshot(
+            self._db.get_all_dict(BLOCK_DISTANCE_MATRIX_DB_IDX)
+        )
 
         matrix = np.empty((len(block_ids), len(block_ids)), dtype=np.float32)
         with tqdm(
-            total=len(block_ids) ** 2, desc="Retrieving matrix", unit="pairs", colour="green", leave=False
+            total=len(block_ids) ** 2,
+            desc="Retrieving matrix",
+            unit="pairs",
+            colour="green",
+            leave=False,
         ) as progress:
             for r, block in enumerate(block_ids):
                 for c, other_block in enumerate(block_ids):

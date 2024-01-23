@@ -18,12 +18,12 @@ from termcolor import colored
 
 from src.config import (
     CAMPAIGN_SUBSET_DB_IDX,
-    PLACE_DB_IDX,
+    ABODE_DB_IDX,
     VOTER_DB_IDX,
-    PlaceSemantics,
+    Abode,
+    Voter,
 )
 from src.distances.blocks import BlockDistances
-from src.distances.houses import HouseDistances
 from src.distances.nodes import NodeDistances
 from src.utils.db import Database
 
@@ -43,48 +43,44 @@ db = Database()
 
 # TODO: Here, we'll also create the campaign subset with some input data, likely? For now, this is manual.
 
-# Walk up the database from voters to places to blocks
-# To retrieve all nodes, take the first and last node from all blocks with places which have voters in this campaign
+# Walk up the database from voters to abodes to blocks
+# To retrieve all nodes, take the first and last node from all blocks with abodes which have voters in this campaign
 voter_ids = db.get_set(args.campaign_id, CAMPAIGN_SUBSET_DB_IDX)
 
 print(f"Found {len(voter_ids)} voters")
 
-place_ids: set[str] = set()
+abode_ids: set[str] = set()
 for voter in voter_ids:
-    place = db.get_dict(voter, VOTER_DB_IDX)
-    if place is None:
+    voter: Voter = db.get_dict(voter, VOTER_DB_IDX)
+    if voter is None:
         print(colored("Voter {} not found in database".format(voter), color="red"))
         sys.exit(1)
 
-    # Ensure the corresponding place has this voter
-    this_place: PlaceSemantics = db.get_dict(place["place"], PLACE_DB_IDX)
+    # Ensure the corresponding abode has this voter
+    abode: Abode = db.get_dict(voter["abode_id"], ABODE_DB_IDX)
 
-    if "voters" not in this_place:
+    if "voter_ids" not in abode:
         print(
-            colored("Place {} does not have voters".format(place["place"]), color="red")
+            colored("Abode {} does not have voters".format(voter["abode_id"]), color="red")
         )
         sys.exit(1)
 
-    place_ids.add(place["place"])
+    abode_ids.add(voter["abode_id"])
 
-print(f"Found {len(place_ids)} places")
+print(f"Found {len(abode_ids)} abode")
 
 block_ids: set[str] = set()
-for place in place_ids:
-    place_data = db.get_dict(place, PLACE_DB_IDX)
-    if place_data is None:
-        print(colored("Place {} not found in database".format(place), color="red"))
+for voter in abode_ids:
+    abode_data = db.get_dict(voter, ABODE_DB_IDX)
+    if abode_data is None:
+        print(colored("Abode {} not found in database".format(voter), color="red"))
         sys.exit(1)
-    block_ids.add(place_data["block_id"])
+    block_ids.add(abode_data["block_id"])
 
 print(f"Found {len(block_ids)} blocks")
 
 # Populate the node distance matrix
-node_distances = NodeDistances(
-    block_ids=block_ids
-)
+node_distances = NodeDistances(block_ids=block_ids, skip_update=True)
 
 # Populate the block distance matrix
-block_distances = BlockDistances(
-    block_ids=block_ids, node_distances=node_distances
-)
+block_distances = BlockDistances(block_ids=block_ids, node_distances=node_distances, skip_update=True)

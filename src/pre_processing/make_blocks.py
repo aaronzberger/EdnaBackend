@@ -1,11 +1,10 @@
 """
-Associate places with blocks. Take in block_output.json and write blocks and places to the database
+Associate abodes with blocks. Take in block_output.json and write blocks and abodes to the database
 """
 
 # TODO: See Covode Pl and Wendover Pl (both have same-named streets, to which all the houses on pl have been wrongly assigned)
 
 import csv
-import dataclasses
 from decimal import Decimal
 import itertools
 from itertools import chain
@@ -17,29 +16,23 @@ import math
 from rapidfuzz import process, fuzz
 import io
 import uuid
-import jsonpickle
-
-from termcolor import colored
 
 from src.config import (
     UUID_NAMESPACE,
-    PlaceGeography,
-    PlaceSemantics,
+    AbodeGeography,
+    Abode,
     NodeType,
-    Point,
+    InternalPoint,
     Block,
     WriteablePoint,
     street_suffixes_file,
     address_pts_file,
     block_output_file,
-    addresses_file,
     ALD_BUFFER,
-    reverse_geocode_file,
-    id_to_addresses_file,
     AREA_BBOX,
     BLOCK_DB_IDX,
     NODE_COORDS_DB_IDX,
-    PLACE_DB_IDX
+    ABODE_DB_IDX,
 )
 from src.utils.gps import (
     along_track_distance,
@@ -51,7 +44,7 @@ from src.utils.gps import (
 
 from src.utils.db import Database
 
-from src.utils.address import Address, addresses_file_t
+from src.utils.address import Address
 
 from tqdm import tqdm
 
@@ -81,13 +74,13 @@ if DEBUG:
 # region Load files
 
 # Load the file (unorganized) containing house coordinates (and info)
-print("Loading coordinates of places...")
+print("Loading coordinates of abodes...")
 house_points_file = open(address_pts_file)
-num_places = -1
+num_abodes = -1
 for _ in house_points_file:
-    num_places += 1
+    num_abodes += 1
 house_points_file.seek(0)
-place_points_reader = csv.DictReader(house_points_file)
+abode_points_reader = csv.DictReader(house_points_file)
 
 # Load the block_output file, containing the blocks returned from the OSM query
 print("Loading node and way coordinations query...")
@@ -97,10 +90,10 @@ blocks: dict[str, Any] = json.load(open(block_output_file))
 print("Loading list of street suffixes")
 street_suffixes: dict[str, str] = json.load(open(street_suffixes_file))
 
-# NOTE/TODO: This file is temporary, and will be eliminated when we transition to place keys
+# NOTE/TODO: This file is temporary, and will be eliminated when we transition to abode keys
 # addresses_to_id: addresses_file_t = {}
 
-# NOTE/TODO: This file is also temporary, and is only used for manual matching (eliminated with place keys)
+# NOTE/TODO: This file is also temporary, and is only used for manual matching (eliminated with abode keys)
 # id_to_addresses: dict[str, dict[str, str]] = {}
 
 # reverse_geocode: list[tuple[float, float, dict[str, str]]] = []
@@ -109,9 +102,8 @@ street_suffixes: dict[str, str] = json.load(open(street_suffixes_file))
 @dataclass
 class Segment:
     """Define an alternate Block with more geographic information."""
-
-    sub_node_1: Point
-    sub_node_2: Point
+    sub_node_1: InternalPoint
+    sub_node_2: InternalPoint
     ctd: float  # cross track distance (to road)
     ald_offset: float  # along track distance offset (to segment bounds)
     side: bool
@@ -123,14 +115,14 @@ block_to_street_names = {}
 
 min_lat, min_lon, max_lat, max_lon = AREA_BBOX
 
-origin = Point(lat=min_lat, lon=min_lon, type=NodeType.other, id="origin")
+origin = InternalPoint(lat=min_lat, lon=min_lon, type=NodeType.other, id="origin")
 
 # Calculate the number of chunks in each direction
 lat_distance = great_circle_distance(
-    origin, Point(lat=max_lat, lon=min_lon, type=NodeType.other, id="max_lat")
+    origin, InternalPoint(lat=max_lat, lon=min_lon, type=NodeType.other, id="max_lat")
 )
 lon_distance = great_circle_distance(
-    origin, Point(lat=min_lat, lon=max_lon, type=NodeType.other, id="max_lon")
+    origin, InternalPoint(lat=min_lat, lon=max_lon, type=NodeType.other, id="max_lon")
 )
 
 num_lat_chunks = int(math.ceil(lat_distance / CHUNK_SIZE))
@@ -143,7 +135,9 @@ block_matrix: list[list[list[str]]] = [
 
 
 # Get matrix indices for a given node
-def get_matrix_index(node: Point, origin: Point, chunk_size: float) -> tuple[int, int]:
+def get_matrix_index(
+    node: InternalPoint, origin: InternalPoint, chunk_size: float
+) -> tuple[int, int]:
     """
     Get the matrix indices for a given node.
 
@@ -158,10 +152,12 @@ def get_matrix_index(node: Point, origin: Point, chunk_size: float) -> tuple[int
         A tuple containing the matrix indices for the given node.
     """
     lat_distance = great_circle_distance(
-        Point(lat=origin["lat"], lon=node["lon"], type=NodeType.other, id=""), node
+        InternalPoint(lat=origin["lat"], lon=node["lon"], type=NodeType.other, id=""),
+        node,
     )
     lon_distance = great_circle_distance(
-        Point(lat=node["lat"], lon=origin["lon"], type=NodeType.other, id=""), node
+        InternalPoint(lat=node["lat"], lon=origin["lon"], type=NodeType.other, id=""),
+        node,
     )
     return int(lat_distance // chunk_size), int(lon_distance // chunk_size)
 
@@ -183,13 +179,20 @@ with tqdm(
 
             # Create the list of sub-segments in this block
             all_node_ids = [str(i) for i in block[2]["nodes"]]
-            all_nodes: list[Point] = []
+            all_nodes: list[InternalPoint] = []
             for id in all_node_ids:
                 coords = db.get_dict(id, NODE_COORDS_DB_IDX)
                 if coords == {}:
                     print(f"KeyError on finding coordinates of node {id}")
                     continue
-                all_nodes.append(Point(lat=float(coords["lat"]), lon=float(coords["lon"]), type=NodeType.node, id=id))
+                all_nodes.append(
+                    InternalPoint(
+                        lat=float(coords["lat"]),
+                        lon=float(coords["lon"]),
+                        type=NodeType.node,
+                        id=id,
+                    )
+                )
             for node in all_nodes:
                 i, j = get_matrix_index(node, origin, CHUNK_SIZE)
                 if 0 <= i < num_lat_chunks and 0 <= j < num_lon_chunks:
@@ -215,10 +218,13 @@ with tqdm(
                 if coords == {}:
                     print(f"KeyError on finding coordinates of node {id}")
                     continue
-                all_nodes.append(WriteablePoint(lat=float(coords["lat"]), lon=float(coords["lon"])))
+                all_nodes.append(
+                    WriteablePoint(lat=float(coords["lat"]), lon=float(coords["lon"]))
+                )
 
             block_to_write = Block(
-                places={},
+                id=segment_id,
+                abodes={},
                 nodes=all_nodes,
                 type=block[2]["ways"][0][1]["highway"],
             )
@@ -244,7 +250,7 @@ with tqdm(
             )
         progress.update(1)
 
-num_failed_places = 0
+num_failed_abodes = 0
 
 
 def keys_with_value(d: dict[str, list[str]], target: str) -> list[str]:
@@ -296,11 +302,13 @@ def address_match_score(s1: str, s2: str, threshold=90, score_cutoff=0.0):
     return score if score >= score_cutoff else 0.0
 
 
-def search_for_best_subsegment(segment, segment_id, best_segment, house_pt: Point):
+def search_for_best_subsegment(
+    segment, segment_id, best_segment, house_pt: InternalPoint
+):
     # Iterate through each block sub-segment (block may curve)
     for node_1_data, node_2_data in itertools.pairwise(segment["nodes"]):
-        node_1 = Point(**node_1_data)
-        node_2 = Point(**node_2_data)
+        node_1 = InternalPoint(**node_1_data)
+        node_2 = InternalPoint(**node_2_data)
 
         ctd = cross_track_distance(house_pt, node_1, node_2)
         alds = along_track_distance(house_pt, node_1, node_2)
@@ -383,11 +391,11 @@ def filter_segments(house_point):
     return filtered_ids
 
 
-# Next, add the places to the blocks
+# Next, add the abodes to the blocks
 with tqdm(
-    total=num_places, desc="Associating places", unit="rows", colour="green"
+    total=num_abodes, desc="Associating abodes", unit="rows", colour="green"
 ) as progress:
-    for item in place_points_reader:
+    for item in abode_points_reader:
         progress.update(1)
         # if item['municipality'].strip().upper() != 'PITTSBURGH' or \
         #         int(item['zip_code']) != 15217:
@@ -402,7 +410,7 @@ with tqdm(
         ):
             continue
 
-        house_pt = Point(lat=float(item["latitude"]), lon=float(item["longitude"]), type="house")  # type: ignore
+        house_pt = InternalPoint(lat=float(item["latitude"]), lon=float(item["longitude"]), type="house")  # type: ignore
 
         street_name_parts = (
             item["st_premodifier"],
@@ -510,7 +518,10 @@ with tqdm(
                         print("---------block---------", file=buffer)
                         # print(segments_by_id[block_id], file=buffer)
                     best_segment = search_for_best_subsegment(
-                        db.get_dict(block_id, BLOCK_DB_IDX), block_id, best_segment, house_pt
+                        db.get_dict(block_id, BLOCK_DB_IDX),
+                        block_id,
+                        best_segment,
+                        house_pt,
                     )
 
         if best_segment is not None and best_segment.ctd <= MAX_DISTANCE:
@@ -535,13 +546,13 @@ with tqdm(
             sub_end = all_points[max(sub_nodes)]
             distances = along_track_distance(
                 p1=house_pt,
-                p2=Point(
+                p2=InternalPoint(
                     lat=sub_start["lat"],
                     lon=sub_start["lon"],
                     type=NodeType.node,
                     id="",
                 ),
-                p3=Point(
+                p3=InternalPoint(
                     lat=sub_end["lat"], lon=sub_end["lon"], type=NodeType.node, id=""
                 ),
             )
@@ -551,45 +562,47 @@ with tqdm(
             # Lastly, calculate the distance from the end of this house's sub-segment to the end of the block
             distance_to_end += distance_along_path(all_points[min(sub_nodes) + 1:])
 
-            house_geography = PlaceGeography(
-                lat=house_pt["lat"],
-                lon=house_pt["lon"],
+            # Add this association to the abodes file
+            lat_rounded = Decimal(str(house_pt["lat"])).quantize(Decimal("0.0001"))
+            lon_rounded = Decimal(str(house_pt["lon"])).quantize(Decimal("0.0001"))
+            uuid_input = item["full_address"] + str(lat_rounded) + str(lon_rounded)
+
+            house_uuid = uuid.uuid5(UUID_NAMESPACE, uuid_input)
+
+            house_geography = AbodeGeography(
+                id=str(house_uuid),
+                point=WriteablePoint(
+                    lat=house_pt["lat"],
+                    lon=house_pt["lon"]
+                ),
                 distance_to_start=round(distance_to_start),
                 distance_to_end=round(distance_to_end),
                 side=best_segment.side,
                 distance_to_road=round(best_segment.ctd),
-                subsegment=(min(sub_nodes), max(sub_nodes)),
+                subsegment_start=min(sub_nodes),
+                subsegment_end=max(sub_nodes),
             )
 
-            house_semantics = PlaceSemantics(
+            house_semantics = Abode(
+                id=str(house_uuid),
                 display_address=item["full_address"],
-                city=item["municipality"],
                 block_id=str(best_segment.id),
+                city=item["municipality"],
                 state=item["state"],
                 zip=item["zip_code"],
             )
 
-            # Add this association to the places file
-            lat_rounded = Decimal(str(house_pt["lat"])).quantize(Decimal("0.0001"))
-            lon_rounded = Decimal(str(house_pt["lon"])).quantize(Decimal("0.0001"))
-            uuid_input = item["full_address"] + str(lat_rounded) + str(lon_rounded)
-            house_uuid = uuid.uuid5(UUID_NAMESPACE, uuid_input)
-
-            # addresses_to_id[formatted_address] = (str(best_segment.id), str(house_uuid))
-
-            # id_to_addresses[str(house_uuid)] = dataclasses.asdict(formatted_address)
-
             # Add the house to the block (Note that we expect the block to already exist in the database most of the time)
             old_block = db.get_dict(str(best_segment.id), BLOCK_DB_IDX)
-            old_block["places"][str(house_uuid)] = house_geography
+            old_block["abodes"][str(house_uuid)] = house_geography
 
             db.set_dict(str(best_segment.id), old_block, BLOCK_DB_IDX)
 
-            # Add the house to the places file
-            db.set_dict(str(house_uuid), dict(house_semantics), PLACE_DB_IDX)
+            # Add the house to the abodes file
+            db.set_dict(str(house_uuid), dict(house_semantics), ABODE_DB_IDX)
 
         else:
-            num_failed_places += 1
+            num_failed_abodes += 1
             if DEBUG:
                 print(f"Failed to associate house with point: {house_pt}", file=buffer)
                 print(f'Raw street name {item["st_name"]}', file=buffer)
@@ -612,18 +625,9 @@ with tqdm(
             buffer.truncate()  # truncate the buffer from the current position
 
 print(
-    "Failed to associate {} out of {} total places".format(
-        num_failed_places, num_places
+    "Failed to associate {} out of {} total abodes".format(
+        num_failed_abodes, num_abodes
     )
 )
-
-# Write the output to files
-print("Writing temporary files (deprecated soon)...")
-
-# json.dump(id_to_addresses, open(id_to_addresses_file, "w"))
-# json.dump(reverse_geocode, open(reverse_geocode_file, "w"))
-
-# with open(addresses_file, "w") as outfile:
-#     outfile.write(jsonpickle.encode(addresses_to_id, keys=True))
 
 display_blocks()
