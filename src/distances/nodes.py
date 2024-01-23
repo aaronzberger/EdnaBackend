@@ -86,7 +86,7 @@ class NodeDistances:
         """
         with tqdm(
             total=math.comb(len(nodes), 2),
-            desc="Updating nodes",
+            desc="Updating node distance matrix",
             unit="pairs",
             colour="green",
         ) as progress:

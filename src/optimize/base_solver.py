@@ -46,12 +46,6 @@ class BaseSolver:
                 points=self.problem_info["points"], distances=distance_matrix
             )
 
-        print(
-            "Distance matrix has shape {}".format(
-                (len(distance_matrix), len(distance_matrix[0]))
-            )
-        )
-
         # Convert distance matrix to input format
         distance_matrix = distance_matrix / WALKING_M_PER_S
 
@@ -121,7 +115,6 @@ class BaseSolver:
                 route.append(node_index)
                 index = solution.Value(routing.NextVar(index))
             routes.append(route)
-            print(route)
 
         # Convert to universal format
         house_routes: list[list[InternalPoint]] = []

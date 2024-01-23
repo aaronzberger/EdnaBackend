@@ -76,10 +76,6 @@ class GroupCanvas(Optimizer):
         display_custom_area(depot=self.depot, abodes=self.local_abodes)
         # endregion
 
-        print(
-            f"Of {len(block_ids)} blocks, {len(self.local_block_ids)} are within {radius} meters of the depot"
-        )
-
         # region Load distance matrices
         self.node_distances = NodeDistances(
             block_ids=self.local_block_ids, skip_update=True

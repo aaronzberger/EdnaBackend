@@ -71,7 +71,7 @@ class Clustering:
 
         num_clusters = len(self.abode_ids) // SUPER_CLUSTER_NUM_HOUSES
 
-        clustered = KMeans(n_clusters=num_clusters, random_state=0, tol=1e-9).fit(
+        clustered = KMeans(n_clusters=num_clusters, random_state=0, tol=1e-9, n_init=10).fit(
             distance_matrix
         )
 
@@ -137,6 +137,10 @@ class Clustering:
                 "block_ids" -> set of block ids in the cluster
                 "abode_ids" -> set of abode ids in the cluster
                 "tightness" -> the tightness of the cluster
+
+        Notes
+        -----
+            This method is not currently used (and may not be working), but is left here for future reference.
         """
         # Get point locations in UTM
         points: list[tuple[float, float]] = []
@@ -183,36 +187,17 @@ class Clustering:
 
             points.append([x, y])
 
-        # Normalize the points
-        # points = np.array(points)
-        # points -= points.mean(axis=0)
-        # points /= points.std(axis=0)
-
-        print(f"Max x = {max(x for x, _ in points)}")
-        print(f"Max y = {max(y for _, y in points)}")
-        print(f"Min x = {min(x for x, _ in points)}")
-        print(f"Min y = {min(y for _, y in points)}")
-
-        print(f"Clustering {len(points)} points")
-
         # Run spectral clustering with euclidian distance
         num_clusters = len(abode_ids_list) // SUPER_CLUSTER_NUM_HOUSES
-        # clustering = Birch(
-        #     threshold=1000, n_clusters=num_clusters).fit(points)
-        clustering = BisectingKMeans(n_clusters=num_clusters, random_state=0).fit(
+        clustering = BisectingKMeans(n_init=10, n_clusters=num_clusters, random_state=0).fit(
             points
         )
 
         display_clustered_points(abode_points, clustering.labels_)
 
-        for i in range(max(clustering.labels_) + 1):
-            print(f"Cluster {i} has {sum(clustering.labels_ == i)} points")
-
         abode_id_clusters: list[set[str]] = [set() for _ in range(num_clusters)]
         for i, abode_id in enumerate(abode_ids_list):
             abode_id_clusters[clustering.labels_[i]].add(abode_id)
-
-        print("SIZES", [len(i) for i in abode_id_clusters])
 
         block_id_clusters: list[set[str]] = [set() for _ in range(num_clusters)]
 

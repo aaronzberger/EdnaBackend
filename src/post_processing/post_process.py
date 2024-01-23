@@ -882,7 +882,7 @@ def process_partitioned_solution(
 
             list_id = f"{CAMPAIGN_ID}-{id}-{i}-{j}"
             if list_id in details:
-                print(colored(f"Warning: List {list_id} already exists in details"))
+                print(colored(f"Warning: List {list_id} already exists in details", color="yellow"))
 
             num_houses = sum([len(sub_block.abodes) for sub_block in processed_routes[-1]])
             distance = 0
@@ -901,11 +901,8 @@ def process_partitioned_solution(
 
     json.dump(details, open(details_file, "w"))
 
-    print(f'There are {len(processed_routes)} lists in this solution, and the first has {len(processed_routes[0])} sub-blocks')
-
     list_visualizations = display_individual_walk_lists(processed_routes)
     for i, walk_list in enumerate(list_visualizations):
-        print('Saving to', os.path.join(viz_path, f"{CAMPAIGN_ID}-{id}-{i}.html"))
         walk_list.save(os.path.join(viz_path, f"{CAMPAIGN_ID}-{id}-{i}.html"))
 
     form = json.load(
@@ -949,7 +946,7 @@ def process_solution(
 
         list_id = f"{CAMPAIGN_ID}-{id}-{i}"
         if list_id in details:
-            print(colored(f"Warning: List {list_id} already exists in details"))
+            print(colored(f"Warning: List {list_id} already exists in details"), color="yellow")
 
         num_houses = sum([len(sub_block.abodes) for sub_block in routes[-1]])
         distance = 0

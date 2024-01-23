@@ -196,6 +196,8 @@ MAX_STORAGE_DISTANCE = 1600
 # Number of meters to store if nodes are too far away from each other
 NODE_TOO_FAR_DISTANCE = 10000
 
+TERMINAL_WIDTH = os.get_terminal_size().columns
+
 
 # Cost of crossing the street (technically, in meters)
 DIFFERENT_SIDE_COST = {
@@ -344,7 +346,7 @@ class Abode(TypedDict):
 
 
 class SubAbode(TypedDict):
-    """A part of an abode, which simply may contain a subset of the voters."""
+    """A part of an abode, representing the abode's semantic and geographic information."""
     abode_id: str
     point: WriteablePoint
     distance_to_start: int

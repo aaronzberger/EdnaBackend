@@ -70,7 +70,7 @@ class BlockDistances:
             Time complexity: O(n^2), where n is the number of blocks
         """
         with tqdm(
-            total=len(blocks) ** 2, desc="Updating blocks", unit="pairs", colour="green"
+            total=len(blocks) ** 2, desc="Updating block distance matrix", unit="pairs", colour="green"
         ) as progress:
             for b_id, block in blocks.items():
                 for other_b_id, other_block in blocks.items():

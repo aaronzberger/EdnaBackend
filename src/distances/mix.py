@@ -224,10 +224,10 @@ class MixDistances:
 
         snapshot = self.snapshot()
 
-        portion_none = 0
+        num_empty_distances = 0
 
         for i, p1 in enumerate(
-            tqdm(points, desc="Building distance matrix", colour="green")
+            tqdm(points, desc="Building mix distance matrix", unit="points", colour="green")
         ):
             for j, p2 in enumerate(points):
                 d_or_dc = snapshot.get_distance(p1, p2)
@@ -236,15 +236,22 @@ class MixDistances:
                 d = d_or_dc if type(d_or_dc) is not tuple else d_or_dc[0]
 
                 if d is None:
-                    portion_none += 1
+                    num_empty_distances += 1
 
                 # Account for none values
                 d = d if d is not None else MAX_STORAGE_DISTANCE
 
                 matrix[i][j] = d
 
-        print(
-            f"Portion of distances that are None: {portion_none / (len(points) ** 2)}"
-        )
+        portion_empty = num_empty_distances / (len(points) ** 2)
+
+        if portion_empty > 0.2:
+            print(
+                colored(
+                    f"Warning: {portion_empty * 100:.2f}% of the distance matrix is empty when snapshotting",
+                    color="yellow",
+                )
+                + "This may be fine, but the cluster is likely larger than normal. Look at the cluster visualization to check."
+            )
 
         return matrix

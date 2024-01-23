@@ -254,7 +254,7 @@ class HouseDistances:
             Time complexity: O(n^2), where n is the number of blocks
         """
         with tqdm(
-            total=len(blocks) ** 2, desc="Updating houses", unit="pairs", colour="green"
+            total=len(blocks) ** 2, desc="Building house distance matrix", unit="pairs", colour="green"
         ) as progress:
             for b1_id, b1 in blocks.items():
                 if depots is not None:
@@ -332,8 +332,5 @@ class HouseDistances:
         -------
             HouseDistancesSnapshot: a snapshot of the current house distances table
         """
-        print(
-            f"Taking snapshot of house distances table with {len(self.distance_matrix)} entries"
-        )
         snapshot = deepcopy(self.distance_matrix)
         return HouseDistancesSnapshot(snapshot)

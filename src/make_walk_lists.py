@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+import os
 
 from termcolor import colored
 
@@ -17,6 +18,9 @@ from src.config import (
     DEPOT,
     NUM_ROUTES,
     TIMEOUT,
+    CAMPAIGN_ID,
+    TERMINAL_WIDTH,
+    STYLE_COLOR,
     NodeType,
     Abode,
     InternalPoint,
@@ -35,21 +39,17 @@ parser = argparse.ArgumentParser(
     prog="make_walk_lists.py",
     description="Generate walk lists",
 )
-parser.add_argument(
-    "-c",
-    "--campaign_id",
-    required=True,
-    help="The campain id for which to select the universe",
-)
-args = parser.parse_args()
 
 db = Database()
 
 # Walk up the database from voters to abodes to blocks
 # To retrieve all nodes, take the first and last node from all blocks with abodes which have voters in this campaign
-voter_ids = db.get_set(args.campaign_id, CAMPAIGN_SUBSET_DB_IDX)
+voter_ids = db.get_set(CAMPAIGN_ID, CAMPAIGN_SUBSET_DB_IDX)
 
-print(f"Found {len(voter_ids)} voters")
+print(colored(u'\u2500' * TERMINAL_WIDTH, color='blue'))
+print(f'Preparing the universe for campaign with id "{CAMPAIGN_ID}":')
+
+print(f"\tfound {len(voter_ids)} voters")
 
 abode_ids: set[str] = set()
 for voter in voter_ids:
@@ -69,7 +69,7 @@ for voter in voter_ids:
 
     abode_ids.add(voter["abode_id"])
 
-print(f"Found {len(abode_ids)} abode")
+print(f"\t\tliving in {len(abode_ids)} abodes")
 
 block_ids: set[str] = set()
 for voter in abode_ids:
@@ -79,12 +79,15 @@ for voter in abode_ids:
         sys.exit(1)
     block_ids.add(abode_data["block_id"])
 
-print(f"Found {len(block_ids)} blocks")
+print(f"\t\t\ton {len(block_ids)} blocks.")
 
 "-------------------------------------------------------------------------------------------------------"
 "                                               Building                                                "
 " Build the depots and houses for the problem and areas specified                                       "
 "-------------------------------------------------------------------------------------------------------"
+
+print(colored(u'\u2500' * TERMINAL_WIDTH, color='blue'))
+print("Building the problem...")
 
 match PROBLEM_TYPE:
     case Problem_Types.turf_split:
@@ -120,6 +123,8 @@ match PROBLEM_TYPE:
 " Run the optimizer on the subset of the universe                                         "
 "-----------------------------------------------------------------------------------------"
 
+print(colored(u'\u2500' * TERMINAL_WIDTH, color='blue'))
+print("Running the optimizer...")
 routes: list[list[list[InternalPoint]]] | list[list[InternalPoint]] = optimizer(
     debug=True, time_limit_s=TIMEOUT.seconds
 )
@@ -131,12 +136,11 @@ routes: list[list[list[InternalPoint]]] | list[list[InternalPoint]] = optimizer(
 " Also, generate the walk list files and visualizations                                   "
 "-----------------------------------------------------------------------------------------"
 
+print(colored(u'\u2500' * TERMINAL_WIDTH, color='blue'))
+print("Post-processing the solution...")
 if routes is None:
     print(colored("Failed to generate lists", color="red"))
     sys.exit()
-
-print(f"Generated {len(routes)} routes")
-print(routes)
 
 if PROBLEM_TYPE == Problem_Types.turf_split:
     process_partitioned_solution(

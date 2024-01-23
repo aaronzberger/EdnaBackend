@@ -3,6 +3,7 @@ import random
 import sys
 import numpy as np
 from sklearn.cluster import KMeans
+from termcolor import colored
 
 from src.config import (
     BLOCK_DB_IDX,
@@ -22,6 +23,8 @@ from src.utils.db import Database
 from src.clustering import Clustering
 from src.utils.viz import display_clustered_blocks
 
+from prettytable import PrettyTable
+
 
 class SingleCluster:
     def __init__(self, block_ids: set[str], abode_ids: set[str], num_routes: int):
@@ -40,10 +43,6 @@ class SingleCluster:
         self.block_ids = block_ids
         self.abode_ids = abode_ids
         # super().__init__(block_ids=block_ids, abode_ids=abode_ids)
-
-        print(
-            f"Setting up a cluster with {len(self.block_ids)} blocks and {len(self.abode_ids)} abodes"
-        )
 
         self.db = Database()
 
@@ -75,7 +74,7 @@ class SingleCluster:
         for block_id in self.block_ids:
             block = self.db.get_dict(block_id, BLOCK_DB_IDX)
             if block is None:
-                print(f"Block {block_id} not found in database")
+                print(colored(f"Block {block_id} not found in database", color="red"))
                 sys.exit(1)
 
             # Find which abodes on this block are in the universe
@@ -108,17 +107,11 @@ class SingleCluster:
                     inserted_node_ids.add(pt_id(block["nodes"][i]))
         # endregion
 
-        print(
-            f"Found {len(self.abode_points)} abodes and {len(self.potential_depots)} potential depots"
-        )
-
         self.depots = self.find_depots(
             num_depots=num_routes,
             abodes=self.abode_points,
             potential_depots=self.potential_depots,
         )
-
-        print(f"Found {len(self.depots)} depots: {self.depots}")
 
         self.build_problem(houses=self.abode_points, depots=self.depots)
 
@@ -184,7 +177,7 @@ class SingleCluster:
         """
         distance_matrix = self.mix_distances.get_distance_matrix(self.abode_points)
 
-        clustered = KMeans(n_clusters=num_depots, random_state=0).fit(distance_matrix)
+        clustered = KMeans(n_clusters=num_depots, random_state=0, n_init=10).fit(distance_matrix)
 
         centers = []
         for cluster in range(num_depots):
@@ -208,8 +201,6 @@ class SingleCluster:
                     else:
                         depot_sum += MAX_STORAGE_DISTANCE
                 depot_sums.append(depot_sum)
-
-            print("Finished calculating distances")
 
             # Choose the depot which minimizes distance to all these houses
             centers.append(potential_depots[np.argmin(depot_sums)])
@@ -293,11 +284,13 @@ class TurfSplit:
                 for cluster in self.clusters
             ]
 
+        print(colored("\nSuper-clusters to individually optimize:", color="cyan"))
+        t = PrettyTable(['Idx', '# Blocks', '# Abodes', 'Tightness', '# Routes'])
+
         for i, cluster in enumerate(self.clusters):
-            print(
-                f"Cluster {i} has {len(cluster['block_ids'])} blocks, {len(cluster['abode_ids'])} abodes, " +
-                f"tightness {cluster['tightness']:.0f}, and thus {self.num_routes[i]} routes"
-            )
+            t.add_row([i, len(cluster['block_ids']), len(cluster['abode_ids']), int(cluster['tightness']), self.num_routes[i]])
+
+        print(t)
 
         self.problems = []
 
