@@ -2,10 +2,11 @@
 
 This package is the backend for the BetterVote canvassing technology, and temporarily contains the processing for ingesting and pre-processing campaign data.
 
-<img src="https://user-images.githubusercontent.com/35245591/147997445-bb23eec5-8b0c-480c-b283-603f23c5d218.png" alt="Associations" width="589" height="412">
+![Backend](https://github.com/aaronzberger/EdnaBackend/assets/35245591/4d29edb2-2e09-4cbc-9e32-e68d179aadd3)
 
 ## Table of Contents
 - [Overview](#Overview)
+- [Setup](#Setup)
 - [Details](#Details)
   - [Data Structuring](#Data-Structuring)
     - [Typing](#Typing)
@@ -21,9 +22,42 @@ This package is the backend for the BetterVote canvassing technology, and tempor
     - [Post-processing](#Post-processing)
     - [Visualization](#Visualization)
 
+  
+# Overview
+Welcome to the BetterVote canvassing and campaign management backend! This package contains the code for the backend, which is responsible for:
+ - Ingesting campaign data
+ - Pre-processing the data into a format which is usable by the rest of the system
+ - Optimizing routes for canvassing
+ - Post-processing the routes into a format which is usable by the rest of the system
+
+
+# Setup
+We use Docker to manage all dependencies, so the setup is simple.
+1. Install Docker
+
+All the Docker components (routing, database, backend) communicate via a Docker network, so we need to create one.
+
+2. Run `docker network create edna`.
+
+Next, we need to setup OSRM (the routing engine), which runs locally for speed.
+
+3. In the route directory, `mkdir osrm`. This will be the directory which contains the OSRM data.
+4. Run `../docker/run_osrm.sh`. This will download the OSRM data (for Pennsylvania), process it, and run the OSRM server. This may take a while, and will use a bit less than 3GB of space.
+
+Next, we need to setup and run the Redis server.
+
+5. Run `./docker/run_db.sh`, which will start the Redis server (if this doesn't work, simply copy the command in the script and run it manually). If an error occurs, delete the old container and try again.
+
+Finally, we can run the backend.
+
+6. Run `./docker/build_backend.sh`, which will build the backend Docker image. This takes about 3 minutes.
+7. Run `./docker/run_backend.sh` from the root directory, which will run the backend Docker image. This will mount the base directory, and all changes made within the container will be reflected on the host machine (and vice versa). However, Git may not work within the container (unless you'd like to set it up manually), so simply use Git on the host machine.
+
 
 # Details
 The usage of this package is documented throughout the sections below, instead of in a separate section, due to the number of scripts and steps involved. First, let's explore the general principles we use to structure the data.
+
+There are parts of the code which are not fully documented below, as they are used only by sub-components described below.
 
 ## Data Structuring
 There are multiple de-coupling steps which make BetterVote's final product adaptable, scalable, and understandable. Within the backend, de-coupling the structure of the data with the functionality of the backend is critical to being able to adapt to new functionality and data.
@@ -89,3 +123,35 @@ Now, with our understanding of nodes and blocks, we can create the actual `Block
 
 ### Universe Matching
 Finally, we can associate the `universe.csv` file with these `Abode`s and add the voters to their respective `Abode`s. Run `src/pre_processing/process_universe.py` to do this. This also pre-populates the distance matrices for `node`s and `Block`s to save time later. **This will also soon change once a scalable address matching system is implemented, since the current matching between `Abode`s and `universe.csv` is not scalable.**
+
+
+## Route Optimization
+Now that we have a geographic and semantic understanding of a campaign's data, it's time to simply do some route optimization to find the best canvassing routes. First, let's explore what a campaign might actually want:
+
+### Problem Formulation
+The first type of problem is called the *Group Canvas*. This occurs when a campaign wants to host an event at some place, and have some number of volunteers complete canvassing routes from this point.
+
+The second type of problem is called the *Turf Split*, which is the bulk of the novel functionality. This occurs at the beginning of a campaign, when all the routes are generated, and periodically, as the number of projected houses the campaign will visit throughout the campaign changes, and as group canvasses are separately performed.
+
+Both formulations reduce to the same problem, and are both solved using the `BaseSolver` in `src/optimize/base_solver.py`. This solver simply calls [OR-Tools](https://developers.google.com/optimization/routing/vrp) (the best open-source VRP solver) with some starting locations, number of routes, and other route parameters.
+
+#### Group Canvas
+For the *Group Canvas* problem (in `src/optimize/group_canvas.py`), the reduction is simple: given the voter universe, a starting location, and the number of routes (along with other route parameters), it finds the probable area around the starting location needed (to reduce the problem complexity, instead of running on the entire campaign's area), and then generates these routes.
+
+**In the future, we may wish to add functionality to account for driving to a starting location. Thus, this may turn into a turf split problem with a central location.**
+
+#### Turf Split
+This reduction is a bit more complicated. In this problem, we have a huge (usually the entire campaign's) area, and wish to choose the starting locations (among all intersections in the area) which maximizes the number of houses hit in the least time.
+
+**In the future, we hope to use optimization to determine the optimal set of depots to use**. For now, we use the following heuristic, which we call *Super Clustering*: we cluster the large area into manageable chunks (about 500 `Abode`s each), then find depots within each cluster (by clustering again and using the centroids), and then run the base solver with these depots. This is implemented in `src/optimize/turf_split.py`.
+
+### Solving
+Now that we have a problem formulation, we can solve it. This is fully done for us by OR-Tools. The problem setup for OR-Tools and calling is done in `src/optimize/base_solver.py`.
+
+### Post-processing
+Since the output of the VRP is a list of points for each route, we need to convert this into our desired format. The reason we need `Block`s and cannot simply display raw points to users is the following:
+ - Canvassers and campaigns have an easier time understanding larger structures (blocks) than individual points, and giving a route (as Google Maps does) is much easier to follow than giving individual points.
+ - We'd like the ability to impose some "walkability" heuristics into the routes, like not backtracking on yourself (where the optimizer may be indifferent but a human could get confused).
+ - **In the future, we'd also like to give to the user the side of the street they should be walking on, just like Google Maps walking directions does.**
+
+The long post-processing script in `src/optimize/post_process.py` does the following performs this re-association and imposes the heuristics needed. It also displays visualizations of the routes, and produces files which will be used by the dashboard and app to visualize and walk the routes.

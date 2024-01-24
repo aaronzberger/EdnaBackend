@@ -80,7 +80,8 @@ RUN pip install --no-cache-dir\
     ortools\
     pandas\
     boto3\
-    python-dotenv
+    python-dotenv\
+    prettytable
 
 # set up default locale
 RUN locale-gen en_US.UTF-8
