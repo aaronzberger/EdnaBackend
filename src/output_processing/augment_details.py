@@ -5,7 +5,7 @@ import sys
 import csv
 import json
 from typing import Any
-from src.config import Point, coords_node_file, blocks_file, block_output_file
+from src.config import InternalPoint, coords_node_file, blocks_file, block_output_file
 from decimal import Decimal
 from src.utils.gps import great_circle_distance
 
@@ -44,7 +44,7 @@ for list_id in details.keys():
     if "blocks" not in output:
         print(list_id, "has no blocks")
     for block in output["blocks"]:
-        for house in block["places"]:
+        for house in block["abodes"]:
             num_voters += len(house["voter_info"])
 
     details[list_id]["num_voters"] = num_voters
@@ -53,7 +53,7 @@ for list_id in details.keys():
     # First, find the node ids by the start point
     start_point = details[list_id]["start_point"]
 
-    # Round lat and lon to 4 decimal places
+    # Round lat and lon to 4 decimal abodes
     lat = Decimal(start_point["lat"]).quantize(Decimal("0.0001"))
     lon = Decimal(start_point["lon"]).quantize(Decimal("0.0001"))
 
@@ -62,7 +62,7 @@ for list_id in details.keys():
         if len(potential_ids) == 1:
             node_id = potential_ids[0][0]
         else:
-            node_id = min(potential_ids, key=lambda x: great_circle_distance(Point(lat=lat, lon=lon), Point(lat=x[1]["lat"], lon=x[1]["lon"])))[0]
+            node_id = min(potential_ids, key=lambda x: great_circle_distance(InternalPoint(lat=lat, lon=lon), InternalPoint(lat=x[1]["lat"], lon=x[1]["lon"])))[0]
     except KeyError:
         print(f"Could not find node for {lat}:{lon}")
         continue

@@ -11,7 +11,7 @@ from sklearn.cluster import BisectingKMeans, KMeans
 from termcolor import colored
 
 from src.config import (
-    SUPER_CLUSTER_NUM_HOUSES,
+    SUPER_CLUSTER_NUM_ABODES,
     ABODE_DB_IDX,
     InternalPoint,
     BLOCK_DB_IDX,
@@ -69,7 +69,7 @@ class Clustering:
 
         distance_matrix = block_distances.get_distance_matrix(block_ids=self.block_ids)
 
-        num_clusters = len(self.abode_ids) // SUPER_CLUSTER_NUM_HOUSES
+        num_clusters = len(self.abode_ids) // SUPER_CLUSTER_NUM_ABODES
 
         clustered = KMeans(n_clusters=num_clusters, random_state=0, tol=1e-9, n_init=10).fit(
             distance_matrix
@@ -188,7 +188,7 @@ class Clustering:
             points.append([x, y])
 
         # Run spectral clustering with euclidian distance
-        num_clusters = len(abode_ids_list) // SUPER_CLUSTER_NUM_HOUSES
+        num_clusters = len(abode_ids_list) // SUPER_CLUSTER_NUM_ABODES
         clustering = BisectingKMeans(n_init=10, n_clusters=num_clusters, random_state=0).fit(
             points
         )
@@ -201,7 +201,7 @@ class Clustering:
 
         block_id_clusters: list[set[str]] = [set() for _ in range(num_clusters)]
 
-        # For each block, assign it to the cluster which has the most houses on the block
+        # For each block, assign it to the cluster which has the most abodes on the block
         for block in self.block_ids:
             block_data = self.db.get_dict(block, BLOCK_DB_IDX)
             if block_data is None:
@@ -210,12 +210,12 @@ class Clustering:
                 )
                 sys.exit(1)
 
-            num_houses_per_cluster = [
+            num_abodes_per_cluster = [
                 set(block_data["abodes"].keys()).intersection(abode_id_clusters[i])
                 for i in range(num_clusters)
             ]
 
-            max_cluster = np.argmax(num_houses_per_cluster)
+            max_cluster = np.argmax(num_abodes_per_cluster)
 
             block_id_clusters[max_cluster].add(block)
 

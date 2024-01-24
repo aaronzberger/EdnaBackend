@@ -9,8 +9,8 @@ from src.config import (
     NODE_DISTANCE_MATRIX_DB_IDX,
     Point,
     InternalPoint,
-    generate_pt_id,
-    generate_pt_id_pair,
+    pt_id,
+    generate_id_pair,
 )
 from src.utils.db import Database
 from src.utils.gps import great_circle_distance
@@ -22,8 +22,8 @@ class NodeDistancesSnapshot:
         self.snapshot = snapshot
 
     def get_distance(self, p1: Point, p2: Point) -> Optional[float]:
-        p1_id, p2_id = generate_pt_id(p1), generate_pt_id(p2)
-        id_pair_1, id_pair_2 = generate_pt_id_pair(p1_id, p2_id), generate_pt_id_pair(
+        p1_id, p2_id = pt_id(p1), pt_id(p2)
+        id_pair_1, id_pair_2 = generate_id_pair(p1_id, p2_id), generate_id_pair(
             p2_id, p1_id
         )
 
@@ -52,8 +52,8 @@ class NodeDistances:
             node_2 (Point): the second node
         """
         # If this pair already exists in the database, skip it
-        node_1_id, node_2_id = generate_pt_id(node_1), generate_pt_id(node_2)
-        pair_1, pair_2 = generate_pt_id_pair(node_1_id, node_2_id), generate_pt_id_pair(
+        node_1_id, node_2_id = pt_id(node_1), pt_id(node_2)
+        pair_1, pair_2 = generate_id_pair(node_1_id, node_2_id), generate_id_pair(
             node_2_id, node_1_id
         )
         if self._db.exists(pair_1, NODE_DISTANCE_MATRIX_DB_IDX) or self._db.exists(
@@ -67,7 +67,7 @@ class NodeDistances:
         # Only calculate and insert the routed distance if needed
         if distance <= MAX_STORAGE_DISTANCE:
             self._db.set_str(
-                generate_pt_id_pair(generate_pt_id(node_1), generate_pt_id(node_2)),
+                generate_id_pair(pt_id(node_1), pt_id(node_2)),
                 str(get_distance(node_1, node_2)),
                 NODE_DISTANCE_MATRIX_DB_IDX,
             )
@@ -110,12 +110,12 @@ class NodeDistances:
                     "Block with ID {} not found in database.".format(block_id)
                 )
 
-            if generate_pt_id(block["nodes"][0]) not in needed_nodes_set:
+            if pt_id(block["nodes"][0]) not in needed_nodes_set:
                 needed_nodes.append(block["nodes"][0])
-                needed_nodes_set.add(generate_pt_id(block["nodes"][0]))
-            if generate_pt_id(block["nodes"][-1]) not in needed_nodes_set:
+                needed_nodes_set.add(pt_id(block["nodes"][0]))
+            if pt_id(block["nodes"][-1]) not in needed_nodes_set:
                 needed_nodes.append(block["nodes"][-1])
-                needed_nodes_set.add(generate_pt_id(block["nodes"][-1]))
+                needed_nodes_set.add(pt_id(block["nodes"][-1]))
 
         # Add any necessary nodes to the matrix
         self._update(list(needed_nodes))
@@ -133,8 +133,8 @@ class NodeDistances:
         -------
             float | None: distance between the two points if it exists, None otherwise
         """
-        p1_id, p2_id = generate_pt_id(p1), generate_pt_id(p2)
-        id_pair_1, id_pair_2 = generate_pt_id_pair(p1_id, p2_id), generate_pt_id_pair(
+        p1_id, p2_id = pt_id(p1), pt_id(p2)
+        id_pair_1, id_pair_2 = generate_id_pair(p1_id, p2_id), generate_id_pair(
             p2_id, p1_id
         )
 
@@ -169,10 +169,10 @@ class NodeDistances:
         """
         ids: list[tuple[str, str]] = []
         for p1, p2 in pts:
-            p1_id, p2_id = generate_pt_id(p1), generate_pt_id(p2)
-            id_pair_1, id_pair_2 = generate_pt_id_pair(
+            p1_id, p2_id = pt_id(p1), pt_id(p2)
+            id_pair_1, id_pair_2 = generate_id_pair(
                 p1_id, p2_id
-            ), generate_pt_id_pair(p2_id, p1_id)
+            ), generate_id_pair(p2_id, p1_id)
             ids.append((id_pair_1, id_pair_2))
 
         # Flatten the list of tuples

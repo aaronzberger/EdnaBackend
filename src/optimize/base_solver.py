@@ -6,7 +6,7 @@ from typing import TypedDict
 import numpy as np
 from ortools.constraint_solver import pywrapcp, routing_enums_pb2
 
-from src.config import MAX_TOURING_TIME, TIME_AT_HOUSE, WALKING_M_PER_S, InternalPoint
+from src.config import MAX_TOURING_TIME, TIME_AT_ABODE, WALKING_M_PER_S, InternalPoint
 from src.distances.mix import MixDistances
 from src.utils.viz import display_distance_matrix
 
@@ -50,11 +50,11 @@ class BaseSolver:
         distance_matrix = distance_matrix / WALKING_M_PER_S
 
         # Add the stopping time to the distance matrix (add to the arriving node)
-        house_indices = range(
+        abode_indices = range(
             self.problem_info["num_vehicles"], self.problem_info["num_points"]
         )
-        distance_matrix[house_indices, :] += TIME_AT_HOUSE.seconds
-        distance_matrix[:, house_indices] += TIME_AT_HOUSE.seconds
+        distance_matrix[abode_indices, :] += TIME_AT_ABODE.seconds
+        distance_matrix[:, abode_indices] += TIME_AT_ABODE.seconds
         np.fill_diagonal(distance_matrix, 0)
 
         # Convert to int
@@ -86,7 +86,7 @@ class BaseSolver:
         # distance_dimension = routing.GetDimensionOrDie(time_dimension_name)
         # distance_dimension.SetGlobalSpanCostCoefficient(100)
 
-        # Allow dropping houses
+        # Allow dropping abodes
         penalty = 10000000
         for node in range(
             self.problem_info["num_vehicles"], self.problem_info["num_points"]
@@ -117,11 +117,11 @@ class BaseSolver:
             routes.append(route)
 
         # Convert to universal format
-        house_routes: list[list[InternalPoint]] = []
+        abode_routes: list[list[InternalPoint]] = []
         for route in routes:
-            house_route = []
+            abode_route = []
             for node in route:
-                house_route.append(self.problem_info["points"][node])
-            house_routes.append(house_route)
+                abode_route.append(self.problem_info["points"][node])
+            abode_routes.append(abode_route)
 
-        return house_routes
+        return abode_routes

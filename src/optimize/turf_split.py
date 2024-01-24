@@ -13,7 +13,7 @@ from src.config import (
     MAX_STORAGE_DISTANCE,
 )
 from src.distances.blocks import BlockDistances
-from src.distances.houses import HouseDistances
+from src.distances.houses import AbodeDistances
 from src.distances.mix import MixDistances
 from src.distances.nodes import NodeDistances
 
@@ -57,12 +57,12 @@ class SingleCluster:
             skip_update=True,
         )
 
-        self.house_distances = HouseDistances(
+        self.abode_distances = AbodeDistances(
             block_ids=self.block_ids, node_distances=self.node_distances
         )
 
         self.mix_distances = MixDistances(
-            house_distances=self.house_distances, node_distances=self.node_distances
+            abode_distances=self.abode_distances, node_distances=self.node_distances
         )
         # endregion
 
@@ -88,7 +88,7 @@ class SingleCluster:
                     lat=block["abodes"][i]["point"]["lat"],
                     lon=block["abodes"][i]["point"]["lon"],
                     id=i,
-                    type=NodeType.house,
+                    type=NodeType.abode,
                 )
                 for i in self.matching_abode_ids
             )
@@ -109,41 +109,37 @@ class SingleCluster:
 
         self.depots = self.find_depots(
             num_depots=num_routes,
-            abodes=self.abode_points,
+            abode_points=self.abode_points,
             potential_depots=self.potential_depots,
         )
 
-        self.build_problem(houses=self.abode_points, depots=self.depots)
+        self.build_problem(abode_points=self.abode_points, depot_points=self.depots)
 
     def build_problem(
         self,
-        houses: list[InternalPoint],
-        depots: list[InternalPoint],
+        abode_points: list[InternalPoint],
+        depot_points: list[InternalPoint],
     ):
         """
         Build a turf split problem.
 
         Parameters
         ----------
-        houses : list[Point]
-            The houses to visit.
-        depots : list[Point]
-            The depots to start from.
+        abode_points : list[InternalPoint]
+            The abodes to visit.
+        depot_points : list[InternalPoint]
+            The depots to visit.
         """
         # # TODO/NOTE This is much less efficient than taking a subset (and duplicating some entries)
         # # of the matrix from find_depots, but it's much easier to implement.
-        # self.distance_matrix = self.mix_distances.get_distance_matrix(depots + houses)
-        # self.distance_matrix = (
-        #     (self.distance_matrix / WALKING_M_PER_S).round().astype(int).tolist()
-        # )
 
-        self.points = depots + houses
+        self.points = depot_points + abode_points
 
         self.problem_info = ProblemInfo(
             points=self.points,
             num_vehicles=self.num_routes,
             num_depots=self.num_routes,
-            num_points=self.num_routes + len(houses),
+            num_points=self.num_routes + len(abode_points),
             starts=[i for i in range(self.num_routes)],
             ends=[i for i in range(self.num_routes)],
         )
@@ -151,22 +147,22 @@ class SingleCluster:
     def find_depots(
         self,
         num_depots: int,
-        abodes: list[InternalPoint],
+        abode_points: list[InternalPoint],
         potential_depots: list[InternalPoint],
     ) -> list[InternalPoint]:
         """
         Find the optimal depots for the given abodes.
 
         NOTE: In the future, this should be replaced by the actual turf split optimization problem,
-        whereby depots are chosen to maximize total number of houses hit in the cluster. For now,
+        whereby depots are chosen to maximize total number of abodes hit in the cluster. For now,
         we use a simple heuristic of choosing centers of a predermined number of clusters.
 
         Parameters
         ----------
         num_depots : int
             The number of depots to find.
-        abodes : list[Point]
-            The abodes to find depots for.
+        abode_points : list[Point]
+            The abodes to visit.
         potential_depots : list[Point]
             The potential depots to choose from.
 
@@ -181,28 +177,28 @@ class SingleCluster:
 
         centers = []
         for cluster in range(num_depots):
-            # Re-create the list of houses in this cluster
-            cluster_houses = [
-                house
-                for label, house in zip(clustered.labels_, abodes)
+            # Re-create the list of abodes in this cluster
+            cluster_abodes = [
+                abode
+                for label, abode in zip(clustered.labels_, abode_points)
                 if label == cluster
             ]
 
-            # Find the depot closest to these houses
+            # Find the depot closest to these abodes
             depot_sums = []
             for depot in potential_depots:
                 depot_sum = 0
-                for house in random.sample(
-                    cluster_houses, min(len(cluster_houses), 100)
+                for abode in random.sample(
+                    cluster_abodes, min(len(cluster_abodes), 100)
                 ):
-                    distance = self.mix_distances.get_distance(depot, house)
+                    distance = self.mix_distances.get_distance(depot, abode)
                     if isinstance(distance, float):
                         depot_sum += distance
                     else:
                         depot_sum += MAX_STORAGE_DISTANCE
                 depot_sums.append(depot_sum)
 
-            # Choose the depot which minimizes distance to all these houses
+            # Choose the depot which minimizes distance to all these abodes
             centers.append(potential_depots[np.argmin(depot_sums)])
 
         return centers

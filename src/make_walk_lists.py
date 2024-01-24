@@ -83,7 +83,7 @@ print(f"\t\t\ton {len(block_ids)} blocks.")
 
 "-------------------------------------------------------------------------------------------------------"
 "                                               Building                                                "
-" Build the depots and houses for the problem and areas specified                                       "
+" Build the depots and abodes for the problem and areas specified                                       "
 "-------------------------------------------------------------------------------------------------------"
 
 print(colored(u'\u2500' * TERMINAL_WIDTH, color='blue'))

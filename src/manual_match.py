@@ -3,7 +3,7 @@ import os
 import googlemaps
 from termcolor import cprint
 import termcolor
-from src.config import Point
+from src.config import InternalPoint
 from src.utils.gps import great_circle_distance
 
 from src.config import manual_match_input_file, manual_match_output_file, reverse_geocode_file, id_to_addresses_file, GOOGLE_MAPS_API_KEY

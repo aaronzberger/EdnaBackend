@@ -9,7 +9,7 @@ from src.config import (
     ARBITRARY_LARGE_DISTANCE,
     Block,
     BLOCK_DISTANCE_MATRIX_DB_IDX,
-    generate_block_id_pair,
+    generate_id_pair,
     BLOCK_DB_IDX,
 )
 from src.distances.nodes import NodeDistances
@@ -21,7 +21,7 @@ class BlockDistancesSnapshot:
         self.snapshot = snapshot
 
     def get_distance(self, b1_id: str, b2_id: str) -> Optional[float]:
-        pair_1, pair_2 = generate_block_id_pair(b1_id, b2_id), generate_block_id_pair(
+        pair_1, pair_2 = generate_id_pair(b1_id, b2_id), generate_id_pair(
             b2_id, b1_id
         )
         if pair_1 in self.snapshot:
@@ -33,7 +33,7 @@ class BlockDistancesSnapshot:
 
 class BlockDistances:
     def _insert_pair(self, b1: Block, b1_id: str, b2: Block, b2_id: str):
-        pair_1, pair_2 = generate_block_id_pair(b1_id, b2_id), generate_block_id_pair(
+        pair_1, pair_2 = generate_id_pair(b1_id, b2_id), generate_id_pair(
             b2_id, b1_id
         )
         if self._db.exists(pair_1, BLOCK_DISTANCE_MATRIX_DB_IDX) or self._db.exists(
@@ -116,7 +116,7 @@ class BlockDistances:
         Returns:
             float | None: distance between the two blocks if it exists, None otherwise
         """
-        pair_1, pair_2 = generate_block_id_pair(b1_id, b2_id), generate_block_id_pair(
+        pair_1, pair_2 = generate_id_pair(b1_id, b2_id), generate_id_pair(
             b2_id, b1_id
         )
 

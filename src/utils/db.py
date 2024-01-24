@@ -8,7 +8,7 @@ Node Coords DB (NODE_COORDS_DB_IDX)
 
 Blocks (BLOCK_DB_IDX):
     Key: Block ID (from pre-processing, the concatenation of end node IDs and an identifier)
-    Value: Block object (houses, nodes, type)
+    Value: Block object (abodes, nodes, type)
 
 Abodes (ABODE_DB_IDX):
     Key: Abode ID (uuid)

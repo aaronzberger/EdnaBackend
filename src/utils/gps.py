@@ -11,12 +11,12 @@ from geographiclib.geodesic import Geodesic
 from haversine import Unit, haversine
 
 from src.config import (
-    MINS_PER_HOUSE,
+    TIME_AT_ABODE,
     WALKING_M_PER_S,
     NodeType,
     InternalPoint,
     WriteablePoint,
-    generate_pt_id,
+    pt_id,
     Point,
     SubAbode
 )
@@ -323,14 +323,14 @@ def project_to_line(
     )
     ald_p1, ald_p2 = along_track_distance(p1, p2, p3)
 
-    # Account for the case where the house is off the end of the block
+    # Account for the case where the abode is off the end of the block
     if ald_p1 > path_between.s13:
         projected = path_between.Position(path_between.s13)
         return InternalPoint(
             lat=projected["lat2"],
             lon=projected["lon2"],
             type=NodeType.other,
-            id=generate_pt_id(projected["lat2"], projected["lon2"]),
+            id=pt_id(projected["lat2"], projected["lon2"]),
         )
     elif ald_p2 > path_between.s13:
         projected = path_between.Position(0)
@@ -338,7 +338,7 @@ def project_to_line(
             lat=projected["lat2"],
             lon=projected["lon2"],
             type=NodeType.other,
-            id=generate_pt_id(projected["lat2"], projected["lon2"]),
+            id=pt_id(projected["lat2"], projected["lon2"]),
         )
 
     projected = path_between.Position(ald_p1)
@@ -346,7 +346,7 @@ def project_to_line(
         lat=projected["lat2"],
         lon=projected["lon2"],
         type=NodeType.other,
-        id=generate_pt_id(projected["lat2"], projected["lon2"]),
+        id=pt_id(projected["lat2"], projected["lon2"]),
     )
 
 
@@ -369,35 +369,6 @@ def bearing(p1: InternalPoint, p2: InternalPoint) -> float:
     return path_between.azi1
 
 
-# @dataclass
-# class SubBlock:
-#     """Like a block, but ordered and optimized for post-processing and output format."""
-#     block: Block
-#     block_id: str
-
-#     # Note that start and end could be the same point.
-#     start: InternalPoint
-#     end: InternalPoint
-
-#     # Furthest points in each direction the houses span
-#     extremum: tuple[InternalPoint, InternalPoint]
-
-#     houses: list[InternalPoint]
-#     navigation_points: list[InternalPoint]
-
-#     def __post_init__(self):
-#         self.length: float = 0.0
-#         self.length += great_circle_distance(self.start, self.navigation_points[0])
-#         for first, second in itertools.pairwise(self.navigation_points):
-#             self.length += great_circle_distance(first, second)
-#         self.length += great_circle_distance(self.end, self.navigation_points[-1])
-
-#         # TODO: Time to walk depends on walk_method and should likely be iterated through
-#         self.time_to_walk = len(self.houses) * MINS_PER_HOUSE + (
-#             self.length / WALKING_M_PER_S * (1 / 60)
-#         )
-
-
 @dataclass
 class SubBlock:
     """
@@ -412,6 +383,7 @@ class SubBlock:
     block_id: str
     nodes: list[WriteablePoint]
     abodes: list[SubAbode]
+    type: str
 
     def __post_init__(self):
         self.length: float = 0.0
@@ -419,8 +391,8 @@ class SubBlock:
             self.length += great_circle_distance(first, second)
 
         # TODO: Time to walk depends on walk_method and should likely be iterated through
-        self.time_to_walk = len(self.abodes) * MINS_PER_HOUSE + (
-            self.length / WALKING_M_PER_S * (1 / 60)
+        self.mins_to_traverse = len(self.abodes) * TIME_AT_ABODE.seconds + (
+            self.length / WALKING_M_PER_S
         )
 
 

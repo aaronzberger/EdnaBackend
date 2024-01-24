@@ -2,7 +2,7 @@
 Associate abodes with blocks. Take in block_output.json and write blocks and abodes to the database
 """
 
-# TODO: See Covode Pl and Wendover Pl (both have same-named streets, to which all the houses on pl have been wrongly assigned)
+# TODO: See Covode Pl and Wendover Pl (both have same-named streets, to which all the abodes on pl have been wrongly assigned)
 
 import csv
 from decimal import Decimal
@@ -50,7 +50,7 @@ from tqdm import tqdm
 
 from src.utils.viz import display_blocks
 
-MAX_DISTANCE = 500  # meters from house to segment
+MAX_DISTANCE = 500  # meters from abode to segment
 
 # In meters, the square size of each chunk in the matrix
 # Higher values will result in faster processing, but more false positives in matching
@@ -73,14 +73,14 @@ if DEBUG:
 "-----------------------------------------------------------------------------------------"
 # region Load files
 
-# Load the file (unorganized) containing house coordinates (and info)
+# Load the file (unorganized) containing abode coordinates (and info)
 print("Loading coordinates of abodes...")
-house_points_file = open(address_pts_file)
+abode_points_file = open(address_pts_file)
 num_abodes = -1
-for _ in house_points_file:
+for _ in abode_points_file:
     num_abodes += 1
-house_points_file.seek(0)
-abode_points_reader = csv.DictReader(house_points_file)
+abode_points_file.seek(0)
+abode_points_reader = csv.DictReader(abode_points_file)
 
 # Load the block_output file, containing the blocks returned from the OSM query
 print("Loading node and way coordinations query...")
@@ -303,18 +303,18 @@ def address_match_score(s1: str, s2: str, threshold=90, score_cutoff=0.0):
 
 
 def search_for_best_subsegment(
-    segment, segment_id, best_segment, house_pt: InternalPoint
+    segment, segment_id, best_segment, abode_point: InternalPoint
 ):
     # Iterate through each block sub-segment (block may curve)
     for node_1_data, node_2_data in itertools.pairwise(segment["nodes"]):
         node_1 = InternalPoint(**node_1_data)
         node_2 = InternalPoint(**node_2_data)
 
-        ctd = cross_track_distance(house_pt, node_1, node_2)
-        alds = along_track_distance(house_pt, node_1, node_2)
+        ctd = cross_track_distance(abode_point, node_1, node_2)
+        alds = along_track_distance(abode_point, node_1, node_2)
 
-        # The distance from the point this house projects onto the line created by the segment to the segment (0 if within bounds)
-        house_offset = max(
+        # The distance from the point this abode projects onto the line created by the segment to the segment (0 if within bounds)
+        abode_offset = max(
             0,
             max(alds) - great_circle_distance(node_1, node_2) - ALD_BUFFER,
         )
@@ -322,16 +322,16 @@ def search_for_best_subsegment(
         # Convert the nodes to UTM
         x1, y1, _, _ = pt_to_utm(node_1)
         x2, y2, _, _ = pt_to_utm(node_2)
-        xh, yh, _, _ = pt_to_utm(house_pt)
+        xh, yh, _, _ = pt_to_utm(abode_point)
         cross_product = (x2 - x1) * (yh - y1) - (y2 - y1) * (xh - x1)
 
-        house_side = cross_product > 0
+        abode_side = cross_product > 0
 
         # If this segment is better than the best segment, insert it
         if (
             best_segment is None
-            or house_offset < best_segment.ald_offset
-            or (house_offset == best_segment.ald_offset and abs(ctd) < best_segment.ctd)
+            or abode_offset < best_segment.ald_offset
+            or (abode_offset == best_segment.ald_offset and abs(ctd) < best_segment.ctd)
         ):
             if DEBUG:
                 print(
@@ -345,9 +345,9 @@ def search_for_best_subsegment(
                     print("Old best segment was None", file=buffer)
                 else:
                     print(f"Old CTD: {best_segment.ctd}", file=buffer)
-                    if house_offset < best_segment.ald_offset:
+                    if abode_offset < best_segment.ald_offset:
                         print(
-                            f"New house_offset: {house_offset}, old: {best_segment.ald_offset}",
+                            f"New abode_offset: {abode_offset}, old: {best_segment.ald_offset}",
                             file=buffer,
                         )
 
@@ -355,16 +355,16 @@ def search_for_best_subsegment(
                 sub_node_1=deepcopy(node_1),
                 sub_node_2=deepcopy(node_2),
                 ctd=abs(ctd),
-                ald_offset=house_offset,
-                side=bool(house_side),
+                ald_offset=abode_offset,
+                side=bool(abode_side),
                 id=segment_id,
             )
 
     return best_segment
 
 
-def filter_segments(house_point):
-    index = get_matrix_index(house_point, origin, CHUNK_SIZE)
+def filter_segments(abode_point):
+    index = get_matrix_index(abode_point, origin, CHUNK_SIZE)
     max_rows = len(block_matrix)
     max_cols = len(block_matrix[0])
 
@@ -401,7 +401,7 @@ with tqdm(
         #         int(item['zip_code']) != 15217:
         #     continue
 
-        # If this house is not in the area of interest, skip it
+        # If this abode is not in the area of interest, skip it
         if (
             float(item["latitude"]) < min_lat
             or float(item["latitude"]) > max_lat
@@ -410,7 +410,7 @@ with tqdm(
         ):
             continue
 
-        house_pt = InternalPoint(lat=float(item["latitude"]), lon=float(item["longitude"]), type="house")  # type: ignore
+        abode_point = InternalPoint(lat=float(item["latitude"]), lon=float(item["longitude"]), type=NodeType.abode, id="")
 
         street_name_parts = (
             item["st_premodifier"],
@@ -437,21 +437,18 @@ with tqdm(
             None,  # TODO: add function to sanitize state names
             item["zip_code"],
         )
-        # reverse_geocode.append(
-        #     (house_pt["lat"], house_pt["lon"], dataclasses.asdict(formatted_address))
-        # )
 
         best_segment: Optional[
             Segment
-        ] = None  # Store the running closest segment to the house
+        ] = None  # Store the running closest segment to the abode
 
         # First try for an exact match
-        filtered_segment_ids = filter_segments(house_pt)
+        filtered_segment_ids = filter_segments(abode_point)
 
         if DEBUG:
             print("\n\n\n ------------------------------------------", file=buffer)
             print(
-                f"Begin match for house at {house_pt['lat']}, {house_pt['lon']}",
+                f"Begin match for abode at {abode_point['lat']}, {abode_point['lon']}",
                 file=buffer,
             )
 
@@ -475,7 +472,7 @@ with tqdm(
                 closest_block = db.get_dict(segment_id, BLOCK_DB_IDX)
                 # closest_block = segments_by_id[segment_id]
                 best_segment = search_for_best_subsegment(
-                    closest_block, segment_id, best_segment, house_pt
+                    closest_block, segment_id, best_segment, abode_point
                 )
 
         filtered_block_to_street_names = {
@@ -521,11 +518,11 @@ with tqdm(
                         db.get_dict(block_id, BLOCK_DB_IDX),
                         block_id,
                         best_segment,
-                        house_pt,
+                        abode_point,
                     )
 
         if best_segment is not None and best_segment.ctd <= MAX_DISTANCE:
-            # Create house to insert into table
+            # Create abode to insert into table
             all_points = db.get_dict(str(best_segment.id), BLOCK_DB_IDX)["nodes"]
             # all_points = segments_by_id[str(best_segment.id)]["nodes"]
 
@@ -538,14 +535,14 @@ with tqdm(
             distance_to_start: float = 0
             distance_to_end: float = 0
 
-            # Calculate the distance from the start of the block to the beginning of this house's sub-segment
+            # Calculate the distance from the start of the block to the beginning of this abode's sub-segment
             distance_to_start += distance_along_path(all_points[: min(sub_nodes) + 1])
 
-            # Split this sub-segment's length between the two distances, based on this house's location
+            # Split this sub-segment's length between the two distances, based on this abode's location
             sub_start = all_points[min(sub_nodes)]
             sub_end = all_points[max(sub_nodes)]
             distances = along_track_distance(
-                p1=house_pt,
+                p1=abode_point,
                 p2=InternalPoint(
                     lat=sub_start["lat"],
                     lon=sub_start["lon"],
@@ -559,21 +556,21 @@ with tqdm(
             distance_to_start += distances[0]
             distance_to_end += distances[1]
 
-            # Lastly, calculate the distance from the end of this house's sub-segment to the end of the block
+            # Lastly, calculate the distance from the end of this abode's sub-segment to the end of the block
             distance_to_end += distance_along_path(all_points[min(sub_nodes) + 1:])
 
             # Add this association to the abodes file
-            lat_rounded = Decimal(str(house_pt["lat"])).quantize(Decimal("0.0001"))
-            lon_rounded = Decimal(str(house_pt["lon"])).quantize(Decimal("0.0001"))
+            lat_rounded = Decimal(str(abode_point["lat"])).quantize(Decimal("0.0001"))
+            lon_rounded = Decimal(str(abode_point["lon"])).quantize(Decimal("0.0001"))
             uuid_input = item["full_address"] + str(lat_rounded) + str(lon_rounded)
 
-            house_uuid = uuid.uuid5(UUID_NAMESPACE, uuid_input)
+            abode_uuid = uuid.uuid5(UUID_NAMESPACE, uuid_input)
 
-            house_geography = AbodeGeography(
-                id=str(house_uuid),
+            abode_geography = AbodeGeography(
+                id=str(abode_uuid),
                 point=WriteablePoint(
-                    lat=house_pt["lat"],
-                    lon=house_pt["lon"]
+                    lat=abode_point["lat"],
+                    lon=abode_point["lon"]
                 ),
                 distance_to_start=round(distance_to_start),
                 distance_to_end=round(distance_to_end),
@@ -583,8 +580,8 @@ with tqdm(
                 subsegment_end=max(sub_nodes),
             )
 
-            house_semantics = Abode(
-                id=str(house_uuid),
+            abode_semantics = Abode(
+                id=str(abode_uuid),
                 display_address=item["full_address"],
                 block_id=str(best_segment.id),
                 city=item["municipality"],
@@ -592,19 +589,19 @@ with tqdm(
                 zip=item["zip_code"],
             )
 
-            # Add the house to the block (Note that we expect the block to already exist in the database most of the time)
+            # Add the abode to the block (Note that we expect the block to already exist in the database most of the time)
             old_block = db.get_dict(str(best_segment.id), BLOCK_DB_IDX)
-            old_block["abodes"][str(house_uuid)] = house_geography
+            old_block["abodes"][str(abode_uuid)] = abode_geography
 
             db.set_dict(str(best_segment.id), old_block, BLOCK_DB_IDX)
 
-            # Add the house to the abodes file
-            db.set_dict(str(house_uuid), dict(house_semantics), ABODE_DB_IDX)
+            # Add the abode to the abodes file
+            db.set_dict(str(abode_uuid), dict(abode_semantics), ABODE_DB_IDX)
 
         else:
             num_failed_abodes += 1
             if DEBUG:
-                print(f"Failed to associate house with point: {house_pt}", file=buffer)
+                print(f"Failed to associate abode with point: {abode_point}", file=buffer)
                 print(f'Raw street name {item["st_name"]}', file=buffer)
                 print(f"Street name: {sanitized_street_name}", file=buffer)
                 if best_segment is not None:

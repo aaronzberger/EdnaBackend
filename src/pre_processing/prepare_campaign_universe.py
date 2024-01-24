@@ -1,9 +1,9 @@
 """
 Pre-process the data necessary for a campaign: populate the distance matrices with all the necessary data.
 
-TODO: In all distance matrices, add storage matrix to only search for blocks, nodes, houses that actually might be within
+TODO: In all distance matrices, add storage matrix to only search for blocks, nodes, abodes that actually might be within
 the maximum storage distance. Will speed up to linear time.
-TODO Add general write buffer class to block and node distances to speed up writing to the database (as is in house distances hard-coded)
+TODO Add general write buffer class to block and node distances to speed up writing to the database (as is in abode distances hard-coded)
 For this, also write to buffer after certain size, instead of writing at the end.
 """
 

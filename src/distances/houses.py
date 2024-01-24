@@ -16,7 +16,7 @@ from src.config import (
     InternalPoint,
     pt_id,
     BLOCK_DB_IDX,
-    generate_abode_id_pair,
+    generate_id_pair,
 )
 from src.distances.nodes import NodeDistances
 from src.utils.route import get_distance
@@ -37,7 +37,7 @@ def store(distance: int, cost: int) -> int:
         int: the storable integer representing the inputs
     """
     if distance > 9999 or cost > 9999:
-        raise ValueError("Cannot store value more than 9999 in house distance matrix")
+        raise ValueError("Cannot store value more than 9999 in abode distance matrix")
 
     return distance * 10000 + cost
 
@@ -55,15 +55,15 @@ def unstore(value: int) -> tuple[int, int]:
     return (value // 10000, value % 10000)
 
 
-class HouseDistancesSnapshot:
+class AbodeDistancesSnapshot:
     def __init__(self, snapshot: dict[str, str]):
         self.snapshot = snapshot
 
     def get_distance(self, p1: Point, p2: Point) -> Optional[tuple[float, float]]:
         p1_id, p2_id = pt_id(p1), pt_id(p2)
-        id_pair_1, id_pair_2 = generate_abode_id_pair(
+        id_pair_1, id_pair_2 = generate_id_pair(
             p1_id, p2_id
-        ), generate_abode_id_pair(p2_id, p1_id)
+        ), generate_id_pair(p2_id, p1_id)
 
         if id_pair_1 in self.snapshot:
             return unstore(int(self.snapshot[id_pair_1]))
@@ -72,11 +72,11 @@ class HouseDistancesSnapshot:
         return None
 
 
-class HouseDistances:
+class AbodeDistances:
     def _insert_point(self, pt: InternalPoint, b: Block):
-        b_houses = b["abodes"]
+        b_abodes = b["abodes"]
 
-        if len(b_houses) == 0:
+        if len(b_abodes) == 0:
             return
 
         # Calculate the distances between the segment endpoints
@@ -92,7 +92,7 @@ class HouseDistances:
         if distance_from_end is None:
             distance_from_end = get_distance(pt, b["nodes"][-1])
 
-        for address, info in b_houses.items():
+        for address, info in b_abodes.items():
             through_start = distance_from_start + info["distance_to_start"]
             through_end = distance_from_end + info["distance_to_end"]
 
@@ -100,7 +100,7 @@ class HouseDistances:
 
             if distance < MAX_STORAGE_DISTANCE:
                 self.distance_matrix[
-                    generate_abode_id_pair(pt_id(pt), address)
+                    generate_id_pair(pt_id(pt), address)
                 ] = store(round(distance), 0)
 
     def _crossing_penalty(self, block: Block) -> int:
@@ -120,7 +120,7 @@ class HouseDistances:
             b["abodes"].items(), b["abodes"].items()
         ):
             if id_1 == id_2:
-                self.distance_matrix[generate_abode_id_pair(id_1, id_2)] = store(0, 0)
+                self.distance_matrix[generate_id_pair(id_1, id_2)] = store(0, 0)
             else:
                 distance_to_road = (
                     info_1["distance_to_road"] + info_2["distance_to_road"]
@@ -150,7 +150,7 @@ class HouseDistances:
                 if not USE_COST_METRIC:
                     if distance < MAX_STORAGE_DISTANCE:
                         self.distance_matrix[
-                            generate_abode_id_pair(id_1, id_2)
+                            generate_id_pair(id_1, id_2)
                         ] = store(round(distance), 0)
                 else:
                     cost = 0
@@ -159,14 +159,14 @@ class HouseDistances:
 
                     if distance < MAX_STORAGE_DISTANCE:
                         self.distance_matrix[
-                            generate_abode_id_pair(id_1, id_2)
+                            generate_id_pair(id_1, id_2)
                         ] = store(round(distance), round(cost))
 
     def _insert_pair(self, b1: Block, b1_id: str, b2: Block, b2_id: str):
-        b1_houses = b1["abodes"]
-        b2_houses = b2["abodes"]
+        b1_abodes = b1["abodes"]
+        b2_abodes = b2["abodes"]
 
-        if len(b1_houses) == 0 or len(b2_houses) == 0:
+        if len(b1_abodes) == 0 or len(b2_abodes) == 0:
             return
 
         # Check if the segments are the same
@@ -191,9 +191,9 @@ class HouseDistances:
         if len(end_distances) != 4 or min(end_distances) > MAX_STORAGE_DISTANCE:
             return
 
-        # Iterate over every possible pair of houses
+        # Iterate over every possible pair of abodes
         for (id_1, info_1), (id_2, info_2) in itertools.product(
-            b1_houses.items(), b2_houses.items()
+            b1_abodes.items(), b2_abodes.items()
         ):
             distances_to_road = (
                 info_1["distance_to_road"] + info_2["distance_to_road"]
@@ -223,18 +223,18 @@ class HouseDistances:
 
             # Add the street crossing penalties
             if USE_COST_METRIC:
-                # TODO: This isn't quite right. Need a way to check if two houses on different blocks are on the same side /
+                # TODO: This isn't quite right. Need a way to check if two abodes on different blocks are on the same side /
                 # how many streets to cross, etc. This will be a large change
                 cost = mean([self._crossing_penalty(b1), self._crossing_penalty(b2)])
                 cost += DIFFERENT_BLOCK_COST
 
                 if distance < MAX_STORAGE_DISTANCE:
-                    self.distance_matrix[generate_abode_id_pair(id_1, id_2)] = store(
+                    self.distance_matrix[generate_id_pair(id_1, id_2)] = store(
                         round(distance), round(cost)
                     )
             else:
                 if distance < MAX_STORAGE_DISTANCE:
-                    self.distance_matrix[generate_abode_id_pair(id_1, id_2)] = store(
+                    self.distance_matrix[generate_id_pair(id_1, id_2)] = store(
                         round(distance), 0
                     )
 
@@ -254,14 +254,14 @@ class HouseDistances:
             Time complexity: O(n^2), where n is the number of blocks
         """
         with tqdm(
-            total=len(blocks) ** 2, desc="Building house distance matrix", unit="pairs", colour="green"
+            total=len(blocks) ** 2, desc="Building abode distance matrix", unit="pairs", colour="green"
         ) as progress:
             for b1_id, b1 in blocks.items():
                 if depots is not None:
                     for depot in depots:
                         # Insert the point and itself
                         self.distance_matrix[
-                            generate_abode_id_pair(pt_id(depot), pt_id(depot))
+                            generate_id_pair(pt_id(depot), pt_id(depot))
                         ] = store(0, 0)
 
                         self._insert_point(depot, b1)
@@ -298,7 +298,7 @@ class HouseDistances:
         self, p1: Point, p2: Point
     ) -> Optional[tuple[float, float] | float]:
         """
-        Get the distance between two houses by their coordinates.
+        Get the distance between two abodes by their coordinates.
 
         Parameters
         ----------
@@ -310,9 +310,9 @@ class HouseDistances:
             tuple[float, float] | float | None: distance, cost between the two points (if using the cost metric)
                 or just the distance (if not using the cost metric), or None if the distance is too far
         """
-        pair_1, pair_2 = generate_abode_id_pair(
+        pair_1, pair_2 = generate_id_pair(
             pt_id(p1), pt_id(p2)
-        ), generate_abode_id_pair(pt_id(p2), pt_id(p1))
+        ), generate_id_pair(pt_id(p2), pt_id(p1))
 
         pair_1_r = self.distance_matrix.get(pair_1)
         if pair_1_r is not None:
@@ -324,13 +324,13 @@ class HouseDistances:
 
         return None
 
-    def snapshot(self) -> HouseDistancesSnapshot:
+    def snapshot(self) -> AbodeDistancesSnapshot:
         """
-        Get a snapshot of the current house distances table
+        Get a snapshot of the current abode distances table
 
         Returns
         -------
-            HouseDistancesSnapshot: a snapshot of the current house distances table
+            AbodeDistancesSnapshot: a snapshot of the current abode distances table
         """
         snapshot = deepcopy(self.distance_matrix)
-        return HouseDistancesSnapshot(snapshot)
+        return AbodeDistancesSnapshot(snapshot)

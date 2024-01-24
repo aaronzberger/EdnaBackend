@@ -38,16 +38,13 @@ elif PROBLEM_TYPE == Problem_Types.group_canvas:
 assert "timeout_s" in problem_params and int(problem_params["timeout_s"])
 TIMEOUT = timedelta(seconds=problem_params["timeout_s"])
 
-"----------------------------------------------------------------------------------"
-"                                     File Paths                                   "
-"----------------------------------------------------------------------------------"
-
 # NOTE: Right now, there's no standardized way to map campaign id to a physical area
 # This may not need to be solved, if we end up processing entire states and such in advance.
 AREA_BBOX = [40.5147085, -80.2215597, 40.6199697, -80.0632736]
 
-STYLE_COLOR = "#0F6BF5"
-
+"----------------------------------------------------------------------------------"
+"                                     File Paths                                   "
+"----------------------------------------------------------------------------------"
 street_suffixes_file = os.path.join(BASE_DIR, "src", "street_suffixes.json")
 
 region_dir = os.path.join(BASE_DIR, "regions", CAMPAIGN_ID)
@@ -103,7 +100,7 @@ BLOCK_DB_IDX = 3
 NODE_DISTANCE_MATRIX_DB_IDX = 4
 BLOCK_DISTANCE_MATRIX_DB_IDX = 6
 NODE_COORDS_DB_IDX = 7
-HOUSE_IMAGES_DB_IDX = 8
+ABODE_IMAGES_DB_IDX = 8
 STREET_SUFFIXES_DB_IDX = 9
 CAMPAIGN_SUBSET_DB_IDX = 10
 
@@ -115,6 +112,11 @@ TESTING_DB_IDX = 11
 "----------------------------------------------------------------------------------"
 
 USE_COST_METRIC = False
+MAX_TOURING_TIME = timedelta(minutes=180)
+TIME_AT_ABODE = timedelta(minutes=1.5)
+MAX_TOURING_DISTANCE = 6000
+WALKING_M_PER_S = 1.2
+SUPER_CLUSTER_NUM_ABODES = 500
 
 
 def sigmoid(x: float, k: float, a: float) -> float:
@@ -150,8 +152,8 @@ def voter_value(party: Literal["D", "R", "I"], turnout: float) -> float:
     return base_value if party in ["D", "I"] else 0
 
 
-def house_value(voter_values: list[float]) -> float:
-    """Calculate the value of a house based on the voters in it."""
+def abode_value(voter_values: list[float]) -> float:
+    """Calculate the value of a abode based on the voters in it."""
     base_value = exponential(sum(voter_values), 1)
     return round(base_value * 100)
     # in_order = sorted(voter_values, reverse=True)
@@ -172,29 +174,27 @@ class Singleton(type):
 "----------------------------------------------------------------------------------"
 "                                     Constants                                    "
 "----------------------------------------------------------------------------------"
+STYLE_COLOR = "#0F6BF5"
 
 GOOGLE_MAPS_API_KEY = "AIzaSyAPpRP4mPuMlyRP8YiIaEOL_YAms6TpCwM"
 
 UUID_NAMESPACE = uuid.UUID("ccf207c6-3b15-11ee-be56-0242ac120002")
 
-# Maximum distance between two nodes where they should be stored
-ARBITRARY_LARGE_DISTANCE = 10000
-MAX_TOURING_TIME = timedelta(minutes=180)
-TIME_AT_HOUSE = timedelta(minutes=1.5)
-MAX_TOURING_DISTANCE = 6000
-WALKING_M_PER_S = 1.2
-MINS_PER_HOUSE = 1.5
-CLUSTERING_CONNECTED_THRESHOLD = 100  # Meters where blocks are connected
-# TODO: Reimplement Keep_apartments?
-DISTANCE_TO_ROAD_MULTIPLIER = 0.5
-ALD_BUFFER = 150  # Meters after a block ends where a house is still on the block
-DIFFERENT_BLOCK_COST = 25
-SUPER_CLUSTER_NUM_HOUSES = 500
-
+# Distance between points (nodes, blocks, abodes, etc.) beyond which they are not stored
 MAX_STORAGE_DISTANCE = 1600
 
-# Number of meters to store if nodes are too far away from each other
-NODE_TOO_FAR_DISTANCE = 10000
+# The return value for distance functions when the distance is not stored
+ARBITRARY_LARGE_DISTANCE = 10000
+
+# How much the distance to the road should affect the distance between abodes
+# (inaccuracy and imperfect perception of distance make this generally less than 1)
+DISTANCE_TO_ROAD_MULTIPLIER = 0.5
+
+# Number of meters after a block ends where an abode is still considered to be on the block
+ALD_BUFFER = 150
+
+# The cost of crossing the street (technically, in meters)
+DIFFERENT_BLOCK_COST = 25
 
 TERMINAL_WIDTH = os.get_terminal_size().columns
 
@@ -222,56 +222,26 @@ ROAD_WIDTH = {
     "residential": 6,
     "service": 0,
 }
+
+
 "----------------------------------------------------------------------------------"
 "                                       Type Hints                                 "
 "----------------------------------------------------------------------------------"
-
-
 # NOTE: the 'type' and 'id' attributes are not required. When using Python 3.11,
 # wrap these attributes in the 'typing.NotRequired' hint to eliminate errors on instance creation.
 # On earlier versions, either suppress or ignore these errors: they do not affect json export or reading.
 
 # Define the Nodetypes as an enum
-NodeType = Enum("NodeType", ["house", "node", "other"])
+NodeType = Enum("NodeType", ["abode", "node", "other"])
 
 
-def generate_pt_id(*args, **kwargs) -> str:
-    if "lat" in kwargs and "lon" in kwargs:
-        lat = kwargs["lat"]
-        lon = kwargs["lon"]
-    elif "pt" in kwargs:
-        lat = kwargs["pt"]["lat"]
-        lon = kwargs["pt"]["lon"]
-    elif len(args) == 2:
-        lat = args[0]
-        lon = args[1]
-    elif len(args) == 1:
-        if "lat" in args[0] and "lon" in args[0]:
-            lat = args[0]["lat"]
-            lon = args[0]["lon"]
-        elif "latitude" in args[0] and "longitude" in args[0]:
-            lat = args[0]["latitude"]
-            lon = args[0]["longitude"]
-        else:
-            raise ValueError("Either lat/lon or pt must be provided")
-    else:
-        raise ValueError("Either lat/lon or pt must be provided")
-    return str("{:.7f}".format(lat)) + ":" + str("{:.7f}".format(lon))
-
-
-def generate_pt_id_pair(id1: str, id2: str) -> str:
-    # The middle character must never appear in an ID
-    return id1 + "_" + id2
-
-
-def generate_block_id_pair(id1: str, id2: str) -> str:
-    # The middle character must never appear in an ID
-    return id1 + "_" + id2
-
-
-def generate_abode_id_pair(id1: str, id2: str) -> str:
-    # The middle character must never appear in an ID
-    return id1 + "_" + id2
+# region Point-like object type hints
+# NOTE: We stored two different kinds of points, one for internal use and one for export.
+# InternalPoint allows for passing around points which are associated with ids and types directly,
+# instead of needing to pass around metadata separately.
+PT_ID_SEPARATION = ":"
+PT_ID_PRECISION = 7
+ID_PAIR_SEPARATION = "_"
 
 
 class InternalPoint(TypedDict):
@@ -289,13 +259,25 @@ class WriteablePoint(TypedDict):
 Point = InternalPoint | WriteablePoint
 
 
-def to_serializable_pt(p: InternalPoint) -> WriteablePoint:
-    return WriteablePoint(lat=p["lat"], lon=p["lon"])
+def generate_id_pair(id1: str, id2: str) -> str:
+    """
+    Generate a unique ID for a pair of points, given their IDs.
+
+    Parameters
+    ----------
+        id1 (str): the ID of the first point
+        id2 (str): the ID of the second point
+
+    Returns
+    -------
+        str: the ID
+    """
+    return id1 + ID_PAIR_SEPARATION + id2
 
 
 def pt_id(p: Point) -> str:
     """
-    Get the ID of a point.
+    Get the ID of a point, or generate one if it does not have one.
 
     Parameters
     ----------
@@ -305,14 +287,53 @@ def pt_id(p: Point) -> str:
     -------
         str: the ID, if it was provided upon creation. Otherwise, an ID made up of the rounded coordinates
     """
-    return (
-        generate_pt_id(p["lat"], p["lon"])
-        if "id" not in p.keys() or p["id"] is None
-        else p["id"]
-    )
+    def generate_pt_id(*args, **kwargs) -> str:
+        """
+        Generate a unique ID for a point, given some representation of a point as input.
 
+        Returns
+        -------
+            str: the ID
 
-house_t = dict[str, InternalPoint]
+        Examples
+        --------
+            >>> generate_pt_id(lat=40.5, lon=-80.2)
+            '40.5000000:-80.2000000'
+            >>> generate_pt_id(pt={"lat": 40.5, "lon": -80.2})
+            '40.5000000:-80.2000000'
+            >>> generate_pt_id({"latitude": 40.5, "longitude": -80.2})
+            '40.5000000:-80.2000000'
+            >>> generate_pt_id(40.5, -80.2)
+            '40.5000000:-80.2000000'
+        """
+        if "lat" in kwargs and "lon" in kwargs:
+            lat = kwargs["lat"]
+            lon = kwargs["lon"]
+        elif "pt" in kwargs:
+            lat = kwargs["pt"]["lat"]
+            lon = kwargs["pt"]["lon"]
+        elif len(args) == 2:
+            lat = args[0]
+            lon = args[1]
+        elif len(args) == 1:
+            if "lat" in args[0] and "lon" in args[0]:
+                lat = args[0]["lat"]
+                lon = args[0]["lon"]
+            elif "latitude" in args[0] and "longitude" in args[0]:
+                lat = args[0]["latitude"]
+                lon = args[0]["longitude"]
+            else:
+                raise ValueError("Either lat/lon or pt must be provided")
+        else:
+            raise ValueError("Either lat/lon or pt must be provided")
+
+        return str(round(lat, PT_ID_PRECISION)) + PT_ID_SEPARATION + str(round(lon, PT_ID_PRECISION))
+
+    if "id" not in p.keys() or p["id"] is None:
+        return generate_pt_id(p["lat"], p["lon"])
+
+    return p["id"]
+# endregion
 
 
 class AbodeGeography(TypedDict):
@@ -337,7 +358,7 @@ class Abode(TypedDict):
     """An abode's semantic information"""
     id: str
     display_address: str
-    # For houses with multiple units, a mapping of unit numbers to a list of voter IDs
+    # For abodes with multiple units, a mapping of unit numbers to a list of voter IDs
     voter_ids: NotRequired[list[str] | dict[str, list[str]]]
     block_id: str
     city: str
@@ -346,7 +367,7 @@ class Abode(TypedDict):
 
 
 class SubAbode(TypedDict):
-    """A part of an abode, representing the abode's semantic and geographic information."""
+    """A part of an abode, representing the abode's semantic and geographic information, and containing a subset of all the voters living at this abode."""
     abode_id: str
     point: WriteablePoint
     distance_to_start: int
@@ -429,7 +450,7 @@ class Voter(TypedDict):
 
 
 # NOTE/TODO: About to be deprecated
-class HouseOutput(TypedDict):
+class AbodeOutput(TypedDict):
     display_address: str
     city: str
     state: str

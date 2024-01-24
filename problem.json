@@ -1,6 +1,6 @@
 {
     "campaign_id": "dev_1",
     "problem_type": "turf_split",
-    "num_routes": 3,
+    "num_routes": 1,
     "timeout_s": 60
 }

@@ -27,7 +27,7 @@ from src.config import (
     Abode,
     InternalPoint,
     blocks_file_t,
-    generate_pt_id,
+    pt_id,
     turnout_predictions_file,
 )
 from src.utils.db import Database
@@ -111,17 +111,17 @@ def display_blocks() -> set[tuple[float, float]]:
     m = folium.Map()
     cmap = ColorMap(0, len(blocks.values()))
 
-    num_houses_per_block = [len(b["abodes"]) for b in blocks.values()]
-    min_houses, max_houses = min(num_houses_per_block), max(num_houses_per_block)
+    num_abodes_per_block = [len(b["abodes"]) for b in blocks.values()]
+    min_num_abodes_per_block, max_num_abodes_per_block = min(num_abodes_per_block), max(num_abodes_per_block)
     num_duplicate_coords = 0
 
-    added_houses: set[tuple[float, float]] = set()
+    added_abodes: set[tuple[float, float]] = set()
 
     for b_id, block in tqdm(blocks.items(), desc="Displaying blocks", unit="blocks", colour="green"):
         index = randint(0, len(blocks))
         word = humanhash.humanize(str(hash(b_id)), words=1)
         weight = (
-            4 + ((len(block["abodes"]) - min_houses) / (max_houses - min_houses)) * 8
+            4 + ((len(block["abodes"]) - min_num_abodes_per_block) / (max_num_abodes_per_block - min_num_abodes_per_block)) * 8
         )
         folium.PolyLine(
             [[p["lat"], p["lon"]] for p in block["nodes"]],
@@ -137,10 +137,10 @@ def display_blocks() -> set[tuple[float, float]]:
 
             abode: Abode = db.get_dict(abode_geography["id"], ABODE_DB_IDX)
 
-            if (lat, lon) in added_houses:
+            if (lat, lon) in added_abodes:
                 num_duplicate_coords += 1
             else:
-                added_houses.add((lat, lon))
+                added_abodes.add((lat, lon))
 
             folium.Circle(
                 [abode_geography["point"]["lat"], abode_geography["point"]["lon"]],
@@ -155,8 +155,8 @@ def display_blocks() -> set[tuple[float, float]]:
 
     print(
         colored(
-            "Of {} houses, {} were duplicates (too close to render both).".format(
-                sum(num_houses_per_block), num_duplicate_coords
+            "Of {} abodes, {} were duplicates (too close to render both).".format(
+                sum(num_abodes_per_block), num_duplicate_coords
             ),
             "yellow",
         ) +
@@ -167,7 +167,7 @@ def display_blocks() -> set[tuple[float, float]]:
 
     m.save(os.path.join(BASE_DIR, "viz", "blocks.html"))
 
-    return added_houses
+    return added_abodes
 
 
 def display_visited_and_unvisited(
@@ -197,13 +197,13 @@ def display_visited_and_unvisited(
 
 
 def display_blocks_and_unassociated(
-    blocks: blocks_file_t, all_houses: list[InternalPoint]
+    blocks: blocks_file_t, abode_points: list[InternalPoint]
 ) -> folium.Map:
     # Get the map with all the blocks
     m, added_pts = display_blocks(blocks)
 
-    # Read the universe file and find the unassociated houses
-    for pt in all_houses:
+    # Read the universe file and find the unassociated abodes
+    for pt in abode_points:
         lat = float(Decimal(pt["lat"]).quantize(Decimal("0.000001")))
         lon = float(Decimal(pt["lon"]).quantize(Decimal("0.000001")))
         if (lat, lon) not in added_pts:
@@ -335,23 +335,23 @@ def display_distance_matrix(points: list[InternalPoint], distances: NDArray):
     m.save(os.path.join(BASE_DIR, "viz", "distance_matrix.html"))
 
 
-def display_house_orders(
+def display_abode_orders(
     walk_lists: list[list[InternalPoint]],
     cmap: Optional[ColorMap] = None,
     dcs: Optional[list[list[tuple[float, float]]]] = None,
 ) -> folium.Map:
     """
-    Display the house orders in a map.
+    Display the abode orders in a map.
 
     Parameters
     ----------
-        walk_lists: A list of lists of houses. Each list is a walk, and each house is a dictionary with 'lat' and 'lon' keys.
+        walk_lists: A list of lists of abodes. Each list is a walk, and each abode is a dictionary with 'lat' and 'lon' keys.
         cmap: A colormap to use for the blocks. If None, a new one will be created.
-        dcs: A list of lists of tuples of (distance, cost) for each house. If None, no DCs will be displayed.
+        dcs: A list of lists of tuples of (distance, cost) for each abode. If None, no DCs will be displayed.
 
     Returns
     -------
-        A folium map with the house orders displayed.
+        A folium map with the abode orders displayed.
     """
     m = folium.Map()
 
@@ -360,9 +360,9 @@ def display_house_orders(
 
     for i, walk_list in enumerate(walk_lists):
         text_color = cmap.get(i)
-        for j, house in enumerate(walk_list[:-1]):
+        for j, abode in enumerate(walk_list[:-1]):
             folium.Marker(
-                location=[house["lat"], house["lon"]],
+                location=[abode["point"]["lat"], abode["point"]["lon"]],
                 icon=DivIcon(
                     icon_size=(25, 25),
                     icon_anchor=(10, 10),  # left-right, up-down
@@ -420,16 +420,12 @@ def display_walk_list(walk_list: list[SubBlock], color: str) -> folium.Map:
     -------
         folium.Map: The map with the walk list displayed
     """
-    # points = list(itertools.chain.from_iterable([s.houses for s in walk_list]))
-    # lats = [i["lat"] for i in points]
-    # lons = [i["lon"] for i in points]
-    # m = generate_starter_map(lats=lats, lons=lons)
     db = Database()
     turnout_predictions = json.load(open(turnout_predictions_file))
 
     m = folium.Map()
 
-    house_counter = 0
+    abode_counter = 0
 
     for sub_block in walk_list:
         folium.PolyLine(
@@ -454,10 +450,10 @@ def display_walk_list(walk_list: list[SubBlock], color: str) -> folium.Map:
                 # TODO: Deal with apartments
                 voters: list[Voter] = []
 
-            house_counter += 1
-            point_id = generate_pt_id(abode["point"])
+            abode_counter += 1
+            point_id = pt_id(abode["point"])
             if point_id != last_point:
-                display_num = str(house_counter)
+                display_num = str(abode_counter)
                 last_point = point_id
 
                 # Add the address to the tooltip, but delete any unit number
@@ -468,11 +464,11 @@ def display_walk_list(walk_list: list[SubBlock], color: str) -> folium.Map:
                 turnout: float = turnout_predictions[voter["id"]]
                 tooltip += f"<br>{voter['name'].title()} ({voter['party']}): <b>{round(turnout * 100)}%</b>"
 
-            if point_id == generate_pt_id(next_abode["point"]):
+            if point_id == pt_id(next_abode["point"]):
                 continue
 
-            if display_num != str(house_counter):
-                display_num += f"-{str(house_counter)}"
+            if display_num != str(abode_counter):
+                display_num += f"-{str(abode_counter)}"
 
             folium.Marker(
                 location=[abode["point"]["lat"], abode["point"]["lon"]],
@@ -487,9 +483,9 @@ def display_walk_list(walk_list: list[SubBlock], color: str) -> folium.Map:
                 tooltip=tooltip,
             ).add_to(m)
 
-        house_counter += 1
+        abode_counter += 1
 
-        # Add the last house
+        # Add the last abode
         abode: Abode = db.get_dict(sub_block.abodes[-1]["abode_id"], ABODE_DB_IDX)
         if isinstance(abode["voter_ids"], list):
             voters: list[Voter] = [
@@ -499,9 +495,9 @@ def display_walk_list(walk_list: list[SubBlock], color: str) -> folium.Map:
             # TODO: Deal with apartments
             voters: list[Voter] = []
 
-        point_id: str = generate_pt_id(sub_block.abodes[-1]["point"])
+        point_id: str = pt_id(sub_block.abodes[-1]["point"])
         if point_id != last_point:
-            display_num = str(house_counter)
+            display_num = str(abode_counter)
             last_point = point_id
 
             # Add the address to the tooltip
@@ -512,11 +508,11 @@ def display_walk_list(walk_list: list[SubBlock], color: str) -> folium.Map:
             turnout: float = float(turnout_predictions[voter["id"]])
             tooltip += f"<br>{voter['name'].title()} ({voter['party']}): <b>{round(turnout * 100)}%</b>"
 
-        if display_num != str(house_counter):
+        if display_num != str(abode_counter):
             if display_num == "":
-                display_num = str(house_counter)
+                display_num = str(abode_counter)
             else:
-                display_num += f"-{str(house_counter)}"
+                display_num += f"-{str(abode_counter)}"
         if len(sub_block.abodes) == 0:
             continue
         folium.Marker(

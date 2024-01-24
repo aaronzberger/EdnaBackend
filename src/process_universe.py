@@ -1,4 +1,4 @@
-"""Associate PA voter file addresses with the geographic data, determine voter and house values,
+"""Associate PA voter file addresses with the geographic data, determine voter and abode values,
 and save the results to be used in the optimizer.
 
 A universe file is provided, for which addresses are from the PA voter export.
@@ -163,7 +163,7 @@ def handle_universe_file(universe_file: str, turnouts: dict[str, float]):
 
         return True
 
-    # Process each requested house
+    # Process each requested abode
     for entry in tqdm(
         reader,
         total=num_voters,
@@ -221,7 +221,7 @@ def handle_universe_file(universe_file: str, turnouts: dict[str, float]):
     )
 
     # no_choices = len(list(x for x in associater.need_manual_review if len(x["choices"]) == 0))
-    # print(f"Number of failed houses with no matches at all: {no_choices}")
+    # print(f"Number of failed abodes with no matches at all: {no_choices}")
     with open(manual_match_input_file, "w") as manual_match_file:
         json.dump(associater.need_manual_review, manual_match_file)
 

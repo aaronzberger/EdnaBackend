@@ -13,11 +13,11 @@ from src.config import (
     AbodeGeography,
     Abode,
     VIZ_PATH,
-    HouseOutput,
+    AbodeOutput,
     NodeType,
     InternalPoint,
     WriteablePoint,
-    generate_pt_id,
+    pt_id,
     pt_id,
     details_file,
     ABODE_DB_IDX,
@@ -28,7 +28,7 @@ from src.distances.mix import MixDistances
 from src.utils.gps import SubBlock, project_to_line
 from src.utils.route import RouteMaker
 from src.utils.viz import (
-    display_house_orders,
+    display_abode_orders,
     display_individual_walk_lists,
 )
 from src.utils.db import Database
@@ -47,46 +47,46 @@ class PostProcess:
         self.mix_distances = mix_distances
 
     def _calculate_exit(
-        self, final_house: InternalPoint, next_house: InternalPoint
+        self, final_abode_point: InternalPoint, next_abode_point: InternalPoint
     ) -> InternalPoint:
         """
-        Calculate the optimal exit point for a subsegment given the final house and the next house.
+        Calculate the optimal exit point for a subsegment given the final abode and the next abode.
 
         Parameters
         ----------
-            final_house (Point): the final house on the segment
-            next_house (Point): the next house to visit after this segment
+            final_abode_point (InternalPoint): the final abode point of the previous segment
+            next_abode_point (InternalPoint): the first abode to visit on the next segment
 
         Returns
         -------
-            Point: the exit point of this segment, which is either the start or endpoint of final_house's segment
+            Point: the exit point of this segment, which is either the start or endpoint of final_abode_point's segment
         """
         # Determine the exit direction, which will either be the start or end of the segment
-        origin_block_id = self.db.get_dict(final_house["id"], ABODE_DB_IDX)["block_id"]
+        origin_block_id = self.db.get_dict(final_abode_point["id"], ABODE_DB_IDX)["block_id"]
         origin_block = self.db.get_dict(origin_block_id, BLOCK_DB_IDX)
 
         end_node = deepcopy(origin_block["nodes"][-1])
         end_node["type"] = NodeType.node
 
-        through_end = self.mix_distances.get_distance(p1=end_node, p2=next_house)
+        through_end = self.mix_distances.get_distance(p1=end_node, p2=next_abode_point)
 
         if through_end is not None:
-            through_end += origin_block["abodes"][final_house["id"]]["distance_to_end"]
+            through_end += origin_block["abodes"][final_abode_point["id"]]["distance_to_end"]
 
         start_node = deepcopy(origin_block["nodes"][0])
         start_node["type"] = NodeType.node
 
-        through_start = self.mix_distances.get_distance(p1=start_node, p2=next_house)
+        through_start = self.mix_distances.get_distance(p1=start_node, p2=next_abode_point)
 
         if through_start is not None:
-            through_start += origin_block["abodes"][final_house["id"]][
+            through_start += origin_block["abodes"][final_abode_point["id"]][
                 "distance_to_start"
             ]
 
         if through_start is None and through_end is None:
             print(
                 colored(
-                    f"Unable to find distance through start/end of block (final house {final_house}, next house {next_house}). Quitting.",
+                    f"Unable to find distance through start/end of block (final abode {final_abode_point}, next abode {next_abode_point}). Quitting.",
                     "red",
                 )
             )
@@ -104,51 +104,51 @@ class PostProcess:
         )
 
     def _calculate_entrance(
-        self, intersection: InternalPoint, next_house: InternalPoint
+        self, intersection_point: InternalPoint, next_abode_point: InternalPoint
     ) -> InternalPoint:
         """
-        Calculate the optimal entrance point for a sub-block given the running intersection and the next house.
+        Calculate the optimal entrance point for a sub-block given the running intersection and the next abode.
 
         Parameters
         ----------
-            intersection (Point): the current location of the walker
-            next_house (Point): the first house to visit on the next segment
+            intersection_point (InternalPoint): the intersection point of the previous segment
+            next_abode_point (InternalPoint): the first abode to visit on the next segment
 
         Returns
         -------
-            Point: the entrance point of the next segment, which is either the start or endpoint of next_house's segment
+            Point: the entrance point of the next segment, which is either the start or endpoint of next_abode_point's segment
         """
         # Determine the exit direction, which will either be the start or end of the segment
-        destination_block_id = self.db.get_dict(next_house["id"], ABODE_DB_IDX)[
+        destination_block_id = self.db.get_dict(next_abode_point["id"], ABODE_DB_IDX)[
             "block_id"
         ]
         destination_block = self.db.get_dict(destination_block_id, BLOCK_DB_IDX)
 
-        intersection["type"] = NodeType.node
+        intersection_point["type"] = NodeType.node
         end_node = deepcopy(destination_block["nodes"][-1])
         end_node["type"] = NodeType.node
 
-        through_end = self.mix_distances.get_distance(p1=intersection, p2=end_node)
+        through_end = self.mix_distances.get_distance(p1=intersection_point, p2=end_node)
 
         if through_end is not None:
-            through_end += destination_block["abodes"][next_house["id"]][
+            through_end += destination_block["abodes"][next_abode_point["id"]][
                 "distance_to_end"
             ]
 
         start_node = deepcopy(destination_block["nodes"][0])
         start_node["type"] = NodeType.node
 
-        through_start = self.mix_distances.get_distance(p1=intersection, p2=start_node)
+        through_start = self.mix_distances.get_distance(p1=intersection_point, p2=start_node)
 
         if through_start is not None:
-            through_start += destination_block["abodes"][next_house["id"]][
+            through_start += destination_block["abodes"][next_abode_point["id"]][
                 "distance_to_start"
             ]
 
         if through_start is None and through_end is None:
             print(
                 colored(
-                    f"Unable to find distance through start/end of block. Final house {intersection}, next house {next_house}. Quitting.",
+                    f"Unable to find distance through start/end of block. Final abode {intersection_point}, next abode {next_abode_point}. Quitting.",
                     "red",
                 )
             )
@@ -187,12 +187,14 @@ class PostProcess:
             block_id=sub_block.block_id,
             nodes=nav_pts_1,
             abodes=abodes_1,
+            type=sub_block.type,
         )
 
         sub_block_2 = SubBlock(
             block_id=sub_block.block_id,
             nodes=nav_pts_2,
             abodes=abodes_2,
+            type=sub_block.type,
         )
 
         return sub_block_1, sub_block_2
@@ -201,19 +203,19 @@ class PostProcess:
         self,
         abode_points: list[InternalPoint],
         block_id: str,
-        entrance: InternalPoint,
-        exit: InternalPoint,
+        entrance_point: InternalPoint,
+        exit_point: InternalPoint,
         verbose=False,
     ) -> SubBlock | tuple[SubBlock, SubBlock]:
         """
         Process a single sub-block.
 
-        This function takes a list of houses on a single block and returns a SubBlock object
-        which contains the navigation points, houses, and other information needed to use the route.
+        This function takes a list of abodes on a single block and returns a SubBlock object
+        which contains the navigation points, abodes, and other information needed to use the route.
 
         Parameters
         ----------
-            houses (list[Point]): The houses to process
+            abode_points (list[Point]): The abodes to visit on this block
             block_id (str): The block ID of the block to process
             entrance (Point): The entrance to the block
             exit (Point): The exit to the block
@@ -234,27 +236,27 @@ class PostProcess:
             if len(abode_ids) != len(self.block_to_abode_ids[block_id]):
                 print(
                     colored(
-                        f"Notice: There are {len(abode_ids)} houses, but {len(self.block_to_abode_ids[block_id])} houses on this block in the route"
-                        + f"\nThe unplaced houses are {set(self.block_to_abode_ids[block_id]) - set(abode_ids)}",
+                        f"Notice: There are {len(abode_ids)} abodes, but {len(self.block_to_abode_ids[block_id])} abodes on this block in the route"
+                        + f"\nThe unplaced abodes are {set(self.block_to_abode_ids[block_id]) - set(abode_ids)}",
                         "blue",
                     )
                 )
 
         block = self.db.get_dict(block_id, BLOCK_DB_IDX)
 
-        extremum: tuple[InternalPoint, InternalPoint] = (entrance, exit)
+        extremum: tuple[InternalPoint, InternalPoint] = (entrance_point, exit_point)
 
         # region: Calculate the navigation points
-        if pt_id(entrance) != pt_id(exit):
+        if pt_id(entrance_point) != pt_id(exit_point):
             # The canvasser enters at one point and exits at another, so simply
             # order the navigation points to align with the rest of the route
             navigation_points = (
                 block["nodes"]
-                if pt_id(entrance) == pt_id(block["nodes"][0])
+                if pt_id(entrance_point) == pt_id(block["nodes"][0])
                 else block["nodes"][::-1]
             )
 
-        elif pt_id(entrance) == pt_id(exit) == pt_id(block["nodes"][0]):
+        elif pt_id(entrance_point) == pt_id(exit_point) == pt_id(block["nodes"][0]):
             # The canvasser enters at the same point they exit (the start). Thus, this is an
             # "out-and-back" block, so let's find the furthest point the canvasser will walk to
             # (the end_extremum)
@@ -265,7 +267,7 @@ class PostProcess:
                 p1=InternalPoint(
                     lat=extremum_abode["point"]["lat"],
                     lon=extremum_abode["point"]["lon"],
-                    type=NodeType.house,
+                    type=NodeType.abode,
                     id=extremum_abode_id,
                 ),
                 p2=block["nodes"][extremum_abode["subsegment_start"]],
@@ -280,7 +282,7 @@ class PostProcess:
                 + list(reversed(block["nodes"][: extremum_abode["subsegment_start"] + 1]))
             )
 
-        elif pt_id(entrance) == pt_id(exit) == pt_id(block["nodes"][-1]):
+        elif pt_id(entrance_point) == pt_id(exit_point) == pt_id(block["nodes"][-1]):
             # The canvasser enters at the same point they exit (the end). So, do the same
             # but in reverse, calculating the furthest point they go towards the start (the start_extremum)
             extremum_abode_id, extremum_abode = max(
@@ -290,7 +292,7 @@ class PostProcess:
                 p1=InternalPoint(
                     lat=extremum_abode["point"]["lat"],
                     lon=extremum_abode["point"]["lon"],
-                    type=NodeType.house,
+                    type=NodeType.abode,
                     id=extremum_abode_id,
                 ),
                 p2=block["nodes"][extremum_abode["subsegment_start"]],
@@ -326,7 +328,7 @@ class PostProcess:
         sub_abodes: list[SubAbode] = []
 
         # region: Order the abodes
-        if pt_id(entrance) != pt_id(exit):
+        if pt_id(entrance_point) != pt_id(exit_point):
             running_side = all_abode_geographies_on_block[abode_points[0]["id"]]["side"]
             start = 0
             i = 0
@@ -336,7 +338,7 @@ class PostProcess:
 
             metric = (
                 "distance_to_start"
-                if pt_id(entrance) == pt_id(block["nodes"][0])
+                if pt_id(entrance_point) == pt_id(block["nodes"][0])
                 else "distance_to_end"
             )
 
@@ -379,7 +381,7 @@ class PostProcess:
                                 InternalPoint(
                                     lat=abode_geography["lat"],
                                     lon=abode_geography["lon"],
-                                    type=NodeType.house,
+                                    type=NodeType.abode,
                                     id=potential_abode_id,
                                 )
                             )
@@ -417,7 +419,7 @@ class PostProcess:
                         InternalPoint(
                             lat=abode_geography["lat"],
                             lon=abode_geography["lon"],
-                            type=NodeType.house,
+                            type=NodeType.abode,
                             id=potential_abode_id,
                         )
                     )
@@ -464,7 +466,7 @@ class PostProcess:
                     zip=abode["zip"],
                 ))
 
-        elif pt_id(entrance) == pt_id(exit):
+        elif pt_id(entrance_point) == pt_id(exit_point):
             # The optimal path is always to go out on one side and back on the other
             # (since you must go out and back anyway, and this minimizes street crossings)
             out_side = [
@@ -483,7 +485,7 @@ class PostProcess:
             # To avoid mis-placing abodes off the end, sort by the distance to the entrance/exit
             metric_out = (
                 "distance_to_start"
-                if pt_id(entrance) == pt_id(block["nodes"][0])
+                if pt_id(entrance_point) == pt_id(block["nodes"][0])
                 else "distance_to_end"
             )
 
@@ -508,9 +510,9 @@ class PostProcess:
 
                 sub_start_idx = sub_end_idx = len(out_nav_nodes)
                 for node in out_nav_nodes:
-                    if generate_pt_id(node) == generate_pt_id(sub_start):
+                    if pt_id(node) == pt_id(sub_start):
                         sub_start_idx = out_nav_nodes.index(node)
-                    if generate_pt_id(node) == generate_pt_id(sub_end):
+                    if pt_id(node) == pt_id(sub_end):
                         sub_end_idx = out_nav_nodes.index(node)
 
                 if min(sub_start_idx, sub_end_idx) == len(out_nav_nodes):
@@ -555,9 +557,9 @@ class PostProcess:
 
                 sub_start_idx = sub_end_idx = len(back_nav_nodes)
                 for node in back_nav_nodes:
-                    if generate_pt_id(node) == generate_pt_id(sub_start):
+                    if pt_id(node) == pt_id(sub_start):
                         sub_start_idx = back_nav_nodes.index(node)
-                    if generate_pt_id(node) == generate_pt_id(sub_end):
+                    if pt_id(node) == pt_id(sub_end):
                         sub_end_idx = back_nav_nodes.index(node)
 
                 if min(sub_start_idx, sub_end_idx) == len(back_nav_nodes):
@@ -595,10 +597,11 @@ class PostProcess:
             block_id=block_id,
             nodes=navigation_points,
             abodes=sub_abodes,
+            type=block["type"],
         )
 
-        if pt_id(entrance) == pt_id(exit):
-            new_dual = self._split_sub_block(sub_block, entrance, exit)
+        if pt_id(entrance_point) == pt_id(exit_point):
+            new_dual = self._split_sub_block(sub_block, entrance_point, exit_point)
             return new_dual
 
         for uuid in abode_ids:
@@ -649,7 +652,7 @@ class PostProcess:
                         lat=block["nodes"][0]["lat"],
                         lon=block["nodes"][0]["lon"],
                         type=NodeType.node,
-                        id=generate_pt_id(
+                        id=pt_id(
                             block["nodes"][0]["lat"], block["nodes"][0]["lon"]
                         ),
                     )
@@ -657,7 +660,7 @@ class PostProcess:
                         lat=block["nodes"][-1]["lat"],
                         lon=block["nodes"][-1]["lon"],
                         type=NodeType.node,
-                        id=generate_pt_id(
+                        id=pt_id(
                             block["nodes"][-1]["lat"], block["nodes"][-1]["lon"]
                         ),
                     )
@@ -680,6 +683,7 @@ class PostProcess:
                             block_id=block_id,
                             nodes=nav_pts,
                             abodes=[],
+                            type=block["type"],
                         )
                     )
 
@@ -727,7 +731,7 @@ class PostProcess:
         # region SubBlock processing
         current_sub_block_abode_points: list[InternalPoint] = []
 
-        # Take the side closest to the first house (likely where a canvasser would park)
+        # Take the side closest to the first abode (likely where a canvasser would park)
         running_intersection = depot_point
         running_block_id = self.db.get_dict(abode_points[0]["id"], ABODE_DB_IDX)["block_id"]
 
@@ -753,8 +757,8 @@ class PostProcess:
                 sub_block_or_blocks = self._process_sub_block(
                     current_sub_block_abode_points,
                     running_block_id,
-                    entrance=entrance_pt,
-                    exit=exit_pt,
+                    entrance_point=entrance_pt,
+                    exit_point=exit_pt,
                 )
 
                 if isinstance(sub_block_or_blocks, SubBlock):
@@ -772,7 +776,7 @@ class PostProcess:
                 running_intersection = exit_pt
                 running_block_id = next_block_id
 
-        # Since we used pairwise, the last house is never evaluated
+        # Since we used pairwise, the last abode is never evaluated
         if abode_points[-1]["id"] not in self.inserted_abode_ids:
             current_sub_block_abode_points.append(abode_points[-1])
 
@@ -786,8 +790,8 @@ class PostProcess:
             sub_block_or_blocks = self._process_sub_block(
                 current_sub_block_abode_points,
                 running_block_id,
-                entrance=entrance_point,
-                exit=exit_point,
+                entrance_point=entrance_point,
+                exit_point=exit_point,
             )
 
             if isinstance(sub_block_or_blocks, SubBlock):
@@ -830,10 +834,10 @@ class PostProcess:
             nodes = []
             for nav_pt in sub_block.nodes:
                 nodes.append({"lat": nav_pt["lat"], "lon": nav_pt["lon"]})
-            houses = []
+            abodes = []
             for abode in sub_block.abodes:
-                houses.append(
-                    HouseOutput(
+                abodes.append(
+                    AbodeOutput(
                         display_address=abode["display_address"],
                         city=abode["city"],
                         state=abode["state"],
@@ -846,7 +850,7 @@ class PostProcess:
                     )
                 )
 
-            list_out["blocks"].append({"nodes": nodes, "houses": houses})
+            list_out["blocks"].append({"nodes": nodes, "abodes": abodes})
 
         list_out["form"] = form
 
@@ -860,11 +864,11 @@ def process_partitioned_solution(
     viz_path: str = VIZ_PATH,
     id: str = CAMPAIGN_ID,
 ):
-    # Display the house orders together
+    # Display the abode orders together
     combined_routes: list[list[InternalPoint]] = [
         route for sublist in route_parts for route in sublist
     ]
-    display_house_orders(combined_routes).save(
+    display_abode_orders(combined_routes).save(
         os.path.join(viz_path, "direct_output.html")
     )
 
@@ -884,7 +888,7 @@ def process_partitioned_solution(
             if list_id in details:
                 print(colored(f"Warning: List {list_id} already exists in details", color="yellow"))
 
-            num_houses = sum([len(sub_block.abodes) for sub_block in processed_routes[-1]])
+            num_abodes = sum([len(sub_block.abodes) for sub_block in processed_routes[-1]])
             distance = 0
             for sub_block in processed_routes[-1]:
                 distance += sub_block.length
@@ -895,7 +899,7 @@ def process_partitioned_solution(
 
             details[list_id] = {
                 "distance": distance,
-                "num_houses": num_houses,
+                "num_abodes": num_abodes,
                 "start_point": start_point,
             }
 
@@ -927,9 +931,7 @@ def process_solution(
     viz_path: str = VIZ_PATH,
     id: str = CAMPAIGN_ID,
 ):
-    # house_dcs = [[HouseDistances.get_distance(i, j) for (i, j) in itertools.pairwise(list)] for list in point_orders]
-
-    display_house_orders(routes, dcs=None).save(
+    display_abode_orders(routes, dcs=None).save(
         os.path.join(viz_path, "direct_output.html")
     )
 
@@ -948,7 +950,7 @@ def process_solution(
         if list_id in details:
             print(colored(f"Warning: List {list_id} already exists in details"), color="yellow")
 
-        num_houses = sum([len(sub_block.abodes) for sub_block in routes[-1]])
+        num_abodes = sum([len(sub_block.abodes) for sub_block in routes[-1]])
         distance = 0
         for sub_block in routes[-1]:
             distance += sub_block.length
@@ -959,7 +961,7 @@ def process_solution(
 
         details[list_id] = {
             "distance": distance,
-            "num_houses": num_houses,
+            "num_abodes": num_abodes,
             "start_point": start_point,
         }
 

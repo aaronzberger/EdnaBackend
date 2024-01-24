@@ -3,7 +3,7 @@ from src.config import BLOCK_DB_IDX, NodeType, InternalPoint
 from src.distances.mix import MixDistances
 from src.optimize.optimizer import Optimizer
 from src.optimize.base_solver import ProblemInfo
-from src.distances.houses import HouseDistances
+from src.distances.houses import AbodeDistances
 from src.distances.nodes import NodeDistances
 from src.config import MAX_TOURING_DISTANCE
 from src.utils.db import Database
@@ -68,7 +68,7 @@ class GroupCanvas(Optimizer):
                         lat=block["abodes"][i]["lat"],
                         lon=block["abodes"][i]["lon"],
                         id=i,
-                        type=NodeType.house,
+                        type=NodeType.abode,
                     )
                     for i in self.matching_abode_ids
                 )
@@ -81,37 +81,31 @@ class GroupCanvas(Optimizer):
             block_ids=self.local_block_ids, skip_update=True
         )
 
-        self.house_distances = HouseDistances(
+        self.abode_distances = AbodeDistances(
             block_ids=self.local_block_ids,
             node_distances=self.node_distances,
             depots=[self.depot],
         )
 
         self.mix_distances = MixDistances(
-            house_distances=self.house_distances, node_distances=self.node_distances
+            abode_distances=self.abode_distances, node_distances=self.node_distances
         )
         # endregion
 
-        self.build_problem(houses=self.local_abodes)
+        self.build_problem(abode_points=self.local_abodes)
 
-    def build_problem(self, houses: list[InternalPoint]):
+    def build_problem(self, abode_points: list[InternalPoint]):
         """
         Create a group canvas problem.
 
         Parameters
         ----------
-        houses : list[Point]
-            The houses to visit.
-        depot : Point
-            The depot to start from.
-        num_routes : int
-            The number of routes to create.
-        mix_distances : MixDistances
-            The distance matrix to use.
+        abode_points : list[InternalPoint]
+            The abodes to visit.
         """
         super().build_problem(mix_distances=self.mix_distances)
 
-        self.points = [self.depot] * self.num_routes + houses
+        self.points = [self.depot] * self.num_routes + abode_points
 
         self.problem_info = ProblemInfo(
             points=self.points,
