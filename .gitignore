@@ -26,6 +26,4 @@ debug.txt
 *.osrm
 *.osm.pbf
 
-regions/
-
 node_modules/

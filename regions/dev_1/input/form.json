@@ -1,0 +1,70 @@
+[
+    {
+        "type": "Multiple Choice",
+        "question": "Was the voter home?",
+        "options": [
+            "Yes",
+            "No"
+        ]
+    },
+    {
+        "type": "Linear Scale",
+        "question": "Do you think the voter will vote in the election?",
+        "options": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5"
+        ],
+        "markers": [
+            "Definitely not",
+            "",
+            "Unsure",
+            "",
+            "Definitely"
+        ]
+    },
+    {
+        "type": "Linear Scale",
+        "question": "How likely is the voter to vote for Giuseppe?",
+        "options": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5"
+        ],
+        "markers": [
+            "Very unlikely",
+            "",
+            "",
+            "",
+            "Very likely"
+        ]
+    },
+    {
+        "type":"Short Answer",
+        "question": "How many minutes did you spend talking to the voter?"
+    },
+    {
+        "type": "Multiple Choice",
+        "question": "Would you like to visit this voter again?",
+        "options": [
+            "Yes",
+            "No"
+        ]
+    },
+    {
+        "type": "Multiple Choice",
+        "question": "Would you like to send this voter a mailer?",
+        "options": [
+            "Yes",
+            "No"
+        ]
+    },
+    {
+        "type": "Short Answer",
+        "question": "Any other comments?"
+    }
+]
