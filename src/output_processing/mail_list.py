@@ -24,7 +24,7 @@ from src.config import (
     ABODE_DB_IDX,
     VOTER_DB_IDX
 )
-from src.process_universe import Associater
+from src.pre_processing.process_universe import Associater
 from src.utils.viz import display_targeting_voters
 from src.utils.db import Database
 

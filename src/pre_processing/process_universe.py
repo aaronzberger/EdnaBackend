@@ -5,7 +5,14 @@ A universe file is provided, for which addresses are from the PA voter export.
 
 These addresses must be matched with addresses from the PA address points file
 (which were previously associated with blocks in make_blocks.py).
+
+TODO: In all distance matrices, add storage matrix to only search for blocks, nodes, abodes that actually might be within
+the maximum storage distance. Will speed up to linear time.
+TODO Add general write buffer class to block and node distances to speed up writing to the database (as is in abode distances hard-coded)
+For this, also write to buffer after certain size, instead of writing at the end.
 """
+from __future__ import annotations
+
 import csv
 import json
 import os
@@ -31,8 +38,55 @@ from src.config import (
 )
 from src.utils.address import Address
 from src.utils.db import Database
+from src.distances.blocks import BlockDistances
+from src.distances.nodes import NodeDistances
 
 db = Database()
+
+
+# TODO: Here, we'll also create the campaign subset with some input data, likely? For now, this is manual.
+
+# Walk up the database from voters to abodes to blocks
+# To retrieve all nodes, take the first and last node from all blocks with abodes which have voters in this campaign
+voter_ids = db.get_set(CAMPAIGN_ID, CAMPAIGN_SUBSET_DB_IDX)
+
+print(f"Found {len(voter_ids)} voters")
+
+abode_ids: set[str] = set()
+for voter in voter_ids:
+    voter: Voter = db.get_dict(voter, VOTER_DB_IDX)
+    if voter is None:
+        print(colored("Voter {} not found in database".format(voter), color="red"))
+        sys.exit(1)
+
+    # Ensure the corresponding abode has this voter
+    abode: Abode = db.get_dict(voter["abode_id"], ABODE_DB_IDX)
+
+    if "voter_ids" not in abode:
+        print(
+            colored("Abode {} does not have voters".format(voter["abode_id"]), color="red")
+        )
+        sys.exit(1)
+
+    abode_ids.add(voter["abode_id"])
+
+print(f"Found {len(abode_ids)} abode")
+
+block_ids: set[str] = set()
+for voter in abode_ids:
+    abode_data = db.get_dict(voter, ABODE_DB_IDX)
+    if abode_data is None:
+        print(colored("Abode {} not found in database".format(voter), color="red"))
+        sys.exit(1)
+    block_ids.add(abode_data["block_id"])
+
+print(f"Found {len(block_ids)} blocks")
+
+# Populate the node distance matrix
+node_distances = NodeDistances(block_ids=block_ids)
+
+# Populate the block distance matrix
+block_distances = BlockDistances(block_ids=block_ids, node_distances=node_distances)
 
 
 def handle_universe_file(universe_file: str, turnouts: dict[str, float]):
@@ -220,8 +274,6 @@ def handle_universe_file(universe_file: str, turnouts: dict[str, float]):
         )
     )
 
-    # no_choices = len(list(x for x in associater.need_manual_review if len(x["choices"]) == 0))
-    # print(f"Number of failed abodes with no matches at all: {no_choices}")
     with open(manual_match_input_file, "w") as manual_match_file:
         json.dump(associater.need_manual_review, manual_match_file)
 

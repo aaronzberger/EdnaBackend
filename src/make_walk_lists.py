@@ -3,9 +3,7 @@
 
 from __future__ import annotations
 
-import argparse
 import sys
-import os
 
 from termcolor import colored
 
@@ -20,7 +18,6 @@ from src.config import (
     TIMEOUT,
     CAMPAIGN_ID,
     TERMINAL_WIDTH,
-    STYLE_COLOR,
     NodeType,
     Abode,
     InternalPoint,
@@ -34,11 +31,6 @@ from src.post_processing.post_process import (
     process_partitioned_solution,
 )
 from src.utils.db import Database
-
-parser = argparse.ArgumentParser(
-    prog="make_walk_lists.py",
-    description="Generate walk lists",
-)
 
 db = Database()
 
