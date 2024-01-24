@@ -1,4 +1,4 @@
-# BetterVote Canvassing Backend
+# [BetterVote](https://www.bettervote.ai/) Backend
 
 This package is the backend for the BetterVote canvassing technology, and temporarily contains the processing for ingesting and pre-processing campaign data.
 
@@ -20,7 +20,6 @@ This package is the backend for the BetterVote canvassing technology, and tempor
     - [Problem Formulation](#Problem-Formulation)
     - [Solving](#Solving)
     - [Post-processing](#Post-processing)
-    - [Visualization](#Visualization)
 
   
 # Overview
@@ -39,7 +38,7 @@ All the Docker components (routing, database, backend) communicate via a Docker 
 
 2. Run `docker network create edna`.
 
-Next, we need to setup OSRM (the routing engine), which runs locally for speed.
+Next, we need to setup [OSRM](https://project-osrm.org/) (the routing engine), which runs locally for speed.
 
 3. In the route directory, `mkdir osrm`. This will be the directory which contains the OSRM data.
 4. Run `../docker/run_osrm.sh`. This will download the OSRM data (for Pennsylvania), process it, and run the OSRM server. This may take a while, and will use a bit less than 3GB of space.
@@ -62,7 +61,7 @@ There are parts of the code which are not fully documented below, as they are us
 ## Data Structuring
 There are multiple de-coupling steps which make BetterVote's final product adaptable, scalable, and understandable. Within the backend, de-coupling the structure of the data with the functionality of the backend is critical to being able to adapt to new functionality and data.
 
-The schema we use is documented at the bottom of the Swagger API documentation [here](#https://aaronzberger.github.io/EdnaArchitecture/). The rest of the API documentation is also worth exploring, to better understand the purpose of the backend (the outputs).
+The schema we use is documented at the bottom of the Swagger API documentation [here](https://aaronzberger.github.io/EdnaArchitecture/). The rest of the API documentation is also worth exploring, to better understand the purpose of the backend (the outputs).
 
 The geographic structuring is as follows: a `Block` is the segment of road between two possible turning points. A `Block` contains `node`s, which are the `Point`s making up the grographical structure of the line segment. A `Block` also contains `Abode`s, which are places where voters live (this could be a house, apartment within a building, etc.). `Abode`s contain one or more `Voter`s.
 
