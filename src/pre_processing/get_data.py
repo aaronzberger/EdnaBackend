@@ -28,48 +28,9 @@ api = overpass.API(endpoint="https://overpass-api.de/api/interpreter")
 response = api.get(
     f"""
         [out:json][timeout:600];
-        way({AREA_BBOX[0]}, {AREA_BBOX[1]}, {AREA_BBOX[2]}, {AREA_BBOX[3]})
-          ['name']
-          ['highway']
-          ['highway' != 'path']
-          ['highway' != 'steps']
-          ['highway' != 'motorway']
-          ['highway' != 'motorway_link']
-          ['highway' != 'raceway']
-          ['highway' != 'bridleway']
-          ['highway' != 'proposed']
-          ['highway' != 'construction']
-          ['highway' != 'elevator']
-          ['highway' != 'bus_guideway']
-          ['highway' != 'footway']
-          ['highway' != 'cycleway']
-          ['foot' != 'no']
-          ['access' != 'no'];
-        node(w);
-        foreach
-        {{
-        (
-        ._;
-        way(bn)({AREA_BBOX[0]}, {AREA_BBOX[1]}, {AREA_BBOX[2]}, {AREA_BBOX[3]})
-        ['name']
-        ['highway']
-        ['highway' != 'path']
-        ['highway' != 'steps']
-        ['highway' != 'motorway']
-        ['highway' != 'motorway_link']
-        ['highway' != 'raceway']
-        ['highway' != 'bridleway']
-        ['highway' != 'proposed']
-        ['highway' != 'construction']
-        ['highway' != 'elevator']
-        ['highway' != 'bus_guideway']
-        ['highway' != 'footway']
-        ['highway' != 'cycleway']
-        ['foot' != 'no']
-        ['access' != 'no'];
-        );
-        out;
-        }}
+         (area[name="Squirrel Hill"]; )->.a; 
+ way(area.a)
+	["highway"]; out; node (w); out body;
     """,
     build=False,
 )
