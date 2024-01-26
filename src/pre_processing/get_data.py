@@ -27,10 +27,9 @@ api = overpass.API(endpoint="https://overpass-api.de/api/interpreter")
 # TODO: Replace bounding box with polygon
 response = api.get(
     f"""
-        [out:json][timeout:600];
-         (area[name="Squirrel Hill"]; )->.a; 
- way(area.a)
-	["highway"]; out; node (w); out body;
+    [out:json][timeout:600];
+ way(40.5147085, -80.2215597, 40.6199697, -80.0632736)
+	["name"]["highway"]; out; node (w); out body;
     """,
     build=False,
 )

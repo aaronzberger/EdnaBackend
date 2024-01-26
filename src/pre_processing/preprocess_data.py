@@ -19,6 +19,7 @@ def associate_ways_and_nodes(json_file):
         way['node_coords'] = []
         for node in way['nodes']:
             way['node_coords'].append(node_dict[node])
+    print(ways)
     return ways
 
 def find_intersections(ways):
@@ -44,7 +45,7 @@ def make_blocks(ways, intersections):
             if (way['nodes'][i] in intersections) or (i == len(way['nodes']) - 1):
                 uuid_input = str(current_block_points)
                 block_uuid = str(uuid.uuid5(UUID_NAMESPACE, uuid_input))
-                blocks.append({'id': block_uuid, 'nodes': current_block_points, 'type': way['tags']['highway']})
+                blocks.append({'id': block_uuid, 'nodes': current_block_points, 'type': way['tags']['highway'], 'street_name' : way['tags'].get('name')})
                 current_block_points = [way['node_coords'][i]]
     return blocks
     
