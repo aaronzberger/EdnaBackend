@@ -27,6 +27,7 @@ from src.config import (
     WriteablePoint,
     street_suffixes_file,
     address_pts_file,
+    geocoded_universe_file,
     block_output_file,
     ALD_BUFFER,
     AREA_BBOX,
@@ -76,7 +77,7 @@ if DEBUG:
 
 # Load the file (unorganized) containing abode coordinates (and info)
 print("Loading coordinates of abodes...")
-abode_points_file = open(address_pts_file)
+abode_points_file = open(geocoded_universe_file)
 num_abodes = -1
 for _ in abode_points_file:
     num_abodes += 1
@@ -371,16 +372,11 @@ with tqdm(
             or float(item["longitude"]) > max_lon
         ):
             continue
-
+        
         abode_point = InternalPoint(lat=float(item["latitude"]), lon=float(item["longitude"]), type=NodeType.abode, id="")
 
         street_name_parts = (
-            item["st_premodifier"],
-            item["st_prefix"],
-            item["st_pretype"],
-            item["st_name"],
-            item["st_type"],
-            item["st_postmodifier"],
+            item["Street Name"],
         )
 
         raw_street_name = " ".join(part for part in street_name_parts if part)
@@ -391,13 +387,13 @@ with tqdm(
         # unit_type,unit,floor,municipality,county,state,zip_code
         # as far as I can tell, there is never any data in addr_num_prefix
         formatted_address: Address = Address(
-            item["addr_num"],
-            item["addr_num_suffix"],
+            item["House Number"],
+            item["House Number Suffix"],
             sanitized_street_name,
-            item["unit"],
+            item["Apartment Number"],
             None,
             None,  # TODO: add function to sanitize state names
-            item["zip_code"],
+            item["Zip"],
         )
 
         best_segment: Optional[
@@ -520,11 +516,12 @@ with tqdm(
 
             # Lastly, calculate the distance from the end of this abode's sub-segment to the end of the block
             distance_to_end += distance_along_path(all_points[min(sub_nodes) + 1:])
-
+            
+            display_address = str(int(float(item["House Number"]))) + " " + item["Street Name"]
             # Add this association to the abodes file
             lat_rounded = Decimal(str(abode_point["lat"])).quantize(Decimal("0.0001"))
             lon_rounded = Decimal(str(abode_point["lon"])).quantize(Decimal("0.0001"))
-            uuid_input = item["full_address"] + str(lat_rounded) + str(lon_rounded)
+            uuid_input = display_address + str(lat_rounded) + str(lon_rounded)
 
             abode_uuid = uuid.uuid5(UUID_NAMESPACE, uuid_input)
 
@@ -544,11 +541,11 @@ with tqdm(
 
             abode_semantics = Abode(
                 id=str(abode_uuid),
-                display_address=item["full_address"],
+                display_address=display_address,
                 block_id=str(best_segment.id),
-                city=item["municipality"],
-                state=item["state"],
-                zip=item["zip_code"],
+                city=item["City"],
+                state=item["State"],
+                zip=item["Zip"],
             )
             counter += 1
             # Add the abode to the block (Note that we expect the block to already exist in the database most of the time)
@@ -586,6 +583,5 @@ print(
         num_failed_abodes, num_abodes
     )
 )
-print(block_dict)
 db.set_multiple_dict(block_dict, BLOCK_DB_IDX)
 display_blocks()

@@ -74,8 +74,8 @@ def query_smarty(universe):
     metadata = candidates[0].metadata
     longs.append(metadata.longitude)
     lats.append(metadata.latitude)
-  universe.insert(1, "Longitude", longs, True)
-  universe.insert(1, "Latitude", lats, True)
+  universe.insert(1, "longitude", longs, True)
+  universe.insert(1, "latitude", lats, True)
   return universe
 
 if __name__ == "__main__":
