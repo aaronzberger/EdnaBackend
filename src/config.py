@@ -119,6 +119,7 @@ TIME_AT_ABODE = timedelta(minutes=1.5)
 MAX_TOURING_DISTANCE = 6000
 WALKING_M_PER_S = 1.2
 SUPER_CLUSTER_NUM_ABODES = 500
+GEOHASH_PRECISION = 5
 
 
 def sigmoid(x: float, k: float, a: float) -> float:

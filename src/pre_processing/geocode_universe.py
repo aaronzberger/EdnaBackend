@@ -5,22 +5,26 @@ A universe file is provided, for which addresses are from the PA voter export.
 
 These addresses are mapped to longitude and latitude via SmartyStreets API
 """
-import os
-
 from smartystreets_python_sdk import SharedCredentials, StaticCredentials, exceptions, Batch, ClientBuilder
 from smartystreets_python_sdk.us_street import Lookup as StreetLookup
 from smartystreets_python_sdk.us_street.match_type import MatchType
 import pandas as pd
 import numpy as np
+import json
 from src.config import universe_file, geocoded_universe_file
+from dotenv import load_dotenv
+import os
+
+
 
 def load_universe(filename):
   universe = pd.read_csv(filename)
   return universe.head(5)
 def query_smarty(universe):
+  load_dotenv()
 
-  auth_id = '06b04f81-fd8c-9bda-b876-2b1a05c57b07'
-  auth_token = 'sE3Koj62HjEvBQ6zUum7'
+  auth_id = os.environ.get('SMARTY_AUTH_ID')
+  auth_token = os.environ.get('SMARTY_AUTH_TOKEN')
   credentials = StaticCredentials(auth_id, auth_token)
   # The appropriate license values to be used for your subscriptions
   # can be found on the Subscriptions page of the account dashboard.
@@ -58,7 +62,6 @@ def query_smarty(universe):
   try:
     client.send_batch(batch)
   except exceptions.SmartyException as err:
-    print
     print(err)
     return
   longs = []
@@ -66,11 +69,11 @@ def query_smarty(universe):
   for i, lookup in enumerate(batch):
     candidates = lookup.result
 
+
     if len(candidates) == 0:
       longs.append(np.nan)
       lats.append(np.nan)
       continue
-
     metadata = candidates[0].metadata
     longs.append(metadata.longitude)
     lats.append(metadata.latitude)
