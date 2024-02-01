@@ -22,6 +22,7 @@ control_lists/**
 # For privacy. Contact for access
 input/example_universe.csv
 debug.txt
+.env
 
 *.osrm
 *.osm.pbf

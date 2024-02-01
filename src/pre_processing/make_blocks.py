@@ -27,6 +27,7 @@ from src.config import (
     WriteablePoint,
     street_suffixes_file,
     address_pts_file,
+    geocoded_universe_file,
     block_output_file,
     ALD_BUFFER,
     AREA_BBOX,
@@ -63,6 +64,7 @@ buffer = io.StringIO()
 
 # Initialize the database (connect)
 db = Database()
+block_dict = {}
 
 if DEBUG:
     with open("debug.txt", "w") as f:
@@ -75,7 +77,7 @@ if DEBUG:
 
 # Load the file (unorganized) containing abode coordinates (and info)
 print("Loading coordinates of abodes...")
-abode_points_file = open(address_pts_file)
+abode_points_file = open(geocoded_universe_file)
 num_abodes = -1
 for _ in abode_points_file:
     num_abodes += 1
@@ -163,91 +165,51 @@ def get_matrix_index(
 
 
 print("Created empty matrix, starting to place blocks into matrix")
-
+counter = 0
 with tqdm(
     total=len(blocks),
     desc="Creating block location matrix",
     unit="rows",
     colour="green",
 ) as progress:
-    for start_node in blocks:
-        for block in blocks[start_node]:
-            # if the block is empty, this means that the "other" start node likely contains the actual data
-            if block[2] is None:
-                continue
-            segment_id = str(start_node) + ":" + str(block[0]) + ":" + str(block[1])
-
-            # Create the list of sub-segments in this block
-            all_node_ids = [str(i) for i in block[2]["nodes"]]
-            all_nodes: list[InternalPoint] = []
-            for id in all_node_ids:
-                coords = db.get_dict(id, NODE_COORDS_DB_IDX)
-                if coords == {}:
-                    print(f"KeyError on finding coordinates of node {id}")
-                    continue
-                all_nodes.append(
-                    InternalPoint(
-                        lat=float(coords["lat"]),
-                        lon=float(coords["lon"]),
-                        type=NodeType.node,
-                        id=id,
-                    )
-                )
-            for node in all_nodes:
-                i, j = get_matrix_index(node, origin, CHUNK_SIZE)
-                if 0 <= i < num_lat_chunks and 0 <= j < num_lon_chunks:
-                    if segment_id not in block_matrix[i][j]:
-                        block_matrix[i][j].append(segment_id)
+    for block in blocks:
+        segment_id = block['id']
+        for node in block['nodes']:
+            i, j = get_matrix_index(node, origin, CHUNK_SIZE)
+            if 0 <= i < num_lat_chunks and 0 <= j < num_lon_chunks:
+                if segment_id not in block_matrix[i][j]:
+                    block_matrix[i][j].append(segment_id)
         progress.update(1)
 
 # First, load every block, find subsegments, and save all data besides actual addresses to segments_by_id
 with tqdm(
     total=len(blocks), desc="Reading blocks", unit="rows", colour="green"
 ) as progress:
-    for start_node in blocks:
-        for block in blocks[start_node]:
-            if block[2] is None:
-                continue
-            segment_id = str(start_node) + ":" + str(block[0]) + ":" + str(block[1])
-
-            # Create the list of sub-segments in this block
-            all_node_ids = [str(i) for i in block[2]["nodes"]]
-            all_nodes: list[WriteablePoint] = []
-            for id in all_node_ids:
-                coords = db.get_dict(id, NODE_COORDS_DB_IDX)
-                if coords == {}:
-                    print(f"KeyError on finding coordinates of node {id}")
-                    continue
-                all_nodes.append(
-                    WriteablePoint(lat=float(coords["lat"]), lon=float(coords["lon"]))
-                )
-
-            block_to_write = Block(
-                id=segment_id,
-                abodes={},
-                nodes=all_nodes,
-                type=block[2]["ways"][0][1]["highway"],
-            )
-
-            db.set_dict(segment_id, dict(block_to_write), BLOCK_DB_IDX)
+    for block in blocks:
+        block_to_write = Block(
+            id=block['id'],
+            abodes={},
+            nodes=block['nodes'],
+            type=block['type'],
+        )
+        block_dict[block['id']] = block_to_write
 
         progress.update(1)
 
 with tqdm(
     total=len(blocks), desc="Sanitizing street names", unit="rows", colour="green"
 ) as progress:
-    for start_node in blocks:
-        for block in blocks[start_node]:
-            if block[2] is None:
-                continue
-            segment_id = str(start_node) + ":" + str(block[0]) + ":" + str(block[1])
-
-            # Add the street name to the block
+    for block in blocks:
+        segment_id = block['id']
+        # Add the street name to the block
+        if block['street_name'] is not None:
             block_to_street_names[segment_id] = list(
                 set(
-                    Address.sanitize_street_name(i[1]["name"]) for i in block[2]["ways"]
+                    [Address.sanitize_street_name(block['street_name'])]
                 )
             )
+        else:
+            block_to_street_names[segment_id] = list(set([]))
         progress.update(1)
 
 num_failed_abodes = 0
@@ -306,6 +268,7 @@ def search_for_best_subsegment(
     segment, segment_id, best_segment, abode_point: InternalPoint
 ):
     # Iterate through each block sub-segment (block may curve)
+    # print(segment['nodes'])
     for node_1_data, node_2_data in itertools.pairwise(segment["nodes"]):
         node_1 = InternalPoint(**node_1_data)
         node_2 = InternalPoint(**node_2_data)
@@ -350,7 +313,6 @@ def search_for_best_subsegment(
                             f"New abode_offset: {abode_offset}, old: {best_segment.ald_offset}",
                             file=buffer,
                         )
-
             best_segment = Segment(
                 sub_node_1=deepcopy(node_1),
                 sub_node_2=deepcopy(node_2),
@@ -359,7 +321,7 @@ def search_for_best_subsegment(
                 side=bool(abode_side),
                 id=segment_id,
             )
-
+    # print(best_segment)
     return best_segment
 
 
@@ -402,23 +364,19 @@ with tqdm(
         #     continue
 
         # If this abode is not in the area of interest, skip it
-        if (
+    
+        if "latitude" in item.keys() and (
             float(item["latitude"]) < min_lat
             or float(item["latitude"]) > max_lat
             or float(item["longitude"]) < min_lon
             or float(item["longitude"]) > max_lon
         ):
             continue
-
+        
         abode_point = InternalPoint(lat=float(item["latitude"]), lon=float(item["longitude"]), type=NodeType.abode, id="")
 
         street_name_parts = (
-            item["st_premodifier"],
-            item["st_prefix"],
-            item["st_pretype"],
-            item["st_name"],
-            item["st_type"],
-            item["st_postmodifier"],
+            item["Street Name"],
         )
 
         raw_street_name = " ".join(part for part in street_name_parts if part)
@@ -429,13 +387,13 @@ with tqdm(
         # unit_type,unit,floor,municipality,county,state,zip_code
         # as far as I can tell, there is never any data in addr_num_prefix
         formatted_address: Address = Address(
-            item["addr_num"],
-            item["addr_num_suffix"],
+            item["House Number"],
+            item["House Number Suffix"],
             sanitized_street_name,
-            item["unit"],
+            item["Apartment Number"],
             None,
             None,  # TODO: add function to sanitize state names
-            item["zip_code"],
+            item["Zip"],
         )
 
         best_segment: Optional[
@@ -464,17 +422,15 @@ with tqdm(
                 f"Street name to match: {sanitized_street_name} (raw: {raw_street_name})",
                 file=buffer,
             )
-
         for segment_id in filtered_segment_ids:
             if sanitized_street_name in block_to_street_names[segment_id]:
                 if DEBUG:
                     print("Found exact match for street name", file=buffer)
-                closest_block = db.get_dict(segment_id, BLOCK_DB_IDX)
+                closest_block = block_dict[segment_id]
                 # closest_block = segments_by_id[segment_id]
                 best_segment = search_for_best_subsegment(
                     closest_block, segment_id, best_segment, abode_point
                 )
-
         filtered_block_to_street_names = {
             k: block_to_street_names[k] for k in filtered_segment_ids
         }
@@ -514,8 +470,9 @@ with tqdm(
                     if DEBUG:
                         print("---------block---------", file=buffer)
                         # print(segments_by_id[block_id], file=buffer)
+                    # print('calling from 485???')
                     best_segment = search_for_best_subsegment(
-                        db.get_dict(block_id, BLOCK_DB_IDX),
+                        block_dict[block_id],
                         block_id,
                         best_segment,
                         abode_point,
@@ -523,9 +480,10 @@ with tqdm(
 
         if best_segment is not None and best_segment.ctd <= MAX_DISTANCE:
             # Create abode to insert into table
-            all_points = db.get_dict(str(best_segment.id), BLOCK_DB_IDX)["nodes"]
+            # print(best_segment)
+            # print(block_dict[best_segment.id])
+            all_points = block_dict[best_segment.id]["nodes"]
             # all_points = segments_by_id[str(best_segment.id)]["nodes"]
-
             sub_nodes = [
                 all_points.index(best_segment.sub_node_1),
                 all_points.index(best_segment.sub_node_2),
@@ -558,11 +516,12 @@ with tqdm(
 
             # Lastly, calculate the distance from the end of this abode's sub-segment to the end of the block
             distance_to_end += distance_along_path(all_points[min(sub_nodes) + 1:])
-
+            
+            display_address = str(int(float(item["House Number"]))) + " " + item["Street Name"]
             # Add this association to the abodes file
             lat_rounded = Decimal(str(abode_point["lat"])).quantize(Decimal("0.0001"))
             lon_rounded = Decimal(str(abode_point["lon"])).quantize(Decimal("0.0001"))
-            uuid_input = item["full_address"] + str(lat_rounded) + str(lon_rounded)
+            uuid_input = display_address + str(lat_rounded) + str(lon_rounded)
 
             abode_uuid = uuid.uuid5(UUID_NAMESPACE, uuid_input)
 
@@ -582,18 +541,16 @@ with tqdm(
 
             abode_semantics = Abode(
                 id=str(abode_uuid),
-                display_address=item["full_address"],
+                display_address=display_address,
                 block_id=str(best_segment.id),
-                city=item["municipality"],
-                state=item["state"],
-                zip=item["zip_code"],
+                city=item["City"],
+                state=item["State"],
+                zip=item["Zip"],
             )
-
+            counter += 1
             # Add the abode to the block (Note that we expect the block to already exist in the database most of the time)
-            old_block = db.get_dict(str(best_segment.id), BLOCK_DB_IDX)
+            old_block = block_dict[best_segment.id]
             old_block["abodes"][str(abode_uuid)] = abode_geography
-
-            db.set_dict(str(best_segment.id), old_block, BLOCK_DB_IDX)
 
             # Add the abode to the abodes file
             db.set_dict(str(abode_uuid), dict(abode_semantics), ABODE_DB_IDX)
@@ -626,5 +583,5 @@ print(
         num_failed_abodes, num_abodes
     )
 )
-
+db.set_multiple_dict(block_dict, BLOCK_DB_IDX)
 display_blocks()

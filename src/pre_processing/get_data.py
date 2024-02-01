@@ -27,49 +27,9 @@ api = overpass.API(endpoint="https://overpass-api.de/api/interpreter")
 # TODO: Replace bounding box with polygon
 response = api.get(
     f"""
-        [out:json][timeout:600];
-        way({AREA_BBOX[0]}, {AREA_BBOX[1]}, {AREA_BBOX[2]}, {AREA_BBOX[3]})
-          ['name']
-          ['highway']
-          ['highway' != 'path']
-          ['highway' != 'steps']
-          ['highway' != 'motorway']
-          ['highway' != 'motorway_link']
-          ['highway' != 'raceway']
-          ['highway' != 'bridleway']
-          ['highway' != 'proposed']
-          ['highway' != 'construction']
-          ['highway' != 'elevator']
-          ['highway' != 'bus_guideway']
-          ['highway' != 'footway']
-          ['highway' != 'cycleway']
-          ['foot' != 'no']
-          ['access' != 'no'];
-        node(w);
-        foreach
-        {{
-        (
-        ._;
-        way(bn)({AREA_BBOX[0]}, {AREA_BBOX[1]}, {AREA_BBOX[2]}, {AREA_BBOX[3]})
-        ['name']
-        ['highway']
-        ['highway' != 'path']
-        ['highway' != 'steps']
-        ['highway' != 'motorway']
-        ['highway' != 'motorway_link']
-        ['highway' != 'raceway']
-        ['highway' != 'bridleway']
-        ['highway' != 'proposed']
-        ['highway' != 'construction']
-        ['highway' != 'elevator']
-        ['highway' != 'bus_guideway']
-        ['highway' != 'footway']
-        ['highway' != 'cycleway']
-        ['foot' != 'no']
-        ['access' != 'no'];
-        );
-        out;
-        }}
+    [out:json][timeout:600];
+ way(40.5147085, -80.2215597, 40.6199697, -80.0632736)
+	["name"]["highway"]; out; node (w); out body;
     """,
     build=False,
 )

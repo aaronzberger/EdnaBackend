@@ -51,6 +51,7 @@ region_dir = os.path.join(BASE_DIR, "regions", CAMPAIGN_ID)
 input_dir = os.path.join(region_dir, "input")
 
 # Per-region input files
+universe_file = os.path.join(input_dir, "universe.csv")
 block_output_file = os.path.join(input_dir, "block_output.json")
 adjacency_list_file = os.path.join(input_dir, "adjacency_list.json")
 coords_node_file = os.path.join(input_dir, "coords_node.json")
@@ -60,6 +61,7 @@ mail_data_file = os.path.join(BASE_DIR, "input", "mail_data_10-27-23.json")
 
 # Map addresses to block IDs
 addresses_file = os.path.join(region_dir, "addresses.json")
+geocoded_universe_file = os.path.join(region_dir, "geocoded_universe.csv")
 manual_match_input_file = os.path.join(region_dir, "manual_match_input.json")
 reverse_geocode_file = os.path.join(region_dir, "reverse_geocode.json")
 
@@ -117,6 +119,7 @@ TIME_AT_ABODE = timedelta(minutes=1.5)
 MAX_TOURING_DISTANCE = 6000
 WALKING_M_PER_S = 1.2
 SUPER_CLUSTER_NUM_ABODES = 500
+GEOHASH_PRECISION = 5
 
 
 def sigmoid(x: float, k: float, a: float) -> float:
