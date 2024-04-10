@@ -176,7 +176,7 @@ class Singleton(type):
 "----------------------------------------------------------------------------------"
 STYLE_COLOR = "#0F6BF5"
 
-GOOGLE_MAPS_API_KEY = "AIzaSyAPpRP4mPuMlyRP8YiIaEOL_YAms6TpCwM"
+GOOGLE_MAPS_API_KEY = os.get_env("GOOGLE_MAPS_API_KEY")
 
 UUID_NAMESPACE = uuid.UUID("ccf207c6-3b15-11ee-be56-0242ac120002")
 
