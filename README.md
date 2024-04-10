@@ -1,6 +1,6 @@
-# [BetterVote](https://www.bettervote.ai/) Backend
+# Edna Backend
 
-This package is the backend for the BetterVote canvassing technology, and temporarily contains the processing for ingesting and pre-processing campaign data.
+This package is the backend for the Edna canvassing technology, and temporarily contains the processing for ingesting and pre-processing campaign data.
 
 ![Backend](https://github.com/aaronzberger/EdnaBackend/assets/35245591/4d29edb2-2e09-4cbc-9e32-e68d179aadd3)
 
@@ -23,7 +23,7 @@ This package is the backend for the BetterVote canvassing technology, and tempor
 
   
 # Overview
-Welcome to the BetterVote canvassing and campaign management backend! This package contains the code for the backend, which is responsible for:
+Welcome to the Edna canvassing and campaign management backend! This package contains the code for the backend, which is responsible for:
  - Ingesting campaign data
  - Pre-processing the data into a format which is usable by the rest of the system
  - Optimizing routes for canvassing
@@ -31,7 +31,7 @@ Welcome to the BetterVote canvassing and campaign management backend! This packa
 
 
 # Setup
-We use Docker to manage all dependencies, so the setup is simple.
+This project uses Docker to manage all dependencies, so the setup is simple.
 1. Install Docker
 
 All the Docker components (routing, database, backend) communicate via a Docker network, so we need to create one.
@@ -59,7 +59,7 @@ The usage of this package is documented throughout the sections below, instead o
 There are parts of the code which are not fully documented below, as they are used only by sub-components described below.
 
 ## Data Structuring
-There are multiple de-coupling steps which make BetterVote's final product adaptable, scalable, and understandable. Within the backend, de-coupling the structure of the data with the functionality of the backend is critical to being able to adapt to new functionality and data.
+There are multiple de-coupling steps which make Edna adaptable, scalable, and understandable. Within the backend, de-coupling the structure of the data with the functionality of the backend is critical to being able to adapt to new functionality and data.
 
 The schema we use is documented at the bottom of the Swagger API documentation [here](https://aaronzberger.github.io/EdnaArchitecture/). The rest of the API documentation is also worth exploring, to better understand the purpose of the backend (the outputs).
 
@@ -79,9 +79,9 @@ The `Abode` distance matrix similarly uses the `Block` distance matrix, along wi
 
 
 ## Pre-processing
-The goal of the pre-processing is to take a campaign's geographic information (what areas they are running in), and prepare the data for canvassing, and to be used in the CRM. The inputs to the pre-processing are:
+The goal of the pre-processing is to take a campaign's geographic information (what areas they are running in), and prepare the data for canvassing. The inputs to the pre-processing are:
  - The campaign's "universe" file, which contains a subset of the public voter file, containing only the voters the campaign wants to target (see `regions/dev_1/input/universe.csv` for an example).
- - Geocoding information, which maps an address to coordinates. Right now, we test in Alleghney County, PA, which releases a file with this information (see `input/address_pts.csv`). **This will soon transition to a scalable solution like SmartyStreets, which has geocoding and address matching.**
+ - Geocoding information, which maps an address to coordinates. Right now, we test in Alleghney County, PA, which releases a file with this information (see `input/address_pts.csv`).
 
 ### Geographic Data Fetching
 First, we use OpenStreetMap (OSM) to retrieve a geographic understanding of the region requested: blocks and nodes. Run `src/pre_processing/get_data.py` to query OSM for the bounding box defined in `src/config.py`. This may take a while, but finally generates a large file called `overpass.json`.
@@ -118,10 +118,10 @@ Next, we process the raw data in `overpass.json` into a more usable format. Run 
 We also can now store the coordinates of all the nodes in the region for quick access later. Run `src/pre_processing/parse_json.py` to store the nodes from `overpass.json` file into Redis.
 
 ### Block Creation
-Now, with our understanding of nodes and blocks, we can create the actual `Block` objects and store them in Redis. This involves associating the abodes with the blocks, and creating the `Abode` and `Block` objects fully (apart from adding voters to the `Abode`s). Run `src/pre_processing/make_blocks.py`. **This will soon transition to SmartyStreets or equivalent, which provides unique abode keying, address matching, etc.**
+Now, with our understanding of nodes and blocks, we can create the actual `Block` objects and store them in Redis. This involves associating the abodes with the blocks, and creating the `Abode` and `Block` objects fully (apart from adding voters to the `Abode`s). Run `src/pre_processing/make_blocks.py`.
 
 ### Universe Matching
-Finally, we can associate the `universe.csv` file with these `Abode`s and add the voters to their respective `Abode`s. Run `src/pre_processing/process_universe.py` to do this. This also pre-populates the distance matrices for `node`s and `Block`s to save time later. **This will also soon change once a scalable address matching system is implemented, since the current matching between `Abode`s and `universe.csv` is not scalable.**
+Finally, we can associate the `universe.csv` file with these `Abode`s and add the voters to their respective `Abode`s. Run `src/pre_processing/process_universe.py` to do this. This also pre-populates the distance matrices for `node`s and `Block`s to save time later.
 
 
 ## Route Optimization
