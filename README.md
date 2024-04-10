@@ -4,6 +4,10 @@ This package is the backend for the Edna canvassing technology, and temporarily 
 
 ![Backend](https://github.com/aaronzberger/EdnaBackend/assets/35245591/4d29edb2-2e09-4cbc-9e32-e68d179aadd3)
 
+![App](https://github.com/aaronzberger/EdnaBackend/assets/35245591/9abe668d-5a0b-4d4c-bf3a-bfa3da9ae214)
+
+![Dashboard](https://github.com/aaronzberger/EdnaBackend/assets/35245591/7499f66e-9c09-4b55-b4c3-b388a75042f8)
+
 ## Table of Contents
 - [Overview](#Overview)
 - [Setup](#Setup)
